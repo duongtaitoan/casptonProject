@@ -4,32 +4,40 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class HistoryPage extends StatefulWidget {
+class ShowAllEventsPage extends StatefulWidget {
   final FirebaseUser uid;
-  const HistoryPage({Key key, this.uid}) : super(key: key);
+
+  const ShowAllEventsPage({Key key, this.uid}) : super(key: key);
 
   @override
-  _HistoryPageState createState() => _HistoryPageState(uid);
+  _ShowAllEventsPageState createState() => _ShowAllEventsPageState(uid);
 }
 
-class _HistoryPageState extends State<HistoryPage> {
+class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
   final FirebaseUser uid;
-  _HistoryPageState(this.uid);
+
+  _ShowAllEventsPageState(this.uid);
+
   final int count = 10;
 
   @override
   Widget build(BuildContext context) {
-    return  SafeArea(
+    return SafeArea(
         child:SizedBox.expand(
           child: Scaffold(
             appBar: AppBar(
-              title: Text('Lịch sử'),
+              title: Text('Tất cả sự kiện'),
               backgroundColor: Colors.amberAccent[400],
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () =>
-                    Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)=> HomePage(uid: uid,)), (Route<dynamic> route) => false),
+                onPressed: () => Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => HomePage(
+                          uid: uid,
+                        )),
+                        (Route<dynamic> route) => false),
               ),
             ),
             body: Column(
@@ -56,9 +64,8 @@ class _HistoryPageState extends State<HistoryPage> {
               ],
             ),
           ),
-        )
+        ),
     );
-
   }
 }
 
@@ -71,7 +78,7 @@ Widget searchBar() {
             border: InputBorder.none,
             suffixIcon: Icon(Icons.search, color: Colors.black),
             contentPadding: EdgeInsets.only(left: 25.0, top: 15.0),
-            hintText: 'Tìm kiếm lịch sử sự kiện',
+            hintText: 'Tìm kiếm sự kiện',
             hintStyle: TextStyle(color: Colors.grey)),
         onFieldSubmitted: (String input) {}),
   );
@@ -81,7 +88,7 @@ Widget getEvent() {
   var count = 0;
   return Container(
     width: double.infinity,
-    height: 620,
+    height: 600,
     color: Colors.white,
     child: ListView(
       scrollDirection: Axis.vertical,
@@ -105,7 +112,7 @@ Widget getEvent() {
                 Container(
                   margin: const EdgeInsets.fromLTRB(30, 0, 30, 0),
                   child: Text(
-                    "Lịch sử tham gia sự kiện",
+                    "Sự kiện",
                     style: TextStyle(
                         color: Colors.amberAccent[400],
                         fontSize: 20.0,
@@ -115,7 +122,7 @@ Widget getEvent() {
               ]),
         ),
         Container(
-          height: 525,
+          height: 591,
           child: ListView.builder(
             // get count user register events
             itemCount: 10,
@@ -124,7 +131,7 @@ Widget getEvent() {
               return Container(
                 child: FlatButton(
                   child: Container(
-                    margin: EdgeInsets.all(5),
+                    margin: EdgeInsets.all(7),
                     padding: EdgeInsets.all(3),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(

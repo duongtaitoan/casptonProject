@@ -1,15 +1,13 @@
-import 'dart:convert';
 import 'dart:math';
 
-import 'package:designui/src/Service/LoginAuthen.dart';
+import 'file:///F:/ProjectFlutter/design_ui/design_ui/lib/src/ViewModel/login_viewmodel.dart';
+import 'package:designui/src/Model/userDAO.dart';
 import 'package:designui/src/View/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   @override
@@ -22,20 +20,19 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   LoginContext _loginContext;
 
+
   void _onSignInFinished(FirebaseUser user) async {
     if (user == null) return;
     IdTokenResult fbTokenResult = await user.getIdToken(refresh: true);
     String fbToken = fbTokenResult.token;
-
-    print("Firebase Token : "+fbToken);
-
-    // nó trả tới đoạn này thôi à đoạn sau chưa có link server nên chịu
     var success = false;
+
+
     _signInServer(
             fbToken: fbToken,
             success: (tokenData) {
               _firebaseMessaging
-                  .subscribeToTopic(tokenData["client_id"])
+                  .subscribeToTopic(tokenData["token"])
                   .catchError((e) => _loginError(err: e))
                   .then((value) {
                 success = true;
@@ -45,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
             invalid: null,
             error: _loginError)
         .whenComplete(() {
-      if (!success) _loginError(err: e);
+      if (!success){ _loginError(err: e);};
     });
   }
 
@@ -53,11 +50,13 @@ class _LoginPageState extends State<LoginPage> {
     print(err);
     await _googleSignIn.signOut();
     await _auth.signOut();
-    var tokenData = _loginContext.tokenData ?? (await getTokenData());
+    print('Login context :'+_loginContext.tokenData.toString());
+    print('get Tokent :'+UserDao.getTokenData().toString());
+    var tokenData = _loginContext.tokenData ?? (await UserDao.getTokenData());
     print('222222222222ssssssssssssssssssssssssssssssssssssssssss');
     if (tokenData != null) {
-      await clearTokenData();
-      await _firebaseMessaging.unsubscribeFromTopic(tokenData["client_id"]);
+      await UserDao.clearTokenData();
+      await _firebaseMessaging.unsubscribeFromTopic(tokenData["token"]);
       _loginContext.signOut();
     }
   }
@@ -67,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
       Function success,
       Function invalid,
       Function error}) async {
-    return await login(
+    return await UserDao.login(
         invalidEmail: _handleInvalidEmail,
         success: success,
         fbToken: fbToken,
@@ -82,9 +81,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<FirebaseUser> _handleSignIn() async {
+    final GoogleSignIn _googleSignIn = GoogleSignIn();
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+
     GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
     GoogleSignInAuthentication authentication =
-        await googleSignInAccount.authentication;
+    await googleSignInAccount.authentication;
 
     final AuthCredential credential = GoogleAuthProvider.getCredential(
       accessToken: authentication.accessToken,
@@ -96,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
     return user;
   }
 
-  void onSignInPressed() {
+  void onSignInPressed() async {
     _handleSignIn()
         .then(this._onSignInFinished)
         .catchError((e) => this._loginError(err: e))
@@ -113,69 +115,10 @@ class _LoginPageState extends State<LoginPage> {
             textColor: Colors.black);
       }
       else{
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
+        await Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) => HomePage(uid: user)));
       }
     });
-  }
-
-  static Future<dynamic> getTokenData() async {
-    var prefs = await SharedPreferences.getInstance();
-    Map<String, dynamic> tokenData;
-    var tokenDataStr = prefs.getString("token_data");
-    if (tokenDataStr != null) {
-      tokenData = jsonDecode(tokenDataStr);
-    }
-    return tokenData;
-  }
-
-  static Future<void> clearTokenData() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.remove("token_data");
-  }
-
-  static Future<void> login(
-      {@required String fbToken,
-      Function(Map<String, dynamic> tokenData) success,
-      Function(List<String> mess) invalid,
-      Function() invalidEmail,
-      Function error}) async {
-    // check fbToken => get data server
-    var response = await loginAPI(fbToken: fbToken);
-    if (response == 200) {
-      print('Response body: ${response.body}');
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString("token_data", response.body);
-      var tokenData = jsonDecode(response.body);
-      if (success != null) success(tokenData);
-      return;
-    } else if (response.statusCode == 400) {
-      print('+999999999999999999999');
-      var result = jsonDecode(response.body);
-      print(result);
-      var validationData = result["data"]["results"];
-      var mess = <String>[];
-      for (dynamic o in validationData) mess.add(o["message"] as String);
-      if (invalid != null) invalid(mess);
-      return;
-    } else if (response.statusCode == 401) {
-      if (invalidEmail != null) invalidEmail();
-      return;
-    }
-    print(response.body);
-    if (error != null) error();
-  }
-
-
-  static Future<http.Response> loginAPI({@required String fbToken}) async {
-  // get link api user
-    var uri = Uri.http("","");
-    var response = await http.post(uri,
-        body: jsonEncode({
-          "grant_type": "firebase_token",
-          "firebase_token": fbToken,
-        }));
-    return response;
   }
 
   @override
@@ -232,3 +175,5 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
+
