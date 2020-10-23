@@ -24,7 +24,7 @@ class _HistoryPageState extends State<HistoryPage> {
           child: Scaffold(
             appBar: AppBar(
               title: Text('Lịch sử'),
-              backgroundColor: Colors.amberAccent[400],
+              backgroundColor: Colors.orange[400],
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -107,7 +107,7 @@ Widget getEvent() {
                   child: Text(
                     "Lịch sử tham gia sự kiện",
                     style: TextStyle(
-                        color: Colors.amberAccent[400],
+                        color: Colors.orange[400],
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold),
                   ),

@@ -1,18 +1,40 @@
 class EventsDTO{
+  int id;
   String title;
-  String content;
-  String img;
-  DateTime timeStart;
-  DateTime timeStop;
+  String description;
+  int duration;
+  String location;
+  bool gpsTrackingRequired;
+  String startedAt;
+  int maximumParticipant;
+  String note;
+  String status;
 
-  EventsDTO({this.title, this.content, this.img, this.timeStart, this.timeStop});
+  EventsDTO({
+      this.id,
+      this.title,
+      this.description,
+      this.duration,
+      this.location,
+      this.gpsTrackingRequired,
+      this.startedAt,
+      this.maximumParticipant,
+      this.note,
+      this.status}); // DateTime timeStop;
+
+
 
   factory EventsDTO.fromJson(Map<String, dynamic> json) => EventsDTO(
-    title: json[""],
-    content: json[""],
-    img: json[""],
-    timeStart: json[""],
-    timeStop: json[""],
+    id: json["id"],
+    title: json["title"],
+    description: json["description"],
+    duration: json["duration"],
+    location: json["location"],
+    gpsTrackingRequired: json["gpsTrackingRequired"],
+    startedAt: json["startedAt"],
+    maximumParticipant: json["maximumParticipant"],
+    note: json["note"],
+    status: json["status"],
   );
 
 }

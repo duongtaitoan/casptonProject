@@ -5,6 +5,7 @@ import 'package:designui/src/view/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeMenu extends StatefulWidget {
   final FirebaseUser uid;
@@ -166,9 +167,11 @@ class _HomeMenuState extends State<HomeMenu> {
                           "Thoát",
                           style: TextStyle(fontSize: 18, color: Color(0xff323643)),
                         ),
-                        onTap: () {
+                        onTap: () async {
                           googleSignIn.signOut();
                           _auth.signOut();
+                          SharedPreferences sp = await SharedPreferences.getInstance();
+                          sp.remove("token_data");
                           // back to login and when user click button back => logout app
                           Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)=>LoginPage()), (Route<dynamic> route) => false);
                         },

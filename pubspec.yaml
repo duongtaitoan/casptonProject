@@ -44,6 +44,7 @@ dependencies:
   path_provider: ^1.6.11
   dio: ^3.0.10
   stacked_services:
+
   #  flutter_datetime_picker: ^1.4.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -92,6 +93,10 @@ flutter:
      - assets/images/events9.png
      - assets/images/events10.png
      - assets/images/events11.png
+     - assets/images/backgroud4.png
+     - assets/images/backgroud5.png
+     - assets/images/backgroud6.png
+     - assets/images/backgroud7.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 

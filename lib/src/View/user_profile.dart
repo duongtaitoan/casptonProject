@@ -37,7 +37,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           child: Scaffold(
             appBar: AppBar(
               title: Text('Thông tin cá nhân'),
-              backgroundColor: Colors.amberAccent[400],
+              backgroundColor: Colors.orange[400],
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -296,7 +296,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           'Cập nhật thông tin',
                           style: TextStyle(fontSize: 18.0, color: Colors.white),
                         ),
-                        color: Colors.amberAccent[400],
+                        color: Colors.orange[400],
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(Radius.circular(6))),
                       ),

@@ -22,7 +22,7 @@ class _SupportPageState extends State<SupportPage> {
           child: Scaffold(
             appBar: AppBar(
               title: Text('Hỗ trợ'),
-              backgroundColor: Colors.amberAccent[400],
+              backgroundColor: Colors.orange[400],
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -157,7 +157,7 @@ class _SupportPageState extends State<SupportPage> {
                             'Gửi',
                             style: TextStyle(fontSize: 18.0, color: Colors.white),
                           ),
-                          color: Colors.amberAccent[400],
+                          color: Colors.orange[400],
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.all(Radius.circular(6))),
                         ),

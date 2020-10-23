@@ -27,7 +27,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
           child: Scaffold(
             appBar: AppBar(
               title: Text('Tất cả sự kiện'),
-              backgroundColor: Colors.amberAccent[400],
+              backgroundColor: Colors.orange[400],
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -114,7 +114,7 @@ Widget getEvent() {
                   child: Text(
                     "Sự kiện",
                     style: TextStyle(
-                        color: Colors.amberAccent[400],
+                        color: Colors.orange[400],
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold),
                   ),

@@ -1,18 +1,20 @@
-import 'package:designui/src/View/home.dart';
+import 'dart:io';
+
+import 'package:designui/src/API/api_helper.dart';
 import 'package:designui/src/view/login.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(MyApp());
+void main(){
+  // if error is pass
+  HttpOverrides.global = new MyHttpOverrides();
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      routes: {
-        // '/': (context) => Loading(),
-        '/home': (context) => HomePage(),
-        '/login': (context) => LoginPage(),
-      },
       title: 'G&I',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
