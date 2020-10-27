@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-import 'package:designui/src/Helper/show_user_location.dart';
+import 'package:designui/src/Helper/camera_plugin.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/ViewModel/events_viewmodel.dart';
 import 'package:designui/src/view/menu.dart';
@@ -15,42 +15,52 @@ import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   final FirebaseUser uid;
-  final int changeValue;
+  final nameEvents;
   final timeStart;
   final timeStop;
   final idEvents;
   final status;
   const HomePage({Key key, this.uid,
-    this.changeValue, this.timeStart, this.timeStop, this.idEvents,this.status
+    this.nameEvents, this.timeStart, this.timeStop, this.idEvents,this.status
   }) : super(key: key);
   @override
-  _HomePageState createState() => _HomePageState(uid, changeValue,timeStart,timeStop,idEvents,status);
+  _HomePageState createState() => _HomePageState(uid, nameEvents,timeStart,timeStop,idEvents,status);
 }
 
 class _HomePageState extends State<HomePage> {
-
   final FirebaseUser uid;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   var timeStart ;
   var timeStop;
-  int changeValue;
   var idEvents;
-  var checkLocation = false;
   var status;
-  var showsms = false;
-  _HomePageState(this.uid, this.changeValue, this.timeStart, this.timeStop, this.idEvents,this.status);
+  var nameEvents;
+  var checkLocation = false;
+  _HomePageState(this.uid, this.nameEvents, this.timeStart, this.timeStop, this.idEvents,this.status);
   GlobalKey<ScaffoldState> _scaffoldKey;
 
   @override
   void initState() {
+    if(status == null){
       showSmS();
+    }else if(status == "Người dùng đã đăng ký sự kiện") {
+        var now = DateTime.now();
+        Stopwatch s = new Stopwatch();
+        Timer timer = Timer.periodic(Duration(seconds: 1), (Timer time) {
+        if (now.isAfter(dtf.parse(timeStart)) && now.isBefore(dtf.parse(timeStop))) {
+          showDiaLogLocation(context);
+            s.stop();
+            time.cancel();
+          }
+        });// showDiaLogLocation(context);
+      }
+    showSmS();
     _scaffoldKey = new GlobalKey<ScaffoldState>();
     super.initState();
   }
 
   @override
   void setState(fn) {
-    Timer.run(() => showDiaLogLocation(context));
     super.setState(fn);
   }
 
@@ -123,7 +133,6 @@ class _HomePageState extends State<HomePage> {
   }
   // body
   Widget getListEvent() {
-    var count ;
     return Container(
       width: MediaQuery.of(context).size.width,
       height: 610,
@@ -135,7 +144,7 @@ class _HomePageState extends State<HomePage> {
           // list events current
           Container(
               width: MediaQuery.of(context).size.width,
-              height: 200.0,
+              height: 220.0,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(
                   Radius.circular(30.0),
@@ -144,7 +153,7 @@ class _HomePageState extends State<HomePage> {
               margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
               child: FutureBuilder<List<EventsDTO>>(
                 // get count user register events
-                  future: EventsVM.getEventsPending(),
+                  future: EventsVM.getEventsActive(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
@@ -169,7 +178,8 @@ class _HomePageState extends State<HomePage> {
                                 child: Column(
                                   children: <Widget>[
                                     Center(
-                                      child: changeValue == null ? new Padding(
+                                      child: status == null || status != "Người dùng đã đăng ký sự kiện"
+                                          ? new Padding(
                                         padding: const EdgeInsets.all(0.0),
                                         child: FlatButton(
                                           onPressed: () {
@@ -178,12 +188,10 @@ class _HomePageState extends State<HomePage> {
                                                     uid: uid, eventsDTO: snapshot.data[snap],count:snap+1)));
                                           },
                                           child: ClipRRect(
-                                            borderRadius:
-                                            BorderRadius.circular(15.0),
-                                            child: Image.asset(
-                                              'assets/images/events${snap+1}.png',
-                                              width: 140,
-                                              height: 140,
+                                            borderRadius: BorderRadius.circular(15.0),
+                                            child: Image.asset('assets/images/events${snap+1}.png',
+                                              width: 250,
+                                              height: 160,
                                               fit: BoxFit.cover,
                                             ),
                                           ),
@@ -192,21 +200,23 @@ class _HomePageState extends State<HomePage> {
                                           : new Padding(
                                         padding: const EdgeInsets.all(0.0),
                                         child: FlatButton(
-                                          onPressed: () => {Timer.run(() => showDiaLogLocation(context)),},
+                                          onPressed: () => {
+                                            Navigator.of(context).push(MaterialPageRoute(
+                                            builder: (context) => RegisterEventPage(
+                                            uid: uid, eventsDTO: snapshot.data[snap],count:snap+1,status:status))),
+                                          },
                                           child: ClipRRect(
-                                            borderRadius:
-                                            BorderRadius.circular(15.0),
-                                            child: Image.asset(
-                                              'assets/images/events${snap+1}.png',
-                                              width: 140,
-                                              height: 140,
+                                            borderRadius: BorderRadius.circular(15.0),
+                                            child: Image.asset('assets/images/events${snap+1}.png',
+                                              width: 250,
+                                              height: 160,
                                               fit: BoxFit.cover,
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                    Text(snapshot.data[snap].title,),
+                                    Text(snapshot.data[snap].title,style: TextStyle(fontSize: 19),),
                                     Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt))),
                                   ],
                                 ),
@@ -228,7 +238,7 @@ class _HomePageState extends State<HomePage> {
             width: MediaQuery.of(context).size.width,
             height: 550,
             child: FutureBuilder<List<EventsDTO>>(
-                future: EventsVM.getAllListEvents(),
+                future: EventsVM.getEventsPending(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     if (snapshot.data != null) {
@@ -261,7 +271,7 @@ class _HomePageState extends State<HomePage> {
                                         Expanded(
                                           flex: 6,
                                           child: Center(
-                                            child: changeValue == null
+                                            child: status == null || status != "Người dùng đã đăng ký sự kiện"
                                                 ? new Padding(
                                               padding: const EdgeInsets.all(0.0),
                                               child: FlatButton(
@@ -285,8 +295,10 @@ class _HomePageState extends State<HomePage> {
                                                 : new Padding(
                                               padding: const EdgeInsets.all(0.0),
                                               child: FlatButton(
-                                                onPressed: ()=>{
-                                                  Timer.run(() => showDiaLogLocation(context)),
+                                                onPressed: () => {
+                                                  Navigator.of(context).push(MaterialPageRoute(
+                                                      builder: (context) => RegisterEventPage(
+                                                          uid: uid, eventsDTO: snapshot.data[snap],count:snap+1,status:status))),
                                                 },
                                                 child: ClipRRect(
                                                   borderRadius:
@@ -311,7 +323,6 @@ class _HomePageState extends State<HomePage> {
                                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
                                               ),
                                               Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt)),style: TextStyle(fontSize: 16.0),),
-
                                             ],
                                           ),
                                         ),
@@ -336,58 +347,10 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-  // check time current with time event => show notification user
-  showDiaLogLocation(BuildContext context) async {
-    final now = DateTime.now();
-    try{
-      if (now.isAfter(dtf.parse(timeStart)) && now.isBefore(dtf.parse(timeStop))) {
-        // notification get location for user
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text("Thông báo"),
-              content: Text("Checking để tham gia sự kiện"),
-              actions: [
-                CupertinoButton(
-                  child: Text('Đồng ý'),
-                  onPressed: () async {
-                     await Future.delayed(Duration.zero, () {
-                        Navigator.of(context).pop(true);
-                    });
-                    checkLocation = true;
-                  },
-                ),
-                CupertinoButton(
-                  child: Text('Hủy'),
-                  onPressed: () async {
-                    await Future.delayed(Duration.zero, () {
-                      Navigator.of(context).pop(true);
-                    });
-                  },
-                )
-              ],
-            )
-        );
-        getAutoLocation();
-      }
-    }catch(e){
-      throw(e);
-    }
-  }
-
-  // get location auto
-  getAutoLocation(){
-    if(checkLocation == true) {
-      show showEvents = new show();
-      showEvents.showLocationDiaLog(timeStart, timeStop, idEvents);
-    }else{
-      checkLocation = false;
-    }
-  }
 
   // show messasign when user login success
   showSmS(){
-    if(status == ""){
+    if( status == null){
       Fluttertoast.cancel();
     }else{
       Fluttertoast.showToast(
@@ -411,7 +374,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Text(
-              "Sự kiện sắp diễn ra ",
+              "Sự kiện đang diễn ra ",
               style: TextStyle(
                   color: Colors.orange[400],
                   fontSize: 21,
@@ -442,7 +405,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Text(
-              "Sự kiện sắp tới",
+              "Sự kiện sắp diễn ra",
               style: TextStyle(
                   color: Colors.orange[400],
                   fontSize: 21,
@@ -461,6 +424,38 @@ class _HomePageState extends State<HomePage> {
             ),
           ]),
     );
+  }
+
+  showDiaLogLocation(BuildContext context) async {
+      //   // notification get location for user
+      await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Thông báo"),
+            content: Text("Sự kiện $nameEvents đang diễn ra. Xin vui lòng đến trang sự kiện để check in"),
+            actions: [
+              CupertinoButton(
+                child: Text('Đồng ý',style: TextStyle(color: Colors.blue[500]),),
+                onPressed: () async {
+                  checkLocation = true;
+                  await Future.delayed(Duration.zero, () {
+                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                        builder: (BuildContext context) => CameraApp(uid:uid,status:status,timeStart: timeStart,timeStop: timeStop,nameEvents:nameEvents))
+                        ,(Route<dynamic> route) => false);
+                  });
+                },
+              ),
+              CupertinoButton(
+                child: Text('Hủy',style: TextStyle(color: Colors.red),),
+                onPressed: () async {
+                  await Future.delayed(Duration.zero, () {
+                    Navigator.of(context).pop(true);
+                    });
+                },
+              )
+            ],
+          )
+      );
   }
 
 }

@@ -1,144 +1,162 @@
-import 'dart:async';
 import 'dart:io';
-
-import 'package:camera/camera.dart';
+import 'package:designui/src/View/home.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' show join;
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/rendering.dart';
+import 'package:image_picker/image_picker.dart';
 
-Future<void> main() async {
-  // Ensure that plugin services are initialized so that `availableCameras()`
-  // can be called before `runApp()`
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Obtain a list of the available cameras on the device.
-  final cameras = await availableCameras();
-
-  // Get a specific camera from the list of available cameras.
-  final firstCamera = cameras.first;
-
-  runApp(
-    MaterialApp(
-      theme: ThemeData.dark(),
-      home: TakePictureScreen(
-        // Pass the appropriate camera to the TakePictureScreen widget.
-        camera: firstCamera,
-      ),
-    ),
-  );
-}
-
-// A screen that allows users to take a picture using a given camera.
-class TakePictureScreen extends StatefulWidget {
-  final CameraDescription camera;
-
-  const TakePictureScreen({
-    Key key,
-    @required this.camera,
-  }) : super(key: key);
+class CameraApp extends StatefulWidget {
+  final FirebaseUser uid;
+  final status;
+  final timeStart;
+  final timeStop ;
+  final nameEvents;
+  const CameraApp({Key key, this.uid, this.status,this.timeStart,this.timeStop,this.nameEvents}) : super(key: key);
 
   @override
-  TakePictureScreenState createState() => TakePictureScreenState();
+  State<StatefulWidget> createState() {
+    return _CameraAppPageState(uid,status,timeStart,timeStop,nameEvents);
+  }
 }
 
-class TakePictureScreenState extends State<TakePictureScreen> {
-  CameraController _controller;
-  Future<void> _initializeControllerFuture;
+class _CameraAppPageState extends State<CameraApp> {
+  File imageFile = null;
+  final FirebaseUser uid;
+  final status;
+  var timeStart;
+  var timeStop ;
+  var nameEvents;
+  _CameraAppPageState(this.uid, this.status,this.timeStart,this.timeStop,this.nameEvents);
 
   @override
   void initState() {
     super.initState();
-    // To display the current output from the Camera,
-    // create a CameraController.
-    _controller = CameraController(
-      // Get a specific camera from the list of available cameras.
-      widget.camera,
-      // Define the resolution to use.
-      ResolutionPreset.medium,
-    );
-
-    // Next, initialize the controller. This returns a Future.
-    _initializeControllerFuture = _controller.initialize();
-  }
-
-  @override
-  void dispose() {
-    // Dispose of the controller when the widget is disposed.
-    _controller.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Take a picture')),
-      // Wait until the controller is initialized before displaying the
-      // camera preview. Use a FutureBuilder to display a loading spinner
-      // until the controller has finished initializing.
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            // If the Future is complete, display the preview.
-            return CameraPreview(_controller);
-          } else {
-            // Otherwise, display a loading indicator.
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.camera_alt),
-        // Provide an onPressed callback.
-        onPressed: () async {
-          // Take the Picture in a try / catch block. If anything goes wrong,
-          // catch the error.
-          try {
-            // Ensure that the camera is initialized.
-            await _initializeControllerFuture;
-
-            // Construct the path where the image should be saved using the
-            // pattern package.
-            final path = join(
-              // Store the picture in the temp directory.
-              // Find the temp directory using the `path_provider` plugin.
-              (await getTemporaryDirectory()).path,
-              '${DateTime.now()}.png',
-            );
-
-            // Attempt to take a picture and log where it's been saved.
-            await _controller.takePicture(path);
-
-            // If the picture was taken, display it on a new screen.
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DisplayPictureScreen(imagePath: path),
+    return SafeArea(
+        child: SizedBox.expand(
+          child:Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.orange[400],
+                title: Text(
+                  "Chụp Ảnh sự kiện",
+                  textAlign: TextAlign.center,
+                ),
+                leading: IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () =>Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                      builder: (context) => HomePage(uid: uid,status: status,nameEvents: nameEvents, timeStart:timeStart,timeStop:timeStop,)),
+                          (Route<dynamic> route) => false),
+                ),
               ),
-            );
-          } catch (e) {
-            // If an error occurs, log the error to the console.
-            print(e);
-          }
-        },
-      ),
+              body:  Align(
+                  alignment: Alignment.center,
+                  child: Column(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 9,
+                        child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height,
+                            margin: EdgeInsets.only(top: 10),
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: imageFile == null
+                                        ? AssetImage('assets/images/backgroudFPT.png')
+                                        : FileImage(imageFile),
+                                    fit: BoxFit.cover))),
+                      ),
+                      SizedBox(
+                        height: 10.0,
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Center(
+                          child: Row(
+                            children: <Widget>[
+                              SizedBox(width: 40,),
+                              Expanded(
+                                flex: 1,
+                                child: RaisedButton(
+                                    color: Colors.orange[400],
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                                    onPressed: () {
+                                      _buttonTakePicture(context);
+                                    },
+                                    child: Text("Chụp Ảnh",style: TextStyle(color: Colors.white))),
+                              ),
+                              SizedBox(width: 20,),
+                              Expanded(
+                                flex: 1,
+                                child: RaisedButton(
+                                    color: Colors.orange[400],
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                                    onPressed: () {
+                                      // xử lý ảnh gửi
+                                      // nếu trùng với ảnh ở phía server thì get location tracking
+                                      // _buttonTakePicture(context);
+                                    },
+                                    child: Text("Gửi",style: TextStyle(color: Colors.white))),
+                              ),
+                              SizedBox(width: 40,),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+        )
     );
   }
-}
 
-// A widget that displays the picture taken by the user.
-class DisplayPictureScreen extends StatelessWidget {
-  final String imagePath;
+  // image picker
+  Future choiceType(BuildContext context, String pickerType) async {
+    switch (pickerType) {
+      case "camera":
+        imageFile = await ImagePicker.pickImage(
+            source: ImageSource.camera, imageQuality: 90);
+        break;
+    }
+    if (imageFile != null) {
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text("Bạn tham gia sự kiện thành công"),
+      ));
+      print("Bạn chọn ảnh: " + imageFile.path);
+      setState(() {
+        debugPrint("Ảnh bạn chọn  $imageFile");
+      });
+    } else {
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text("Ảnh bạn chụp tham gia sự kiện thất bại.\nXin vui lòng chụp lại"),
+      ));
+    }
+  }
 
-  const DisplayPictureScreen({Key key, this.imagePath}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Display the Picture')),
-      // The image is stored as a file on the device. Use the `Image.file`
-      // constructor with the given path to display the image.
-      body: Image.file(File(imagePath)),
-    );
+  // Image picker
+  void _buttonTakePicture(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return Container(
+            child: new Wrap(
+              children: <Widget>[
+                new ListTile(
+                  title: Center(child: new Text('Camera',style: TextStyle(color: Colors.black,fontSize: 20.0,fontWeight: FontWeight.bold))),
+                  onTap: () => {
+                    choiceType(context, "camera"),
+                    Navigator.pop(context)
+                  },
+                ),
+              ],
+            ),
+          );
+        });
   }
 }

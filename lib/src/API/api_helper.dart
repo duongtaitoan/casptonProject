@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:designui/src/Helper/http.dart';
 import 'package:designui/src/Model/TrackingDTO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_exception.dart';
 
 class ApiHelper {
 
-  final String _baseUrl = "https://192.168.1.78:45455/";
+  final String _baseUrl = "https://192.168.1.113:45455/";
   // get list events
   Future<dynamic> get(String url) async {
     SharedPreferences sp = await SharedPreferences.getInstance();
@@ -48,33 +48,38 @@ class ApiHelper {
   // }
 
   // get link api user
-  Future<dynamic> loginAPI(String fbToken, String url) async {
-    var response = await http.post(_baseUrl+url, headers: HttpHelper.headers(body: true),
-        body: jsonEncode({
-          "firebaseToken": fbToken
-        }));
+
+  Future<dynamic> LoginAPI({@required String fbToken, String url}) async {
+    Map<String, String> headers ={
+      HttpHeaders.contentTypeHeader : "application/json; charset=UTF-8",
+    };
+     Map<String, String> map = new Map();
+     map['firebaseToken'] = fbToken;
+     var response = await http.post(_baseUrl+url, headers: headers,
+        body: jsonEncode(map)
+     );
     return response;
   }
 
-  Future<dynamic> patch(String url, Map<String, dynamic> nameValues) async {
-    var responseJson;
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    String token = sp.getString("token_data");
-    // print('token :'+token);
-    try {
-      final response = await http.patch(_baseUrl + url,
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'accept': '*/*',
-            'Authorization': 'Bearer '+token,
-          },
-          body: jsonEncode(nameValues));
-      responseJson = returnResponse(response);
-    } on SocketException {
-      throw FetchDataException('No Internet connection');
-    }
-    return responseJson;
-  }
+  // Future<dynamic> patch(String url, Map<String, dynamic> nameValues) async {
+  //   var responseJson;
+  //   SharedPreferences sp = await SharedPreferences.getInstance();
+  //   String token = sp.getString("token_data");
+  //   try {
+  //     final response = await http.patch(_baseUrl + url,
+  //         headers: {
+  //           'Content-Type': 'application/x-www-form-urlencoded',
+  //           'accept': '*/*',
+  //           'Authorization': 'Bearer '+token,
+  //         },
+  //         body: jsonEncode(nameValues));
+  //     responseJson = returnResponse(response);
+  //   } on SocketException {
+  //     throw FetchDataException('No Internet connection');
+  //   }
+  //   return responseJson;
+  // }
+
   // tracking
   Future<dynamic> postTracking(TrackingDTO dto,String url) async {
     var responseJson;

@@ -31,7 +31,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     var email = uid.email;
     var displayName = uid.displayName;
     final format = DateFormat("dd/MM/yyyy");
-
+    DateTime birthdayStudent = DateTime.now();
+    int relust = birthdayStudent.year - 18;
     return SafeArea(
         child:SizedBox.expand(
           child: Scaffold(
@@ -52,257 +53,140 @@ class _UserProfilePageState extends State<UserProfilePage> {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                SizedBox(height: 10,),
-                Flexible(
-                  flex: 6,
-                  fit: FlexFit.tight,
+                Expanded(
+                  flex: 10,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                    child: Column(children: <Widget>[
-                      Row(children: <Widget>[
-                        Expanded(
-                          flex: 3,
-                          child: Container(
-                            width: double.infinity,
-                            height: 50,
-                            margin: const EdgeInsets.all(0),
-                            child: Row(
-                              children: <Widget>[
-                                Icon(Icons.email, size: 20.0,),
-                                SizedBox(width: 15,),
-                                Text("Gmail ", style: TextStyle(color: Colors.black, fontSize: 18.0)),
+                      padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                      child: SingleChildScrollView(
+                        child: Column(children: <Widget>[
+                          Expanded(
+                            flex: 0,
+                            child: Column(
+                               children: <Widget>[
+                               SizedBox(height: 30,),
+                               Column(children: <Widget>[
+                                  Row(
+                                      children: <Widget>[
+                                        SizedBox(width: 15,),
+                                        Text("Gmail ", style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        SizedBox(width: 15,),
+                                        Text('$email', textAlign: TextAlign.start,
+                                          style: TextStyle(fontSize: 20.0),
+                                        ),
+                                      ],
+                                    ),
                               ],
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 7,
-                          child: Container(
-                            width: double.infinity,
-                            height: 50,
-                            margin: const EdgeInsets.all(0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: <Widget>[
-                                Text(
-                                  '$email',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 20.0),
+                              ),
+                               SizedBox(height: 30,),
+                               Column(
+                                children: <Widget>[
+                                 Row(
+                                  children: <Widget>[
+                                    SizedBox(width: 15,),
+                                    Text("Họ và tên ", style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold)),
+                                  ],
+                                 ),
+                                 Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      SizedBox(width: 15,),
+                                      Text('$displayName', textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 20.0),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                               SizedBox(height: 30,),
+                               Column(
+                                   children: <Widget>[
+                                     Row(
+                                       children: <Widget>[
+                                         SizedBox(width: 15,),
+                                         Text("Số điện thoại ",style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold)),
+                                       ],
+                                     ),
+                                     Padding(
+                                       padding: const EdgeInsets.only(left: 15,right: 15),
+                                       child: Column(
+                                         mainAxisAlignment: MainAxisAlignment.start,
+                                         children: <Widget>[
+                                           TextField(
+                                             controller: controlMajors,
+                                             decoration: InputDecoration(
+                                               hintText: '0836831237',
+                                             ),
+                                           ),
+                                         ],
+                                       ),
+                                     ),
+                                   ],
+                                 ),
+                               SizedBox(height: 30,),
+                               Column(
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      SizedBox(width: 15,),
+                                      Text("Mã số sinh viên ", style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 15,right: 15),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        TextField(
+                                          controller: controlMajors,
+                                          // textAlign: TextAlign.right,
+                                          decoration: InputDecoration(
+                                            hintText: 'SE63438',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),),
+                          Expanded(
+                            flex: 0,
+                            child:  Container(
+                              margin: EdgeInsets.only(top: 230,right: 5),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: RaisedButton(
+                                  onPressed: () {
+                                    Fluttertoast.showToast(
+                                        msg: "Cập nhật thông tin thành công",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.BOTTOM,
+                                        timeInSecForIos: 3,
+                                        fontSize: 20.0,
+                                        textColor: Colors.black);
+                                  },
+                                  child: Text(
+                                    'Cập nhật thông tin',
+                                    style: TextStyle(fontSize: 18.0, color: Colors.white),
+                                  ),
+                                  color: Colors.orange[400],
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(6))),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                      ),
-                      SizedBox(height: 5,),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: 3,
-                            child: Container(
-                              width: double.infinity,
-                              height: 50,
-                              margin: const EdgeInsets.all(0.0),
-                              child: Row(
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.person_outline,
-                                    size: 20.0,
-                                  ),
-                                  Text("Họ và tên ", textAlign:TextAlign.center,
-                                      style: TextStyle(color: Colors.black, fontSize: 18.0)),
-                                ],
                               ),
                             ),
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: Container(
-                              width: double.infinity,
-                              height: 50,
-                              margin: const EdgeInsets.all(0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  Text(
-                                    '$displayName',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 20.0),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5,),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: 3,
-                            child: Container(
-                              width: double.infinity,
-                              height: 50,
-                              margin: const EdgeInsets.all(0.0),
-                              child: Row(
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.card_giftcard,
-                                    size: 20.0,
-                                  ),
-                                  Text("Năm Sinh ",textAlign:TextAlign.center,
-                                      style: TextStyle(
-                                          color: Colors.black, fontSize: 18.0)),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: Container(
-                              height: 50,
-                              margin: const EdgeInsets.only(left: 25),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  DateTimeField(
-                                    textAlign: TextAlign.center,
-                                    format: format,
-                                    decoration: InputDecoration(
-                                      hintText: '10/10/2000',
-                                      contentPadding: EdgeInsets.all(0),
-                                    ),
-                                    onShowPicker: (context, currentValue) {
-                                      return showDatePicker(
-                                          context: context,
-                                          firstDate: DateTime(1900),
-                                          initialDate:
-                                          currentValue ?? DateTime.now(),
-                                          lastDate: new DateTime.now());
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5,),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex:5,
-                            child: Container(
-                              width: double.infinity,
-                              height: 70,
-                              margin: const EdgeInsets.only(left: 20),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  InternationalPhoneNumberInput(
-                                    maxLength: 10,
-                                    onInputChanged: (PhoneNumber number) {
-                                      print(number.phoneNumber);
-                                    },
-                                    // show for user by list or dialog or ....
-                                    selectorConfig: SelectorConfig(
-                                      selectorType: PhoneInputSelectorType.DIALOG,
-                                    ),
-                                    selectorTextStyle: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 20.0,
-                                    ),
-                                    initialValue: number,
-                                    hintText: 'Vd: 0836 678 979',
-
-                                    locale: 'VN',
-                                    textFieldController: controlNumber,
-                                  ),
-
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5,),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Expanded(
-                            flex: 4,
-                            child: Container(
-                              width: double.infinity,
-                              height: 50,
-                              margin: const EdgeInsets.all(0.0),
-                              child: Row(
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.work,
-                                    size: 20.0,
-                                  ),
-                                  Text("Chuyên ngành ", textAlign:TextAlign.center,
-                                      style: TextStyle(color: Colors.black, fontSize: 15.0)),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: Container(
-                              width: double.infinity,
-                              height: 50,
-                              margin: const EdgeInsets.only(left: 0),
-                              child: Column(
-                                children: <Widget>[
-                                  TextField(
-                                    controller: controlMajors,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(
-                                        hintText: 'Vd: Công nghệ thông tin'
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ]),
-                  ),
-                ),
-                SizedBox(height: 30,),
-                Flexible(
-                  flex: 0,
-                  fit: FlexFit.tight,
-                  child: Container(
-                    margin: EdgeInsets.only(top: 193),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: RaisedButton(
-                        onPressed: () {
-                          Fluttertoast.showToast(
-                              msg: "Cập nhật thông tin thành công",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.BOTTOM,
-                              timeInSecForIos: 3,
-                              fontSize: 20.0,
-                              textColor: Colors.black);
-                        },
-                        child: Text(
-                          'Cập nhật thông tin',
-                          style: TextStyle(fontSize: 18.0, color: Colors.white),
-                        ),
-                        color: Colors.orange[400],
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(6))),
+                          )
+                        ]),
                       ),
                     ),
                   ),
-                )
               ],
             ),
           )

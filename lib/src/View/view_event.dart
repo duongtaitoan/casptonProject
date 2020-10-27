@@ -1,8 +1,11 @@
+import 'package:designui/src/Model/eventDTO.dart';
+import 'package:designui/src/ViewModel/events_viewmodel.dart';
 import 'package:designui/src/view/home.dart';
 import 'package:designui/src/view/registers_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ShowAllEventsPage extends StatefulWidget {
   final FirebaseUser uid;
@@ -18,7 +21,6 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
 
   _ShowAllEventsPageState(this.uid);
 
-  final int count = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -50,12 +52,15 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                   fit: FlexFit.tight,
                   child: Container(
                     width: double.infinity,
-                    height: 600,
+                    height: 620,
                     color: Colors.grey[100],
                     child: SingleChildScrollView(
                       child: Column(
                         children: <Widget>[
-                          getEvent(),
+                          SizedBox(height: 10,),
+                          searchBar(),
+                          SizedBox(height: 10,),
+                          getEvent(context,uid),
                         ],
                       ),
                     ),
@@ -84,56 +89,23 @@ Widget searchBar() {
   );
 }
 
-Widget getEvent() {
-  var count = 0;
+Widget getEvent(BuildContext context,uid) {
+  var status ;
+  DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   return Container(
-    width: double.infinity,
-    height: 600,
-    color: Colors.white,
-    child: ListView(
-      scrollDirection: Axis.vertical,
-      children: <Widget>[
-        SizedBox(
-          height: 3,
-        ),
-        Container(
-          height: 50,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-            child: searchBar(),
-          ),
-        ),
-        SizedBox(height: 3),
-        Container(
-          height: 40,
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Container(
-                  margin: const EdgeInsets.fromLTRB(30, 0, 30, 0),
-                  child: Text(
-                    "Sự kiện",
-                    style: TextStyle(
-                        color: Colors.orange[400],
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ]),
-        ),
-        Container(
-          height: 591,
-          child: ListView.builder(
-            // get count user register events
-            itemCount: 10,
-            itemBuilder: (context, index) {
-              count = index + 1;
-              return Container(
-                child: FlatButton(
-                  child: Container(
-                    margin: EdgeInsets.all(7),
-                    padding: EdgeInsets.all(3),
-                    alignment: Alignment.center,
+    width: MediaQuery.of(context).size.width,
+    height: 570,
+    child: FutureBuilder<List<EventsDTO>>(
+        future: EventsVM.getAllListEvents(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data != null) {
+              return ListView.builder(
+                // get count user register events
+                itemCount: snapshot.data.length,
+                itemBuilder: (context, snap) {
+                  return Container(
+                    margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(color: Colors.grey[200], width: 1),
@@ -141,49 +113,80 @@ Widget getEvent() {
                         Radius.circular(30.0),
                       ),
                     ),
-                    child: Column(children: <Widget>[
-                      Row(children: <Widget>[
-                        Expanded(
-                          flex: 6,
-                          child: FlatButton(
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => RegisterEventPage()));
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15.0),
-                              child: Image.asset(
-                                'assets/images/events$count.png',
-                                width: 150,
-                                height: 120,
-                                fit: BoxFit.cover,
+                    child: FlatButton(
+                      child: Column(children: <Widget>[
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Expanded(
+                                flex: 6,
+                                child: Center(
+                                    child: status == null || status != "Người dùng đã đăng ký sự kiện" ?
+                                    new Padding(
+                                      padding: const EdgeInsets.only(top: 5,bottom: 5),
+                                      child: FlatButton(
+                                        onPressed: () {
+                                          Navigator.of(context).push(MaterialPageRoute(
+                                              builder: (context) => RegisterEventPage(
+                                                uid: uid, eventsDTO: snapshot.data[snap],count:snap + 1,status: status,)));},
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(15.0),
+                                          child: Image.asset('assets/images/events${snap + 1}.png',
+                                            width: double.infinity, height: 140, fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                    ): new Padding(
+                                  padding: const EdgeInsets.all(0.0),
+                                    child: FlatButton(
+                                      onPressed: () => {
+                                        Navigator.of(context).push(MaterialPageRoute(
+                                            builder: (context) => RegisterEventPage(
+                                                uid: uid, eventsDTO: snapshot.data[snap],
+                                                count:snap+1,status:status))),
+                                      },
+                                      child: ClipRRect(
+                                        borderRadius:
+                                        BorderRadius.circular(15.0),
+                                        child: Image.asset(
+                                          'assets/images/events${snap + 1}.png', width: 140,
+                                          height: 140, fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 6,
-                          child: ListTile(
-                            title: Text(
-                              'events do nhà trường tổ chức theo thứ tự $count',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 20.0),
-                            ),
-                            subtitle: Text(
-                              'dd/mm/yyy',
-                              style: TextStyle(fontSize: 18.0),
-                            ),
-                          ),
-                        ),
-                      ])
-                    ]),
-                  ),
-                ),
+                              Expanded(
+                                flex: 4,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisSize: MainAxisSize.max,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text(snapshot.data[snap].title,
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                                    ),
+                                    Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt)),style: TextStyle(fontSize: 16.0),),
+                                  ],
+                                ),
+                              ),
+                            ])
+                      ]),
+                    ),
+                  );
+                },
               );
-            },
-          ),
-        ),
-      ],
+            };
+          };
+          return Padding(
+            padding: const EdgeInsets.all(10.0),
+            // loading when not found
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
     ),
   );
 }

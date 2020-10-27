@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:designui/src/API/api_helper.dart';
+import 'package:designui/src/View/registers_event.dart';
 import 'package:designui/src/view/login.dart';
 import 'package:flutter/material.dart';
 

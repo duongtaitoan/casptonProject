@@ -53,10 +53,6 @@ class _SupportPageState extends State<SupportPage> {
                                 margin: const EdgeInsets.all(0.0),
                                 child: Row(
                                   children: <Widget>[
-//                              Icon(
-//                                Icons.menu,
-//                                size: 40.0,
-//                              ),
                                     Text("Mục lục ",
                                         style: TextStyle(
                                             color: Colors.black, fontSize: 20.0)),
@@ -128,17 +124,18 @@ class _SupportPageState extends State<SupportPage> {
                                           EdgeInsets.only(left: 15.0, top: 15.0),
                                           hintText: 'Nội dung cần hỗ trợ',
                                           hintStyle: TextStyle(
-                                              color: Colors.black54, fontSize: 20.0)),
+                                              color: Colors.white, fontSize: 20.0)),
+                                      style: TextStyle(color: Colors.white),
                                       onFieldSubmitted: (String input) {}),
                                 ),
-                                color: Colors.green
+                                color: Colors.orange[400]
                             ),
                           ),
                         ),
                       ]),
                     ),
                     Container(
-                      margin: EdgeInsets.only(top: 37),
+                      margin: EdgeInsets.only(top: 40,right: 8,left: 8),
                       child: SizedBox(
                         width: double.infinity,
                         height: 52,

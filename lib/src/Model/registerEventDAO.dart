@@ -7,10 +7,10 @@ class RegisterEventDAO{
       ApiHelper _api = new ApiHelper();
       var json = await _api.postRegisEvent(dto, "api/registrations/");
       if (json != null) {
-        return "Đăng kí thành công";
+        return "Đăng ký thành công";
       }
     }catch(e){
-        return "Người dùng đã đăng kí sự kiện";
+        return "Người dùng đã đăng ký sự kiện";
     }
   }
 }

@@ -39,8 +39,9 @@ dependencies:
   fluttertoast: ^3.1.0
   http: ^0.12.0+2
   esys_flutter_share: ^1.0.2
-  camera: ^0.5.8+2
+  camera: ^0.5.7+2
   path: ^1.6.4
+  image_picker: ^0.6.2+3
   path_provider: ^1.6.11
   dio: ^3.0.10
   stacked_services:

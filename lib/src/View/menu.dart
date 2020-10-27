@@ -34,51 +34,44 @@ class _HomeMenuState extends State<HomeMenu> {
             // name and icone user
             Column(
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: 4,
-                      child: Container(
-                        margin: const EdgeInsets.fromLTRB(2,30,2,10),
-                        child:ClipRRect(
-                          borderRadius: BorderRadius.circular(100.0),
-                          child: Image.network(account,width: double.infinity,height: 130,fit: BoxFit.cover,),
-                        ),
-                      ),
+                Expanded(
+                  flex: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(80, 10, 80, 0),
+                    child:ClipRRect(
+                      borderRadius: BorderRadius.circular(100.0),
+                      child: Image.network(account,width: 120,height: 120,fit: BoxFit.cover,),
                     ),
-                    SizedBox(height: 10,),
-                    Expanded(
-                      flex: 4,
-                      child: ListTile(
-                        title: Text("$userName",
-                          style: TextStyle(fontSize: 17, color: Color(0xff323643)),
-                        ),
-                      ),
+
+                  ),
+                ),
+                SizedBox(height: 30,),
+                Expanded(
+                  flex: 0,
+                  child: Center(
+                    child: Text("$userName",
+                      style: TextStyle(fontSize: 25, color: Color(0xff323643)),
                     ),
-                  ],
-                )
+                  ),
+                ),
               ],
             ),
-            SizedBox(height: 60,),
+            SizedBox(height: 10,),
+            Center(
+              child: Text('_____________________________',style: TextStyle(color: Colors.black),),
+            ),
+            SizedBox(height: 30,),
             // profile
             Column(
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    Expanded(
-                      flex: 2,
-                      child: ListTile(
-                        leading: Image.asset("assets/images/acc.png",width: 50,height: 50,),
-                      ),
-                    ),
-                    SizedBox(height: 10,),
+                    SizedBox( width: 10,),
                     Expanded(
                       flex: 5,
                       child: ListTile(
-                        title: Text(
-                          "Thông tin cá nhân",
-                          style: TextStyle(fontSize: 18, color: Color(0xff323643)),
-                        ),
+                        leading: Image.asset("assets/images/acc.png",width: 30,height: 30),
+                        title: Text("Thông tin cá nhân", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
                         onTap: () {
                           // back to login and when user click button back => logout app
                           Navigator.of(context).push(MaterialPageRoute(builder: (context)=>UserProfilePage(uid: uid)));
@@ -95,23 +88,16 @@ class _HomeMenuState extends State<HomeMenu> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    Expanded(
-                      flex: 2,
-                      child: ListTile(
-                        leading: Image.asset("assets/images/history.png",width: 50,height: 50,),
-                      ),
-                    ),
-                    SizedBox(height: 10,),
+                    SizedBox( width: 10,),
                     Expanded(
                       flex: 5,
                       child: ListTile(
-                        title: Text(
-                          "Lịch sử",
-                          style: TextStyle(fontSize: 18, color: Color(0xff323643)),
-                        ),onTap: () {
-                        // back to login and when user click button back => logout app
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HistoryPage(uid: uid)));
-                      },
+                        leading: Image.asset("assets/images/history.png",width: 30,height: 30),
+                        title: Text("Lịch sử", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
+                        onTap: () {
+                          // back to login and when user click button back => logout app
+                          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HistoryPage(uid: uid)));
+                        },
                       ),
                     ),
                   ],
@@ -124,20 +110,12 @@ class _HomeMenuState extends State<HomeMenu> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    Expanded(
-                      flex: 2,
-                      child: ListTile(
-                        leading: Image.asset("assets/images/help.png",width: 50,height: 50,),
-                      ),
-                    ),
-                    SizedBox(height: 10,),
+                    SizedBox( width: 10,),
                     Expanded(
                       flex: 5,
                       child: ListTile(
-                        title: Text(
-                          "Giúp đỡ",
-                          style: TextStyle(fontSize: 18, color: Color(0xff323643)),
-                        ),
+                        leading: Image.asset("assets/images/help.png",width: 30,height: 30),
+                        title: Text("Giúp đỡ", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
                         onTap: (){
                           Navigator.of(context).push(MaterialPageRoute(builder: (context)=>SupportPage(uid: uid)));
                         },
@@ -153,20 +131,12 @@ class _HomeMenuState extends State<HomeMenu> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    Expanded(
-                      flex: 2,
-                      child: ListTile(
-                        leading: Image.asset("assets/images/logout.png",width: 50,height: 50,),
-                      ),
-                    ),
-                    SizedBox(height: 10,),
+                    SizedBox( width: 10,),
                     Expanded(
                       flex: 5,
                       child: ListTile(
-                        title: Text(
-                          "Thoát",
-                          style: TextStyle(fontSize: 18, color: Color(0xff323643)),
-                        ),
+                        leading: Image.asset("assets/images/logout.png",width: 30,height: 30,),
+                        title: Text("Thoát", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
                         onTap: () async {
                           googleSignIn.signOut();
                           _auth.signOut();
@@ -185,6 +155,5 @@ class _HomeMenuState extends State<HomeMenu> {
         )
       )
     );
-
   }
 }

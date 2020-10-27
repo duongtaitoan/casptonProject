@@ -55,7 +55,7 @@ class show {
     }
     Stopwatch s = new Stopwatch();
       print('----------Start------------');
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < 1; i++) {
         sleep(new Duration(seconds: 1));
         print('location :'+_locationData.longitude.toString()+ " - - - "+_locationData.latitude.toString());
         getLocation(new TrackingDTO(eventId: idEvents,longitude: _locationData.longitude,latitude: _locationData.latitude));
