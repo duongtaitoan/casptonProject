@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:designui/src/Service/google_sign.dart';
 import 'package:designui/src/View/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:uiblock/uiblock.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -12,12 +11,16 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  GlobalKey _scaffoldGlobalKey = GlobalKey();
+  bool showLoader = false;
+
+
   void onSignInPressed() async {
       FirebaseUser user = await GoogleSign.handleSignIn();
       String status = await GoogleSign.onSignInFinished(user);
       RegExp regExp =
       RegExp("^[a-z0-9_\.]{8,}@[fpt|fu]{1,4}(\.[edu]{3})(\.[vn]{2})");
-    if (status != "Đăng nhập thành công" ||
+      if (status != "Đăng nhập thành công" ||
           !regExp.hasMatch(user.email.toString())) {
         Fluttertoast.showToast(
             msg: status,
@@ -27,14 +30,12 @@ class _LoginPageState extends State<LoginPage> {
             fontSize: 24.0,
             textColor: Colors.black);
       } else {
-        await Padding(
+         Padding(
             padding: const EdgeInsets.all(10.0),
             // loading when not found
             child: Column(
               children: <Widget>[
-                Center(
-                  child: CircularProgressIndicator(),
-                ),
+                Center(child: CircularProgressIndicator(),),
                 await Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (context) => HomePage(uid: user, status: status,),),
                 ),
@@ -48,6 +49,7 @@ class _LoginPageState extends State<LoginPage> {
     return SafeArea(
       child: SizedBox.expand(
           child: Scaffold(
+            key: _scaffoldGlobalKey,
             body: Container(
               padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
               constraints: BoxConstraints.expand(),
@@ -60,9 +62,7 @@ class _LoginPageState extends State<LoginPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
-                    SizedBox(
-                      height: 215,
-                    ),
+                    SizedBox(height: 215,),
                     Center(
                         child:Text(
                           "Events Tracking",style: TextStyle(color: Colors.orange,fontSize: 35, fontWeight: FontWeight.bold),
@@ -94,7 +94,22 @@ class _LoginPageState extends State<LoginPage> {
                               ],
                             ),
                             onPressed: () async {
-                              await onSignInPressed();
+                              try{
+                                UIBlock.block(_scaffoldGlobalKey.currentContext);
+                                await Future.delayed(Duration(seconds: 1), () => '1');
+                                await onSignInPressed();
+                                UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+                              }catch(e){
+                                UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+                                Fluttertoast.showToast(
+                                    msg: "Lỗi hệ thống xin vui lòng đăng nhập lại",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIos: 1,
+                                    fontSize: 24.0,
+                                    textColor: Colors.black);
+                              }
+
                             })),
                   ],
                 ),

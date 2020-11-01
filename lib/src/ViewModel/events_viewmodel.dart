@@ -69,6 +69,21 @@ class EventsVM {
       EventsDAO dao = new EventsDAO();
       var listEvents = await dao.apiGetListEvents();
       List<EventsDTO> saveEvents = new List<EventsDTO>();
+      for (int i = 1; i < listEvents.length; i++) {
+        saveEvents.add(listEvents[i]);
+      }
+      return saveEvents;
+    } catch (e) {
+      throw (e);
+    }
+  }
+
+
+   Future<List<EventsDTO>> testEventAll() async {
+    try {
+      EventsDAO dao = new EventsDAO();
+      var listEvents = await dao.apiGetListEvents();
+      List<EventsDTO> saveEvents = new List<EventsDTO>();
       for (int i = 0; i < listEvents.length; i++) {
         saveEvents.add(listEvents[i]);
       }

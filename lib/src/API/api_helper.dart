@@ -1,15 +1,32 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:designui/src/Model/TrackingDTO.dart';
+import 'package:designui/src/Model/imageDTO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_exception.dart';
+import 'package:async/async.dart';
 
 class ApiHelper {
 
-  final String _baseUrl = "https://192.168.1.113:45455/";
+  final String _baseUrl = "https://apt-api.conveyor.cloud/";
+
+  // login api
+  Future<dynamic> LoginAPI({@required String fbToken, String url}) async {
+    Map<String, String> headers ={
+      HttpHeaders.contentTypeHeader : "application/json",
+    };
+    Map<String, String> map = new Map();
+    map['firebaseToken'] = fbToken;
+    var response = await http.post(_baseUrl+url, headers: headers,
+        body: jsonEncode(map)
+    );
+    return response;
+  }
+
   // get list events
   Future<dynamic> get(String url) async {
     SharedPreferences sp = await SharedPreferences.getInstance();
@@ -30,35 +47,25 @@ class ApiHelper {
     return responseJson;
   }
 
-  // Future<dynamic> put(String title) async {
-  //   var responseJson;
-  //   try {
-  //     final response = await http.put(_baseUrl , headers: <String, String>{
-  //       "Content-Type": "application/json; charset=UTF-8",
-  //     },
-  //       body: jsonEncode(<String, String>{
-  //         'title': title,
-  //       }),
-  //     );
-  //     responseJson = returnResponse(response);
-  //   } on SocketException {
-  //     throw FetchDataException('No Internet connection');
-  //   }
-  //   return responseJson;
-  // }
-
-  // get link api user
-
-  Future<dynamic> LoginAPI({@required String fbToken, String url}) async {
-    Map<String, String> headers ={
-      HttpHeaders.contentTypeHeader : "application/json; charset=UTF-8",
-    };
-     Map<String, String> map = new Map();
-     map['firebaseToken'] = fbToken;
-     var response = await http.post(_baseUrl+url, headers: headers,
-        body: jsonEncode(map)
-     );
-    return response;
+  Future<dynamic> put(String idStudent,String url) async {
+    var responseJson;
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String token = sp.getString("token_data");
+    try {
+      final response = await http.put(_baseUrl +url, headers: <String, String>{
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'accept': '*/*',
+        'Authorization': 'Bearer '+token,
+      },
+        body: jsonEncode(<String, String>{
+          'idStudents': idStudent,
+        }),
+      );
+      responseJson = returnResponse(response);
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
   }
 
   // Future<dynamic> patch(String url, Map<String, dynamic> nameValues) async {
@@ -81,6 +88,8 @@ class ApiHelper {
   // }
 
   // tracking
+
+  // tracking get location
   Future<dynamic> postTracking(TrackingDTO dto,String url) async {
     var responseJson;
     SharedPreferences sp = await SharedPreferences.getInstance();
@@ -102,6 +111,39 @@ class ApiHelper {
     }
     return responseJson;
   }
+
+  // user post img
+  Future<dynamic> uploadImage(ImageDTO dto,String url) async {
+    http.StreamedResponse response;
+    try {
+      SharedPreferences sp = await SharedPreferences.getInstance();
+      String token = sp.getString("token_data");
+
+      var responseJson = http.MultipartRequest('POST', Uri.parse(_baseUrl+url));
+      responseJson.fields['eventId']= dto.eventId.toString();
+      responseJson.fields['latitude']= dto.latitude.toString();
+      responseJson.fields['longitude']= dto.longitude.toString();
+
+      var stream = new http.ByteStream(DelegatingStream.typed(dto.file.openRead()));
+      var length = await dto.file.length();
+      var multipartFile = new http.MultipartFile('file', stream, length,
+          filename: basename(dto.file.path));
+      responseJson.files.add(multipartFile);
+
+      Map<String, String> headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'accept': '*/*',
+        'Authorization': 'Bearer '+token,
+      };
+
+      responseJson.headers.addAll(headers);
+      response = await responseJson.send();
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    }
+    return response.statusCode;
+  }
+
   // user register events
   Future<dynamic> postRegisEvent(RegisterEventsDTO dto,String url) async {
     var responseJson;

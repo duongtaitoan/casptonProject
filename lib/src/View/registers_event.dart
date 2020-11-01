@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:designui/src/Helper/camera_plugin.dart';
-import 'package:designui/src/Helper/show_user_location.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/Model/registerEventDAO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
@@ -80,7 +79,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 5,bottom: 5),
                       child: Text(eventsDTO.title ,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0,),textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25.0,),textAlign: TextAlign.center,
                       ),
                     ),
                     timeEvent(),
@@ -98,63 +97,37 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     return Container(
       height: 40,
       width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+      padding: const EdgeInsets.only(left: 5.0, right: 5.0),
       color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          SizedBox(
-            width: 15,
-          ),
-          Flexible(
-              flex: 5,
-              fit: FlexFit.tight,
-              child: Container(
-                height: 20,
-                width: MediaQuery.of(context).size.width,
+          SizedBox(width: 10,),
+          Flexible(flex: 5, fit: FlexFit.tight,
+              child: Container(height: 20, width: MediaQuery.of(context).size.width,
                 child:  Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Image.asset(
-                      'assets/images/date_time.png',
-                      width: 19,
-                      height: 19,
-                    ),
-                    SizedBox(
-                      width: 3,
-                    ),
+                    Image.asset('assets/images/date_time.png', width: 19, height: 19,),
+                    SizedBox(width: 3,),
                     // Color(Colors.blue),
                     Text(dtf.format(DateTime.parse(eventsDTO.startedAt)),
-                        style: TextStyle(
-                            color: Colors.black, fontSize: 17.0)),
+                        style: TextStyle(color: Colors.black, fontSize: 17.0)),
                   ],
                 ),
 
               )),
-          SizedBox(
-            width: 4,
-          ),
-          Flexible(
-              flex: 5,
-              fit: FlexFit.tight,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: 20,
+          SizedBox(width: 4,),
+          Flexible(flex: 5, fit: FlexFit.tight,
+              child: Container(width: MediaQuery.of(context).size.width, height: 20,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Image.asset(
-                      'assets/images/date_time.png',
-                      width: 19,
-                      height: 19,
-                    ),
-                    SizedBox(
-                      width: 3,
-                    ),
+                    Image.asset('assets/images/date_time.png', width: 19, height: 19,),
+                    SizedBox(width: 3,),
                     // Color(Colors.blue),
                     Text(dtf.format(DateTime.parse(timeStop)).toString(),
-                        style: TextStyle(
-                            color: Colors.black, fontSize: 17.0)),
+                        style: TextStyle(color: Colors.black, fontSize: 17.0)),
                   ],
                 ),
               )),
@@ -162,13 +135,14 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       ),
     );
   }
+
   // slot and content event
   Widget contentEvent(){
     return Flexible(
       flex: 5,
       fit: FlexFit.tight,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 0, 20, 0),
+        padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
         child: Column(
           children: <Widget>[
             Row(
@@ -194,8 +168,8 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                       side: BorderSide(
-                        color: Colors.grey[200],
-                        width: 2.0,
+                        color: Colors.grey[50],
+                        width: 1.0,
                       ),
                     ),
                     child: Column(
@@ -217,8 +191,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                           flex: 2,
                           child:  ListTile(
                             title: Text('Nội dung sự kiện',
-                              style: TextStyle(
-                                  color: Colors.black,
+                              style: TextStyle(color: Colors.black,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18.0),textAlign: TextAlign.start,),
                             subtitle: Text(eventsDTO.description,style: TextStyle(
@@ -235,97 +208,49 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       ),
     );
   }
+
   // button register and showdialog
   Widget registerEvent(){
     return Flexible(
       flex: 1,
       fit: FlexFit.tight,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(80, 15, 80, 2),
+        padding: const EdgeInsets.fromLTRB(2, 7, 2, 10),
         child: SizedBox(
           width: MediaQuery.of(context).size.width,
-          height: 52,
-          child: status != "Lịch sử người dùng" ? new Center(
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: 52,
-                child: status == null || status != "Người dùng đã đăng ký sự kiện" ?
-                new RaisedButton(
-                  child: Text(
-                    'Đăng ký sự kiện',
-                    style: TextStyle(fontSize: 18.0, color: Colors.white),
+          height: MediaQuery.of(context).size.height,
+          child: status != "Lịch sử người dùng"
+              ? new Center(
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 52,
+                  child: status == null || status != "Người dùng đã đăng ký sự kiện" ?
+                  eventsNotifi() : eventsButton()
+                ))
+              : new Center(
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 52,
+                    child: RaisedButton(
+                      child: Text('Sự kiện bạn đã tham gia',
+                        style: TextStyle(fontSize: 18.0, color: Colors.white),),
+                      onPressed: () {
+                        status = 'Lịch sử người dùng';
+                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                            builder: (context) =>
+                                HistoryPage(uid: uid, status: status,)), (
+                            Route<dynamic> route) => false);
+                      },
+                      color: Colors.orange[600],
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
                   ),
-                  onPressed: () async {
-                    await showDialog(
-                      context: this.context,
-                      child: new FlatButton(
-                        child: AlertDialog(
-                          title: Text('Thông báo'),
-                          content: Text(
-                            "Bạn có muốn đăng ký sự kiện này không ?",
-                            style: TextStyle(fontSize: 17),
-                          ),
-                          actions: <Widget>[
-                            CupertinoButton(
-                              child: Text('Đồng ý',style: TextStyle(color: Colors.blue[500]),),
-                              onPressed: () async {
-                                RegisterEventDAO regisDao = new RegisterEventDAO();
-                                statusGPS = true;
-                                status = await regisDao.registerEvents(new RegisterEventsDTO(eventId: eventsDTO.id));
-                                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-                                  builder: (context) => HomePage(uid: uid, nameEvents: eventsDTO.title,
-                                      timeStart:dtf.format(DateTime.parse(eventsDTO.startedAt)),timeStop:dtf.format(DateTime.parse(timeStop)).toString(),
-                                      idEvents:eventsDTO.id,status:status),), (Route<dynamic> route) => false);
-                              },
-                            ),
-                            CupertinoButton(
-                              child: Text('Hủy',style: TextStyle(color: Colors.red),),
-                              onPressed: () {Navigator.of(context).pop();},
-                            ),
-                          ],
-                        ),
-                        onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-                            builder: (context) => HomePage(uid: uid,
-                                timeStart:dtf.format(DateTime.parse(eventsDTO.startedAt)),timeStop:dtf.format(DateTime.parse(timeStop)).toString(),
-                                idEvents:eventsDTO.id)), (Route<dynamic> route) => false),
-                      ),
-                    );
-                  },
-                  color: Colors.orange[400],
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
-                ): new RaisedButton(
-                  child: Text('Tham gia sự kiện',
-                    style: TextStyle(fontSize: 18.0, color: Colors.white),),
-                    onPressed: () async {
-                      setState(() {showDiaLogLocation(context);});
-                    },
-                  color: Colors.orange[400],
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
-                ),
-              )
-          ) :new Center(
-              child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: 52,
-              child: RaisedButton(
-                child: Text('Sự kiện bạn đã tham gia',
-                  style: TextStyle(fontSize: 18.0, color: Colors.white),),
-                onPressed: () {
-                  status = 'Lịch sử người dùng';
-                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-                      builder: (context) =>
-                          HistoryPage(uid: uid, status: status,)), (
-                      Route<dynamic> route) => false);
-                },
-                color: Colors.orange[400],
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
-              ),
               ),
           ),
         ),
       ),
     );
   }
+
   // check date time start - duration => date time stop
   converDateTime(){
     int hours = int.parse(eventsDTO.duration.toString());
@@ -354,7 +279,8 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                      checkLocation = true;
                     await Future.delayed(Duration.zero, () {
                       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (BuildContext context) =>
-                          CameraApp(uid:uid,status:status,timeStart: timeStart,timeStop: timeStop,nameEvents:eventsDTO.title)),(Route<dynamic> route) => false);
+                          CameraApp(uid:uid,status:status,timeStart: timeStart,timeStop: timeStop,nameEvents:eventsDTO.title,
+                              idEvents:eventsDTO.id)),(Route<dynamic> route) => false);
                     });
                   },
                 ),
@@ -369,17 +295,80 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
               ],
             )
         );
-      getAutoLocation();
       }
   }
 
-  // get location auto
-  getAutoLocation(){
-    if(checkLocation == true) {
-      show showEvents = new show();
-      showEvents.showLocationDiaLog(dtf.format(DateTime.parse(eventsDTO.startedAt)), dtf.format(DateTime.parse(timeStop)), eventsDTO.id);
-    }else{
-      checkLocation = false;
-    }
+  // button apply and cancel events
+  Widget eventsButton(){
+    return  Row(
+      children: <Widget>[
+        Expanded(
+          flex: 1,
+          child: RaisedButton(
+              color: Colors.orange[600],
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              onPressed: () {
+                setState(() {showDiaLogLocation(context);});
+              },
+              child: Text("Tham gia",style: TextStyle(color: Colors.white))),
+        ),
+        SizedBox(width: 10,),
+        Expanded(
+          flex: 1,
+          child: RaisedButton(
+              color: Colors.orange[600],
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              onPressed: () {
+
+              },
+              child: Text("Hủy",style: TextStyle(color: Colors.white))),
+        ),
+      ],
+    );
+  }
+
+  // notification events
+  Widget eventsNotifi(){
+    return new RaisedButton(
+      child: Text('Đăng ký sự kiện', style: TextStyle(fontSize: 18.0, color: Colors.white),),
+      onPressed: () async {
+        await showDialog(
+          context: this.context,
+          child: new FlatButton(
+            child: AlertDialog(
+              title: Text('Thông báo'),
+              content: Text("Bạn có muốn đăng ký sự kiện này không ?",
+                style: TextStyle(fontSize: 17),),
+              actions: <Widget>[
+                CupertinoButton(
+                  child: Text('Đồng ý',style: TextStyle(color: Colors.blue[500]),),
+                  onPressed: () async {
+                    RegisterEventDAO regisDao = new RegisterEventDAO();
+                    statusGPS = true;
+                    status = await regisDao.registerEvents(new RegisterEventsDTO(eventId: eventsDTO.id));
+                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                      builder: (context) => HomePage(uid: uid, nameEvents: eventsDTO.title,
+                          timeStart:dtf.format(DateTime.parse(eventsDTO.startedAt)),timeStop:dtf.format(DateTime.parse(timeStop)).toString(),
+                          idEvents:eventsDTO.id,status:status),), (Route<dynamic> route) => false);
+                  },
+                ),
+                CupertinoButton(
+                  child: Text('Hủy',style: TextStyle(color: Colors.red),),
+                  onPressed: () {Navigator.of(context).pop();},
+                ),
+              ],
+            ),
+            onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                builder: (context) => HomePage(uid: uid,
+                    timeStart:dtf.format(DateTime.parse(eventsDTO.startedAt)),timeStop:dtf.format(DateTime.parse(timeStop)).toString(),
+                    idEvents:eventsDTO.id)), (Route<dynamic> route) => false),
+          ),
+        );
+      },
+      color: Colors.orange[600],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
+    );
   }
 }

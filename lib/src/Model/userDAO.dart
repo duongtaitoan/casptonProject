@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserDao {
-  static Future<String> login({@required String fbToken}) async {
+  static Future login({@required String fbToken}) async {
     ApiHelper _api = new ApiHelper();
     var response = await _api.LoginAPI(fbToken: fbToken, url: "api/users/firebase-signin",);
 

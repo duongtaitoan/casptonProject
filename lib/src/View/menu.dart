@@ -58,7 +58,7 @@ class _HomeMenuState extends State<HomeMenu> {
             ),
             SizedBox(height: 10,),
             Center(
-              child: Text('_____________________________',style: TextStyle(color: Colors.black),),
+              child: Text('_______________________________________',style: TextStyle(color: Colors.black),),
             ),
             SizedBox(height: 30,),
             // profile
@@ -66,7 +66,7 @@ class _HomeMenuState extends State<HomeMenu> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    SizedBox( width: 10,),
+                    SizedBox( width: 25,),
                     Expanded(
                       flex: 5,
                       child: ListTile(
@@ -88,7 +88,7 @@ class _HomeMenuState extends State<HomeMenu> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    SizedBox( width: 10,),
+                    SizedBox( width: 25,),
                     Expanded(
                       flex: 5,
                       child: ListTile(
@@ -110,7 +110,7 @@ class _HomeMenuState extends State<HomeMenu> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    SizedBox( width: 10,),
+                    SizedBox( width: 25,),
                     Expanded(
                       flex: 5,
                       child: ListTile(
@@ -131,7 +131,7 @@ class _HomeMenuState extends State<HomeMenu> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    SizedBox( width: 10,),
+                    SizedBox( width: 25,),
                     Expanded(
                       flex: 5,
                       child: ListTile(

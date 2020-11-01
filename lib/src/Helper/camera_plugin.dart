@@ -1,5 +1,8 @@
 import 'dart:io';
+import 'package:designui/src/Helper/show_user_location.dart';
+import 'package:designui/src/Model/imageDTO.dart';
 import 'package:designui/src/View/home.dart';
+import 'package:designui/src/ViewModel/tracking_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,22 +15,24 @@ class CameraApp extends StatefulWidget {
   final timeStart;
   final timeStop ;
   final nameEvents;
-  const CameraApp({Key key, this.uid, this.status,this.timeStart,this.timeStop,this.nameEvents}) : super(key: key);
+  final idEvents;
+  const CameraApp({Key key, this.uid, this.status,this.timeStart,this.timeStop,this.nameEvents,this.idEvents}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _CameraAppPageState(uid,status,timeStart,timeStop,nameEvents);
+    return _CameraAppPageState(uid,status,timeStart,timeStop,nameEvents,idEvents);
   }
 }
 
 class _CameraAppPageState extends State<CameraApp> {
-  File imageFile = null;
+  File imageFile;
   final FirebaseUser uid;
+  final idEvents;
   final status;
   var timeStart;
   var timeStop ;
   var nameEvents;
-  _CameraAppPageState(this.uid, this.status,this.timeStart,this.timeStop,this.nameEvents);
+  _CameraAppPageState(this.uid, this.status,this.timeStart,this.timeStop,this.nameEvents,this.idEvents);
 
   @override
   void initState() {
@@ -97,10 +102,23 @@ class _CameraAppPageState extends State<CameraApp> {
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(Radius.circular(10))),
                                     onPressed: () {
-                                      // xử lý ảnh gửi
-                                      // nếu trùng với ảnh ở phía server thì get location tracking
-                                      // _buttonTakePicture(context);
-                                    },
+
+                                        var value = checkinEvents(new ImageDTO(eventId: idEvents,latitude: 0.0,longitude: 0.0,file: imageFile));
+                                        value.then((tmpValue) async {
+                                          if(tmpValue == "Checkin thành công"){
+                                            await showDialog(
+                                                context: context,
+                                                builder: (context) => AlertDialog(
+                                                  title: Text("Thông báo"),
+                                                  content: Text("Bạn ${tmpValue}"),
+                                            )
+                                          );
+                                            // get location auto
+                                              var showEvents = new show();
+                                              showEvents.showLocationDiaLog(timeStart, timeStop, idEvents);
+                                          }
+                                        });
+                            },
                                     child: Text("Gửi",style: TextStyle(color: Colors.white))),
                               ),
                               SizedBox(width: 40,),
@@ -125,17 +143,12 @@ class _CameraAppPageState extends State<CameraApp> {
         break;
     }
     if (imageFile != null) {
-      Scaffold.of(context).showSnackBar(SnackBar(
-        content: Text("Bạn tham gia sự kiện thành công"),
-      ));
       print("Bạn chọn ảnh: " + imageFile.path);
       setState(() {
         debugPrint("Ảnh bạn chọn  $imageFile");
       });
-    } else {
-      Scaffold.of(context).showSnackBar(SnackBar(
-        content: Text("Ảnh bạn chụp tham gia sự kiện thất bại.\nXin vui lòng chụp lại"),
-      ));
+    }else {
+      print("Bạn không tấm ảnh nào cả");
     }
   }
 

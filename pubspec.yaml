@@ -45,6 +45,7 @@ dependencies:
   path_provider: ^1.6.11
   dio: ^3.0.10
   stacked_services:
+  uiblock: ^0.2.0
 
   #  flutter_datetime_picker: ^1.4.0
   # The following adds the Cupertino Icons font to your application.

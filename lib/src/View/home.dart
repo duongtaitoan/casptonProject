@@ -3,8 +3,9 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:designui/src/Helper/camera_plugin.dart';
 import 'package:designui/src/Model/eventDTO.dart';
+import 'package:designui/src/View/action_event.dart';
+import 'package:designui/src/View/menu.dart';
 import 'package:designui/src/ViewModel/events_viewmodel.dart';
-import 'package:designui/src/view/menu.dart';
 import 'package:designui/src/view/registers_event.dart';
 import 'package:designui/src/view/view_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -36,25 +37,21 @@ class _HomePageState extends State<HomePage> {
   var status;
   var nameEvents;
   var checkLocation = false;
+  int selectedIndex = 0;
+  List<EventsDTO> _search;
+  final TextEditingController _controller = TextEditingController();
+  EventsVM vmDao;
+
   _HomePageState(this.uid, this.nameEvents, this.timeStart, this.timeStop, this.idEvents,this.status);
   GlobalKey<ScaffoldState> _scaffoldKey;
+  Widget _actionEvents = ActionEventsPage();
 
   @override
   void initState() {
-    if(status == null){
-      showSmS();
-    }else if(status == "Người dùng đã đăng ký sự kiện") {
-        var now = DateTime.now();
-        Stopwatch s = new Stopwatch();
-        Timer timer = Timer.periodic(Duration(seconds: 1), (Timer time) {
-        if (now.isAfter(dtf.parse(timeStart)) && now.isBefore(dtf.parse(timeStop))) {
-          showDiaLogLocation(context);
-            s.stop();
-            time.cancel();
-          }
-        });// showDiaLogLocation(context);
-      }
-    showSmS();
+    checkStatus();
+    _actionEvents = ActionEventsPage(uid: uid,);
+    _search = List<EventsDTO>();
+    vmDao = new EventsVM();
     _scaffoldKey = new GlobalKey<ScaffoldState>();
     super.initState();
   }
@@ -64,288 +61,321 @@ class _HomePageState extends State<HomePage> {
     super.setState(fn);
   }
 
+  void onItemTapped(int index) async {
+    setState(() {selectedIndex = index; });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: SizedBox.expand(
           child: Scaffold(
             key: _scaffoldKey,
-            appBar: AppBar(
-              title: searchBar(),
-              backgroundColor: Colors.orange[400],
-              leading: FlatButton(
-                onPressed: () {
-                  _scaffoldKey.currentState.openDrawer();
-                },
-                child: Container(
-                  width: 26,
-                  height: 26,
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(uid.photoUrl),
-                  ),
+            appBar: myAppBar(),
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: selectedIndex,
+              onTap: onItemTapped,
+              backgroundColor: Colors.orange[600],
+              selectedIconTheme: IconThemeData (opacity: 1.0, size: 25),
+              unselectedIconTheme: IconThemeData (opacity: 0.5, size: 20),
+              items: [
+                BottomNavigationBarItem(
+                  icon: new Icon(Icons.home,color: Colors.white),
+                  title: new Text('Home',style: TextStyle(color: Colors.white),),
                 ),
-              ),
-            ),
-            body: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Flexible(
-                  fit: FlexFit.tight,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    color: Colors.grey[100],
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: <Widget>[
-                          getListEvent(),
-                        ],
-                      ),
-                    ),
-                  ),
+                BottomNavigationBarItem(
+                  icon: new Icon(Icons.event,color: Colors.white,),
+                  title: new Text('Hoạt động',style: TextStyle(color: Colors.white),),
                 ),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.person,color: Colors.white),
+                    title: Text('Cá nhân',style: TextStyle(color: Colors.white),)
+                )
               ],
             ),
-            drawer: Drawer(
-              child: HomeMenu(
-                uid: uid,
-              ),
-            ),
+            body: getBody(),
           ),
         ));
   }
-  // button search
-  Widget searchBar() {
-    return Material(
-      elevation: 10.0,
-      borderRadius: BorderRadius.circular(10.0),
-      child: TextFormField(
-          decoration: InputDecoration(
-              border: InputBorder.none,
-              suffixIcon: Icon(Icons.search, color: Colors.black),
-              contentPadding: EdgeInsets.only(left: 15.0, top: 15.0),
-              hintText: 'Tìm kiếm sự kiện',
-              hintStyle: TextStyle(color: Colors.grey)),
-          onFieldSubmitted: (String input) {}),
+
+  // show body in home when user click
+  Widget getBody( )  {
+    if(this.selectedIndex == 0) {
+      return this.body();
+    } else if(this.selectedIndex==1) {
+      return this._actionEvents ;
+    } else {
+      return HomeMenu(uid:uid);
+    }
+  }
+
+  // appbar in show then show
+  Widget myAppBar(){
+    if(this.selectedIndex == 0){
+      return AppBar(
+        title: IconSearch(),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.orange[600],
+      );
+    }else if(this.selectedIndex == 1){
+      return null;
+    }else{
+      return null;
+    }
+  }
+
+  // body home
+  body(){
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Flexible(
+          fit: FlexFit.tight,
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            color: Colors.grey[100],
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  bodyEvents(),
+                ],
+              ),
+            ),
+          ),
+        )
+      ],
     );
   }
-  // body
-  Widget getListEvent() {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 610,
-      color: Colors.white,
-      child: ListView(
-        scrollDirection: Axis.vertical,
+
+  // button search
+  Widget IconSearch() {
+    return Center(
+      child: Row(
         children: <Widget>[
-          CurrentEvents(),
-          // list events current
-          Container(
-              width: MediaQuery.of(context).size.width,
-              height: 220.0,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(30.0),
-                ),
-              ),
-              margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-              child: FutureBuilder<List<EventsDTO>>(
-                // get count user register events
-                  future: EventsVM.getEventsActive(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      if (snapshot.data != null) {
-                        return Container(
-                          margin: EdgeInsets.all(6),
-                          padding: EdgeInsets.all(3),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            border: Border.all(color: Colors.grey[200],
-                                width: 1),
-                            borderRadius: BorderRadius.all(
-                                Radius.circular(
-                                    15.0)), // set rounded corner radius
-                          ),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: snapshot.data.length,
-                            itemBuilder: (context,snap){
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(10.0),
-                                child: Column(
-                                  children: <Widget>[
-                                    Center(
-                                      child: status == null || status != "Người dùng đã đăng ký sự kiện"
-                                          ? new Padding(
-                                        padding: const EdgeInsets.all(0.0),
-                                        child: FlatButton(
-                                          onPressed: () {
-                                            Navigator.of(context).push(MaterialPageRoute(
-                                                builder: (context) => RegisterEventPage(
-                                                    uid: uid, eventsDTO: snapshot.data[snap],count:snap+1)));
-                                          },
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(15.0),
-                                            child: Image.asset('assets/images/events${snap+1}.png',
-                                              width: 250,
-                                              height: 160,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                          : new Padding(
-                                        padding: const EdgeInsets.all(0.0),
-                                        child: FlatButton(
-                                          onPressed: () => {
-                                            Navigator.of(context).push(MaterialPageRoute(
-                                            builder: (context) => RegisterEventPage(
-                                            uid: uid, eventsDTO: snapshot.data[snap],count:snap+1,status:status))),
-                                          },
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(15.0),
-                                            child: Image.asset('assets/images/events${snap+1}.png',
-                                              width: 250,
-                                              height: 160,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Text(snapshot.data[snap].title,style: TextStyle(fontSize: 19),),
-                                    Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt))),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      };
-                    };
-                    return Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      // loading when not found
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  })),
-          UpcomingEvents(),
-          // list events upcoming
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: 550,
-            child: FutureBuilder<List<EventsDTO>>(
-                future: EventsVM.getEventsPending(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if (snapshot.data != null) {
-                      return ListView.builder(
-                        // get count user register events
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (context, snap) {
-                          return Container(
-                            margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: Colors.grey[200], width: 1),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(30.0),
-                              ),
-                            ),
-                            child: FlatButton(
-                              child: Container(
-                                margin: const EdgeInsets.all(0),
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.white),
-                                ),
-                                child: Column(children: <Widget>[
-                                  Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      mainAxisSize: MainAxisSize.max,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Expanded(
-                                          flex: 6,
-                                          child: Center(
-                                            child: status == null || status != "Người dùng đã đăng ký sự kiện"
-                                                ? new Padding(
-                                              padding: const EdgeInsets.all(0.0),
-                                              child: FlatButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).push(MaterialPageRoute(
-                                                      builder: (context) => RegisterEventPage(
-                                                          uid: uid, eventsDTO: snapshot.data[snap],count:snap + 1)));
-                                                },
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                  BorderRadius.circular(15.0),
-                                                  child: Image.asset(
-                                                    'assets/images/events${snap + 1}.png',
-                                                    width: double.infinity,
-                                                    height: 140,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                                : new Padding(
-                                              padding: const EdgeInsets.all(0.0),
-                                              child: FlatButton(
-                                                onPressed: () => {
-                                                  Navigator.of(context).push(MaterialPageRoute(
-                                                      builder: (context) => RegisterEventPage(
-                                                          uid: uid, eventsDTO: snapshot.data[snap],count:snap+1,status:status))),
-                                                },
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                  BorderRadius.circular(15.0),
-                                                  child: Image.asset(
-                                                    'assets/images/events${snap + 1}.png', width: 140,
-                                                    height: 140, fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 4,
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                            mainAxisSize: MainAxisSize.max,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              Text(snapshot.data[snap].title,
-                                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
-                                              ),
-                                              Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt)),style: TextStyle(fontSize: 16.0),),
-                                            ],
-                                          ),
-                                        ),
-                                      ])
-                                ]),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    };
-                  };
-                  return Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    // loading when not found
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-            ),
+          SizedBox(width: 135,),
+          Text('Home'),
+          SizedBox(width: 90,),
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.white),
+            onPressed: () => Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ShowAllEventsPage(uid: uid,)),
+                    (Route<dynamic> route) => false),
           ),
         ],
       ),
     );
+  }
+
+  // body
+  Widget bodyEvents() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
+      color: Colors.white,
+      child: ListView(
+        scrollDirection: Axis.vertical,
+        children: <Widget>[
+          // title of current events
+          titleEvents("Sự kiện đang diễn ra"),
+          // list events current
+          listEventsCurrent(),
+          // title events upcoming
+          titleEvents("Sự kiện sắp diễn ra"),
+          // list events upcoming
+          listEventsUpcoming(),
+        ],
+      ),
+    );
+  }
+
+  // Title current events
+  Widget titleEvents(String title){
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: 50,
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text('$title',
+              style: TextStyle(
+                  color: Colors.orange[600],
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold),
+            ),
+            FlatButton(
+              child: Text(
+                "Hiện tất cả",
+                style: TextStyle(
+                    color: Colors.orange[600], fontSize: 18),
+              ),
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => ShowAllEventsPage(uid: uid)));
+              },
+            ),
+          ]),
+    );
+  }
+
+  // list events occurring
+  Widget listEventsCurrent(){
+    return Container(
+        width: MediaQuery.of(context).size.width,
+        height: 220.0,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(
+            Radius.circular(30.0),
+          ),
+        ),
+        margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+        child: FutureBuilder<List<EventsDTO>>(
+          // get count user register events
+            future: EventsVM.getAllListEvents() ,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                if (snapshot.data != null) {
+                  return Container(
+                    margin: EdgeInsets.all(6),
+                    padding: EdgeInsets.all(3),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      border: Border.all(color: Colors.grey[200],
+                          width: 1),
+                      borderRadius: BorderRadius.all(
+                          Radius.circular(
+                              15.0)), // set rounded corner radius
+                    ),
+                    child : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context,snap){
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(10.0),
+                          child: Column(
+                            children: <Widget>[
+                              getListEvents(snapshot, snap, 250.0, 160.0),
+                              Text(snapshot.data[snap].title,style: TextStyle(fontSize: 19),),
+                              Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt))),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                };
+              };
+              return Padding(
+                padding: const EdgeInsets.all(10.0),
+                // loading when not found
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }));
+  }
+
+  // list event upcoming
+  Widget listEventsUpcoming(){
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height*1.88,
+      child: FutureBuilder<List<EventsDTO>>(
+          future: EventsVM.getAllListEvents(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              if (snapshot.data != null) {
+                return ListView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  // get count user register events
+                  itemCount: snapshot.data.length,
+                  itemBuilder: (context, snap) {
+                    return Card(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          getListEvents(snapshot, snap, double.infinity, 160.0),
+                          ListTile(
+                            title: Text(snapshot.data[snap].title,
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),textAlign: TextAlign.start,
+                            ),
+                            subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt)),style: TextStyle(fontSize: 16.0),),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              };
+            };
+            return Padding(
+              padding: const EdgeInsets.all(10.0),
+              // loading when not found
+              child: Container(
+                  width: 25,
+                  height: 25,
+                  padding: const EdgeInsets.only(bottom: 1200.0, left: 150,right: 150,top: 90),
+                  child: CircularProgressIndicator()),
+            );
+          }
+      ),
+    );
+  }
+
+  // showdialog and goto checking
+  showDiaLogLocation(BuildContext context) async {
+      //   // notification get location for user
+      await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Thông báo"),
+            content: Text("Sự kiện $nameEvents đang diễn ra. Xin vui lòng đến trang sự kiện để check in"),
+            actions: [
+              CupertinoButton(
+                child: Text('Đồng ý',style: TextStyle(color: Colors.blue[500]),),
+                onPressed: () async {
+                  checkLocation = true;
+                  await Future.delayed(Duration.zero, () {
+                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                        builder: (BuildContext context) => CameraApp(uid:uid,status:status,timeStart: timeStart,timeStop: timeStop,
+                          nameEvents:nameEvents,idEvents:idEvents,)),(Route<dynamic> route) => false);
+                  });
+                },
+              ),
+              CupertinoButton(
+                child: Text('Hủy',style: TextStyle(color: Colors.red),),
+                onPressed: () async {
+                  await Future.delayed(Duration.zero, () {
+                    Navigator.of(context).pop(true);
+                    });
+                },
+              )
+            ],
+          )
+      );
+  }
+
+  // check status
+  checkStatus(){
+    if(status == null){
+      showSmS();
+    }else if(status == "Người dùng đã đăng ký sự kiện") {
+      var now = DateTime.now();
+      Stopwatch s = new Stopwatch();
+      Timer.periodic(Duration(seconds: 1), (Timer time) {
+        if (now.isAfter(dtf.parse(timeStart)) && now.isBefore(dtf.parse(timeStop))) {
+          showDiaLogLocation(context);
+          s.stop();
+          time.cancel();
+        }
+      });// showDiaLogLocation(context);
+    }
+    showSmS();
   }
 
   // show messasign when user login success
@@ -364,98 +394,46 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Title current events
-  Widget CurrentEvents(){
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 50,
-      margin: const EdgeInsets.fromLTRB(20, 0, 7, 0),
-      child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Text(
-              "Sự kiện đang diễn ra ",
-              style: TextStyle(
-                  color: Colors.orange[400],
-                  fontSize: 21,
-                  fontWeight: FontWeight.bold),
+  // centerEvents
+  getListEvents(snapshot,snap,width,height){
+    return Center(
+      child: status == null || status != "Người dùng đã đăng ký sự kiện"
+          ? new Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: FlatButton(
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => RegisterEventPage(
+                    uid: uid, eventsDTO: snapshot.data[snap],count:snap+1)));
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15.0),
+            child: Image.asset('assets/images/events${snap+1}.png',
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
             ),
-            FlatButton(
-              child: Text(
-                "Hiện tất cả",
-                style: TextStyle(
-                    color: Colors.orange[400], fontSize: 18),
-              ),
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ShowAllEventsPage(uid: uid)));
-              },
+          ),
+        ),
+      )
+          : new Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: FlatButton(
+          onPressed: () => {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => RegisterEventPage(
+                    uid: uid, eventsDTO: snapshot.data[snap],count:snap+1,status:status))),
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15.0),
+            child: Image.asset('assets/images/events${snap+1}.png',
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
             ),
-          ]),
+          ),
+        ),
+      ),
     );
   }
-
-  // Title upcoming events
-  Widget UpcomingEvents(){
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 50,
-      margin: const EdgeInsets.fromLTRB(20, 0, 7, 0),
-      child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Text(
-              "Sự kiện sắp diễn ra",
-              style: TextStyle(
-                  color: Colors.orange[400],
-                  fontSize: 21,
-                  fontWeight: FontWeight.bold),
-            ),
-            FlatButton(
-              child: Text(
-                "Hiện tất cả",
-                style: TextStyle(
-                    color: Colors.orange[400], fontSize: 18),
-              ),
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ShowAllEventsPage(uid: uid)));
-              },
-            ),
-          ]),
-    );
-  }
-
-  showDiaLogLocation(BuildContext context) async {
-      //   // notification get location for user
-      await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text("Thông báo"),
-            content: Text("Sự kiện $nameEvents đang diễn ra. Xin vui lòng đến trang sự kiện để check in"),
-            actions: [
-              CupertinoButton(
-                child: Text('Đồng ý',style: TextStyle(color: Colors.blue[500]),),
-                onPressed: () async {
-                  checkLocation = true;
-                  await Future.delayed(Duration.zero, () {
-                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-                        builder: (BuildContext context) => CameraApp(uid:uid,status:status,timeStart: timeStart,timeStop: timeStop,nameEvents:nameEvents))
-                        ,(Route<dynamic> route) => false);
-                  });
-                },
-              ),
-              CupertinoButton(
-                child: Text('Hủy',style: TextStyle(color: Colors.red),),
-                onPressed: () async {
-                  await Future.delayed(Duration.zero, () {
-                    Navigator.of(context).pop(true);
-                    });
-                },
-              )
-            ],
-          )
-      );
-  }
-
 }

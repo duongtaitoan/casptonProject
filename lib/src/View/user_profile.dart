@@ -2,9 +2,6 @@ import 'package:designui/src/view/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'package:intl/intl.dart';
-import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class UserProfilePage extends StatefulWidget {
@@ -22,23 +19,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
   _UserProfilePageState(this.uid);
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final TextEditingController controlMajors = TextEditingController();
+  final TextEditingController controlMSSV = TextEditingController();
   final TextEditingController controlNumber = TextEditingController();
-  PhoneNumber number = PhoneNumber(isoCode: 'VN');
 
   @override
   Widget build(BuildContext context) {
     var email = uid.email;
     var displayName = uid.displayName;
-    final format = DateFormat("dd/MM/yyyy");
-    DateTime birthdayStudent = DateTime.now();
-    int relust = birthdayStudent.year - 18;
+
     return SafeArea(
         child:SizedBox.expand(
           child: Scaffold(
             appBar: AppBar(
               title: Text('Thông tin cá nhân'),
-              backgroundColor: Colors.orange[400],
+              backgroundColor: Colors.orange[600],
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -117,7 +111,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                          mainAxisAlignment: MainAxisAlignment.start,
                                          children: <Widget>[
                                            TextField(
-                                             controller: controlMajors,
+                                             keyboardType: TextInputType.number,
+                                             controller: controlNumber,
                                              decoration: InputDecoration(
                                                hintText: '0836831237',
                                              ),
@@ -142,7 +137,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                                       children: <Widget>[
                                         TextField(
-                                          controller: controlMajors,
+                                          keyboardType: TextInputType.number,
+                                          controller: controlMSSV,
                                           // textAlign: TextAlign.right,
                                           decoration: InputDecoration(
                                             hintText: 'SE63438',
@@ -176,7 +172,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                     'Cập nhật thông tin',
                                     style: TextStyle(fontSize: 18.0, color: Colors.white),
                                   ),
-                                  color: Colors.orange[400],
+                                  color: Colors.orange[600],
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.all(Radius.circular(6))),
                                 ),
