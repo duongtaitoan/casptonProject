@@ -2,11 +2,13 @@ import 'dart:io';
 import 'package:designui/src/Helper/show_user_location.dart';
 import 'package:designui/src/Model/imageDTO.dart';
 import 'package:designui/src/View/home.dart';
+import 'package:designui/src/View/feedback.dart';
 import 'package:designui/src/ViewModel/tracking_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CameraApp extends StatefulWidget {
@@ -47,7 +49,7 @@ class _CameraAppPageState extends State<CameraApp> {
               appBar: AppBar(
                 backgroundColor: Colors.orange[400],
                 title: Text(
-                  "Chụp Ảnh sự kiện",
+                  "Check in",
                   textAlign: TextAlign.center,
                 ),
                 leading: IconButton(
@@ -92,33 +94,45 @@ class _CameraAppPageState extends State<CameraApp> {
                                     onPressed: () {
                                       _buttonTakePicture(context);
                                     },
-                                    child: Text("Chụp Ảnh",style: TextStyle(color: Colors.white))),
+                                    child: Text("Picture",style: TextStyle(color: Colors.white))),
                               ),
                               SizedBox(width: 20,),
                               Expanded(
                                 flex: 1,
                                 child: RaisedButton(
                                     color: Colors.orange[400],
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                                     onPressed: () {
-
-                                        var value = checkinEvents(new ImageDTO(eventId: idEvents,latitude: 0.0,longitude: 0.0,file: imageFile));
-                                        value.then((tmpValue) async {
-                                          if(tmpValue == "Checkin thành công"){
-                                            await showDialog(
-                                                context: context,
-                                                builder: (context) => AlertDialog(
-                                                  title: Text("Thông báo"),
-                                                  content: Text("Bạn ${tmpValue}"),
-                                            )
-                                          );
+                                      var value = checkinEvents(new ImageDTO(eventId: idEvents,latitude: 0.0,longitude: 0.0,file: imageFile));
+                                      value.then((tmpValue) async {
+                                        if(tmpValue == "Checkin successful"){
+                                          await showDialog(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                title: Text("Notification"),
+                                                content: Padding(
+                                                  padding: const EdgeInsets.only(left: 50),
+                                                  child: Text("Your ${tmpValue}"),
+                                                ),
+                                              )
+                                           );
                                             // get location auto
-                                              var showEvents = new show();
-                                              showEvents.showLocationDiaLog(timeStart, timeStop, idEvents);
+                                            var showEvents = new show();
+                                            showEvents.showLocationDiaLog(timeStart, timeStop, idEvents);
+                                            // if events finish then show feedback
+                                            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>FeedBackPage(uid: uid,nameEvents:nameEvents)));
+                                            // back home and lock this events
+                                          }else{
+                                           Fluttertoast.showToast(
+                                              msg: tmpValue,
+                                              toastLength: Toast.LENGTH_SHORT,
+                                              gravity: ToastGravity.BOTTOM,
+                                              timeInSecForIos: 3,
+                                              fontSize: 20.0,
+                                              textColor: Colors.black);
                                           }
                                         });
-                            },
+                                    },
                                     child: Text("Gửi",style: TextStyle(color: Colors.white))),
                               ),
                               SizedBox(width: 40,),

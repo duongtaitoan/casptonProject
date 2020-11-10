@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:designui/src/Model/TrackingDTO.dart';
 import 'package:designui/src/Model/imageDTO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
+import 'package:designui/src/Model/user_profileDTO.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
@@ -12,7 +13,7 @@ import 'package:async/async.dart';
 
 class ApiHelper {
 
-  final String _baseUrl = "https://apt-api.conveyor.cloud/";
+  final String _baseUrl = "https://eventtrackingapi.azurewebsites.net/";
 
   // login api
   Future<dynamic> LoginAPI({@required String fbToken, String url}) async {
@@ -47,6 +48,26 @@ class ApiHelper {
     return responseJson;
   }
 
+  // get list events user register
+  Future<dynamic> getList(String url) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String token = sp.getString("token_data");
+    var responseJson;
+    try {
+      final response = await http.get(_baseUrl+url,  headers:
+      {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer '+token,
+      },
+      );
+      responseJson = returnResponse(response);
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
+  }
+
   Future<dynamic> put(String idStudent,String url) async {
     var responseJson;
     SharedPreferences sp = await SharedPreferences.getInstance();
@@ -59,6 +80,30 @@ class ApiHelper {
       },
         body: jsonEncode(<String, String>{
           'idStudents': idStudent,
+        }),
+      );
+      responseJson = returnResponse(response);
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
+  }
+
+  // update information of user
+  Future<dynamic> putInfor(UserProfileDTO dto,String url) async {
+    var responseJson;
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String token = sp.getString("token_data");
+    try {
+      final response = await http.put(_baseUrl +url, headers: <String, String>{
+        'Content-Type': 'application/json',
+        'accept': '*/*',
+        'Authorization': 'Bearer '+token,
+      },
+        body: jsonEncode(<String, String>{
+          'phone': dto.phone.toString(),
+          'major': dto.major,
+          'studentCode': dto.studentCode,
         }),
       );
       responseJson = returnResponse(response);

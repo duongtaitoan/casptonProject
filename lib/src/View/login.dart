@@ -1,5 +1,6 @@
 import 'package:designui/src/Service/google_sign.dart';
 import 'package:designui/src/View/home.dart';
+import 'package:designui/src/View/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -14,14 +15,12 @@ class _LoginPageState extends State<LoginPage> {
   GlobalKey _scaffoldGlobalKey = GlobalKey();
   bool showLoader = false;
 
-
   void onSignInPressed() async {
       FirebaseUser user = await GoogleSign.handleSignIn();
       String status = await GoogleSign.onSignInFinished(user);
-      RegExp regExp =
-      RegExp("^[a-z0-9_\.]{8,}@[fpt|fu]{1,4}(\.[edu]{3})(\.[vn]{2})");
-      if (status != "Đăng nhập thành công" ||
-          !regExp.hasMatch(user.email.toString())) {
+      RegExp regExp = RegExp("^[a-z0-9_\.]{8,}@[fpt|fu]{1,4}(\.[edu]{3})(\.[vn]{2})");
+
+    if (status != "Signin successful" || !regExp.hasMatch(user.email.toString())) {
         Fluttertoast.showToast(
             msg: status,
             toastLength: Toast.LENGTH_SHORT,
@@ -29,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
             timeInSecForIos: 1,
             fontSize: 24.0,
             textColor: Colors.black);
-      } else {
+      } else if(status == "Signin successful") {
          Padding(
             padding: const EdgeInsets.all(10.0),
             // loading when not found
@@ -41,7 +40,19 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ],
             ));
-    }
+      } else if(status == "Need Information") {
+        Padding(
+            padding: const EdgeInsets.all(10.0),
+            // loading when not found
+            child: Column(
+              children: <Widget>[
+                Center(child: CircularProgressIndicator(),),
+                await Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (context) => UserProfilePage(uid: user,),),
+                ),
+              ],
+            ));
+      }
   }
 
   @override
@@ -102,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                               }catch(e){
                                 UIBlock.unblock(_scaffoldGlobalKey.currentContext);
                                 Fluttertoast.showToast(
-                                    msg: "Lỗi hệ thống xin vui lòng đăng nhập lại",
+                                    msg: "System error Please login again",
                                     toastLength: Toast.LENGTH_SHORT,
                                     gravity: ToastGravity.BOTTOM,
                                     timeInSecForIos: 1,

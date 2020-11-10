@@ -39,7 +39,7 @@ class _HistoryPageState extends State<HistoryPage>{
         child: SizedBox.expand(
             child: Scaffold(
               appBar: AppBar(
-                title: Text('Lịch sử của bạn'),
+                title: Text('Your History'),
                 backgroundColor: Colors.orange[600],
                 leading: IconButton(
                   icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -70,7 +70,10 @@ class _HistoryPageState extends State<HistoryPage>{
                                 SizedBox(
                                   height: 10,
                                 ),
-                                searchBar(searchEvents, _controller),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 10, right: 10),
+                                  child: searchBar(searchEvents, _controller),
+                                ),
                                 SizedBox(
                                   height: 10,
                                 ),
@@ -118,23 +121,34 @@ class _HistoryPageState extends State<HistoryPage>{
 
 Widget searchBar(searchEvents, _controller) {
   return Material(
-    elevation: 10.0,
+    elevation: 1.0,
     borderRadius: BorderRadius.circular(20.0),
-    child: TextFormField(
-      decoration: InputDecoration(
-          border: InputBorder.none,
-          suffixIcon: Icon(Icons.search, color: Colors.black),
-          contentPadding: EdgeInsets.only(left: 25.0, top: 15.0),
-          hintText: 'Tìm kiếm sự kiện',
-          hintStyle: TextStyle(color: Colors.grey)),
-      controller: _controller,
-      onChanged: searchEvents,
+    child: ListTile(
+      leading: Icon(Icons.search, color: Colors.black),
+      title: TextFormField(
+        autofocus: true,
+        textInputAction: TextInputAction.search,
+        decoration: InputDecoration(
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.only(left: 25.0, top: 1.0),
+            hintText: 'Search events',
+            hintStyle: TextStyle(color: Colors.grey)),
+        controller: _controller,
+        onChanged: searchEvents,
+      ),
+      trailing: IconButton(
+        onPressed: () {
+          _controller.clear();
+          searchEvents('');
+        },
+        icon: Icon(Icons.cancel, color: Colors.black),
+      ),
     ),
   );
 }
 
 Widget getEvent(BuildContext context, uid, status, List<EventsDTO> _search, _controller) {
-  var status = "Lịch sử người dùng";
+  var status = "This event you have completed";
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   return Container(
     width: MediaQuery.of(context).size.width,
@@ -145,86 +159,94 @@ Widget getEvent(BuildContext context, uid, status, List<EventsDTO> _search, _con
           if (snapshot.hasData) {
             if (snapshot.data != null) {
               return _search.length != 0 || _controller.text.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: _search.length,
-                      itemBuilder: (context, i) {
-                        return Container(
-                          margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border:
-                                Border.all(color: Colors.grey[200], width: 1),
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(30.0),
+                  ? Center(
+                    child:  _search.length != 0
+                        ? ListView.builder(
+                        itemCount: _search.length,
+                        itemBuilder: (context, i) {
+                          return Container(
+                            margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border:
+                                  Border.all(color: Colors.grey[200], width: 1),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10.0),
+                              ),
                             ),
-                          ),
-                          child: FlatButton(
-                            child: Column(children: <Widget>[
-                              Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: <Widget>[
-                                    Expanded(
-                                      flex: 6,
-                                      child: Center(
+                            child: FlatButton(
+                              child: Column(children: <Widget>[
+                                Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                    mainAxisSize: MainAxisSize.max,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      Expanded(
+                                        flex: 6,
+                                        child: Center(
                                           child: Padding(
-                                        padding: const EdgeInsets.only(
-                                            top: 5, bottom: 5),
-                                        child: FlatButton(
-                                          onPressed: () {
-                                            Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        RegisterEventPage(
-                                                          uid: uid,
-                                                          eventsDTO: _search[i],
-                                                          count: _search[i].id,
-                                                          status: status,
-                                                        )));
-                                          },
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(15.0),
-                                            child: Image.asset(
-                                              'assets/images/events${_search[i].id}.png',
-                                              width: double.infinity,
-                                              height: 140,
-                                              fit: BoxFit.cover,
+                                            padding: const EdgeInsets.only(top: 5, bottom: 5),
+                                            child: FlatButton(
+                                              onPressed: () {
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            RegisterEventPage(
+                                                              uid: uid,
+                                                              eventsDTO: _search[i],
+                                                              count: _search[i].id,
+                                                              status: status,
+                                                            )));
+                                              },
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(15.0),
+                                                child: Image.asset(
+                                                  'assets/images/events${_search[i].id}.png',
+                                                  width: double.infinity,
+                                                  height: 140,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                          )
                                         ),
-                                      )),
-                                    ),
-                                    Expanded(
-                                      flex: 4,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        mainAxisSize: MainAxisSize.max,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Text(
-                                            _search[i].title,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 18.0),
-                                          ),
-                                          Text(
-                                            dtf.format(DateTime.parse(
-                                                _search[i].startedAt)),
-                                            style: TextStyle(fontSize: 16.0),
-                                          ),
-                                        ],
                                       ),
-                                    ),
-                                  ])
-                            ]),
-                          ),
-                        );
-                      })
+                                      Expanded(
+                                        flex: 4,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: <Widget>[
+                                            Text(
+                                              _search[i].title,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18.0),
+                                            ),
+                                            Text(
+                                              dtf.format(DateTime.parse(
+                                                  _search[i].startedAt)),
+                                              style: TextStyle(fontSize: 16.0),
+                                            ),
+                                            // lấy trạng thái user tham gia hay chưa tham gia (xanh) / hủy thì màu (đỏ) / in wishlist (cam)
+                                            // status =="wishList" ? Center(
+                                            //   child: status == "tham gia"|| status =="chưa tham gia"
+                                            //       ? Text('',style: TextStyle(fontSize: 16.0,color: Colors.blue[500]),)
+                                            //       : Text('',style: TextStyle(fontSize: 16.0,color: Colors.red[500])),)
+                                            //     : Text('', style: TextStyle(fontSize: 16.0,color: Colors.orange[600]),),
+                                          ],
+                                        ),
+                                      ),
+                                    ])
+                              ]),
+                            ),
+                          );
+                        })
+                        : Center(child: Text('Not found events',style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold),),),
+                  )
                   : ListView.builder(
                       // get count user register events
                       itemCount: snapshot.data.length,
@@ -242,8 +264,7 @@ Widget getEvent(BuildContext context, uid, status, List<EventsDTO> _search, _con
                           child: FlatButton(
                             child: Column(children: <Widget>[
                               Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: <Widget>[
@@ -251,9 +272,9 @@ Widget getEvent(BuildContext context, uid, status, List<EventsDTO> _search, _con
                                       flex: 6,
                                       child: Center(
                                           child: Padding(
-                                        padding: const EdgeInsets.only(
+                                            padding: const EdgeInsets.only(
                                             top: 5, bottom: 5),
-                                        child: FlatButton(
+                                            child: FlatButton(
                                           onPressed: () {
                                             Navigator.of(context).push(
                                                 MaterialPageRoute(

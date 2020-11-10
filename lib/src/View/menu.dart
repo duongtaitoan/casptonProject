@@ -1,6 +1,5 @@
 import 'package:designui/src/view/history.dart';
 import 'package:designui/src/view/login.dart';
-import 'package:designui/src/view/support.dart';
 import 'package:designui/src/view/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +70,7 @@ class _HomeMenuState extends State<HomeMenu> {
                       flex: 5,
                       child: ListTile(
                         leading: Image.asset("assets/images/acc.png",width: 30,height: 30),
-                        title: Text("Thông tin cá nhân", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
+                        title: Text("Personal Information", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
                         onTap: () {
                           // back to login and when user click button back => logout app
                           Navigator.of(context).push(MaterialPageRoute(builder: (context)=>UserProfilePage(uid: uid)));
@@ -93,31 +92,10 @@ class _HomeMenuState extends State<HomeMenu> {
                       flex: 5,
                       child: ListTile(
                         leading: Image.asset("assets/images/history.png",width: 30,height: 30),
-                        title: Text("Lịch sử", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
+                        title: Text("History", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
                         onTap: () {
                           // back to login and when user click button back => logout app
                           Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HistoryPage(uid: uid)));
-                        },
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-            SizedBox(height: 10,),
-            // support
-            Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    SizedBox( width: 25,),
-                    Expanded(
-                      flex: 5,
-                      child: ListTile(
-                        leading: Image.asset("assets/images/help.png",width: 30,height: 30),
-                        title: Text("Giúp đỡ", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
-                        onTap: (){
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>SupportPage(uid: uid)));
                         },
                       ),
                     ),
@@ -136,7 +114,7 @@ class _HomeMenuState extends State<HomeMenu> {
                       flex: 5,
                       child: ListTile(
                         leading: Image.asset("assets/images/logout.png",width: 30,height: 30,),
-                        title: Text("Thoát", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
+                        title: Text("Logout", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
                         onTap: () async {
                           googleSignIn.signOut();
                           _auth.signOut();

@@ -1,4 +1,4 @@
-import 'package:designui/src/Model/ImageDAO.dart';
+import 'package:designui/src/Model/imageDAO.dart';
 import 'package:designui/src/Model/TrackingDTO.dart';
 import 'package:designui/src/Model/imageDTO.dart';
 import 'package:designui/src/Model/trackingDAO.dart';
@@ -19,9 +19,9 @@ Future<String> checkinEvents(ImageDTO dto) async {
   try{
     ImageDAO dao = new ImageDAO();
     await dao.imageTracking(dto);
-    return "Checkin thành công";
+    return "Checkin successful";
   } catch(e){
-      return "Checkin bị lỗi!!";
+      return "Checkin failed!!";
   }
 }
 

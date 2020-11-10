@@ -22,7 +22,10 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
   TextEditingController _controller;
   EventsVM vmDao;
   GlobalKey<ScaffoldState> _scaffoldKey;
+
   _ShowAllEventsPageState(this.uid);
+
+  var checkSearch = false;
 
   @override
   void initState() {
@@ -41,38 +44,40 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
           key: _scaffoldKey,
           appBar: AppBar(
             title: Material(
-              elevation: 2.0,
-              borderRadius: BorderRadius.circular(20.0),
-              child:  ListTile(
-                leading: Icon(Icons.search),
-                title: TextFormField(
-                  decoration: InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(top: 1.0),
-                      hintText: 'Tìm kiếm sự kiện',
-                      hintStyle: TextStyle(color: Colors.grey)),
-                  controller: _controller,
-                  onChanged: searchEvents,
-                ),
-                trailing: IconButton(
-                  onPressed: () {
-                    _controller.clear();
-                    _search.clear();
-                    searchEvents('');
-                  },
-                  icon: Icon(Icons.cancel),
-                ),
-              )
+                borderRadius: BorderRadius.circular(5.0),
+                color: Colors.orange[600],
+                child: ListTile(
+                  title: TextFormField(
+                    autofocus: true,
+                    textInputAction: TextInputAction.search,
+                    decoration: InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(top: 1.0),
+                        hintText: 'Search events',
+                        hintStyle: TextStyle(color: Colors.white,fontSize: 20.0)),
+                    controller: _controller,
+                    onChanged: searchEvents,
+                    style: TextStyle(color: Colors.white,fontSize: 20),
+                  ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      _controller.clear();
+                      _search.clear();
+                      searchEvents('');
+                    },
+                    icon: Icon(Icons.cancel, color: Colors.white),
+                  ),
+                )
             ),
             backgroundColor: Colors.orange[600],
-            elevation: 0,
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => HomePage(uid: uid,)),
-                  (Route<dynamic> route) => false),
+              onPressed: () =>
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => HomePage(uid: uid,)),
+                          (Route<dynamic> route) => false),
             ),
           ),
           body: Column(
@@ -103,7 +108,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
     );
   }
 
-  searchEvents(String input) async{
+  searchEvents(String input) async {
     _search.clear();
     if (input.isEmpty) {
       setState(() {});
@@ -112,11 +117,11 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
     List<EventsDTO> tmpList = new List();
     List<EventsDTO> listEvents = await EventsVM.getAllListEvents();
     listEvents.forEach((ex) {
-      if (ex.title.toUpperCase().contains(input.toUpperCase()) || ex.description.toString().contains(input.toUpperCase())) {
+      if (ex.title.toUpperCase().contains(input.toUpperCase()) ||
+          ex.description.toString().contains(input.toUpperCase())) {
         tmpList.add(ex);
-
-        for(int i = 0; i< tmpList.length; i++ ){
-          if(ex.id.toString().compareTo(tmpList[i].id.toString()) == 0){
+        for (int i = 0; i < tmpList.length; i++) {
+          if (ex.id.toString().compareTo(tmpList[i].id.toString()) == 0) {
             _search.add(ex);
           }
         }
@@ -124,141 +129,226 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
           _search.clear();
           _search.addAll(tmpList);
         });
-        return;
-      } else if(!_search.isNotEmpty){
+      } else if (!_search.isNotEmpty) {
+        checkSearch = true;
         _search.clear();
+        return checkSearch;
       }
     });
   }
-}
 
-Widget getEvent(BuildContext context, uid,List<EventsDTO> _search, _controller) {
-  var status;
-  DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
-  return Container(
-    padding: const EdgeInsets.only(right: 10,top: 10),
-    width: MediaQuery.of(context).size.width,
-    height: 620,
-    child: FutureBuilder<List<EventsDTO>>(
-        future: EventsVM.getAllListEvents(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            if (snapshot.data != null) {
-              return _search.length != 0 || _controller.text.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: _search.length,
-                      itemBuilder: (context, i) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.grey[200], width: 1),
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(30.0),
-                            ),
-                          ),
-                          child: FlatButton(
-                            child: Column(children: <Widget>[
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  SizedBox(height: 10,),
-                                  getListEvents(_search[i], _search[i].id,status,context,uid ),
-                                  ListTile(
-                                    title: Text( _search[i].title, style:
-                                    TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),textAlign: TextAlign.start,),
-                                    subtitle: Text(dtf.format(DateTime.parse(_search[i].startedAt)),style: TextStyle(fontSize: 16.0),),
-                                  ),
-                                ],
+
+  Widget getEvent(BuildContext context, uid, List<EventsDTO> _search,
+      _controller) {
+    var status = "Người dùng đăng ký sự kiện";
+    DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
+    return Container(
+      padding: const EdgeInsets.only(right: 10, top: 10),
+      width: MediaQuery
+          .of(context)
+          .size
+          .width,
+      height: 620,
+      child: FutureBuilder<List<EventsDTO>>(
+          future: EventsVM.getAllListEvents(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              if (snapshot.data != null) {
+                return  Center(
+                  child: _search.length != 0 || _controller.text.isNotEmpty
+                      ? Center(
+                        child: _search == 0
+                            ? ListView.builder(
+                        itemCount: _search.length,
+                        itemBuilder: (context, i) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey[200], width: 1),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(30.0),
                               ),
-                            ]),
-                          ),
-                    );
-                  })
-                  : ListView.builder(
-                      // get count user register events
-                      itemCount: snapshot.data.length,
-                      itemBuilder: (context, snap) {
-                        return Container(
-                          margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border:
-                                Border.all(color: Colors.grey[200], width: 1),
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(30.0),
                             ),
-                          ),
-                          child: FlatButton(
-                            child: Column(children: <Widget>[
-                               Column(
+                            child:FlatButton(
+                              child: Column(children: <Widget>[
+                                Column(
                                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: <Widget>[
                                     SizedBox(height: 10,),
-                                    getListEvents(snapshot, snap,status,context,uid ),
-                                    ListTile(
-                                      title: Text(snapshot.data[snap].title,
-                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),textAlign: TextAlign.start,
+                                    Center(
+                                      child: status == null ||
+                                          status != "Người dùng đã đăng ký sự kiện"
+                                          ? new Padding(
+                                        padding: const EdgeInsets.all(0.0),
+                                        child: FlatButton(
+                                          onPressed: () {
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        RegisterEventPage(
+                                                            uid: uid,
+                                                            eventsDTO: _search[i],
+                                                            count: _search[i].id)));
+                                          },
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                                15.0),
+                                            child: Image.asset(
+                                              'assets/images/events${_search[i]
+                                                  .id}.png',
+                                              width: double.infinity,
+                                              height: 170,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                          : new Padding(
+                                        padding: const EdgeInsets.all(0.0),
+                                        child: FlatButton(
+                                          onPressed: () =>
+                                          {
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        RegisterEventPage(
+                                                            uid: uid,
+                                                            eventsDTO: _search[i],
+                                                            count: _search[i].id,
+                                                            status: status))),
+                                          },
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                                15.0),
+                                            child: Image.asset(
+                                              'assets/images/events${_search[i]
+                                                  .id}.png',
+                                              width: double.infinity,
+                                              height: 170,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                      subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt)),style: TextStyle(fontSize: 16.0),),
+                                    ),
+                                    ListTile(
+                                      title: Text(_search[i].title, style:
+                                      TextStyle(fontWeight: FontWeight.bold,
+                                          fontSize: 18.0),
+                                        textAlign: TextAlign.start,),
+                                      subtitle: Text(dtf.format(
+                                          DateTime.parse(_search[i].startedAt)),
+                                        style: TextStyle(fontSize: 16.0),),
                                     ),
                                   ],
                                 ),
-                            ]),
+                              ]),
+                            )
+                          );
+                        })
+                            : Center(child: Text('Not found events',style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold),),),
+                      )
+                      : ListView.builder(
+                    // get count user register events
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (context, snap) {
+                      return Container(
+                        margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border:
+                          Border.all(color: Colors.grey[200], width: 1),
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(30.0),
                           ),
-                        );
-                      },
-                    );
+                        ),
+                        child: FlatButton(
+                          child: Column(children: <Widget>[
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                SizedBox(height: 10,),
+                                getListEvents(
+                                    snapshot, snap, status, context, uid),
+                                ListTile(
+                                  title: Text(snapshot.data[snap].title,
+                                    style: TextStyle(fontWeight: FontWeight.bold,
+                                        fontSize: 18.0),
+                                    textAlign: TextAlign.start,
+                                  ),
+                                  subtitle: Text(dtf.format(DateTime.parse(
+                                      snapshot.data[snap].startedAt)),
+                                    style: TextStyle(fontSize: 16.0),),
+                                ),
+                              ],
+                            ),
+                          ]),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
             };
-          };
-          return Padding(
-            padding: const EdgeInsets.all(10.0),
-            // loading when not found
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }),
-  );
-}
+            return Padding(
+              padding: const EdgeInsets.all(10.0),
+              // loading when not found
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }),
+    );
+  }
 
-getListEvents(snapshot,snap,status,context,uid){
-  return Center(
-    child: status == null || status != "Người dùng đã đăng ký sự kiện"
-        ? new Padding(
-      padding: const EdgeInsets.all(0.0),
-      child: FlatButton(
-        onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => RegisterEventPage(
-                  uid: uid, eventsDTO: snapshot.data[snap],count:snap+1)));
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(15.0),
-          child: Image.asset('assets/images/events${snap+1}.png',
-            width: double.infinity,
-            height: 170,
-            fit: BoxFit.cover,
+  getListEvents(snapshot, snap, status, context, uid) {
+    return Center(
+      child: status == null || status != "Người dùng đã đăng ký sự kiện"
+          ? new Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: FlatButton(
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) =>
+                    RegisterEventPage(
+                        uid: uid,
+                        eventsDTO: snapshot.data[snap],
+                        count: snap + 1)));
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15.0),
+            child: Image.asset('assets/images/events${snap + 1}.png',
+              width: double.infinity,
+              height: 170,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      )
+          : new Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: FlatButton(
+          onPressed: () =>
+          {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) =>
+                    RegisterEventPage(
+                        uid: uid,
+                        eventsDTO: snapshot.data[snap],
+                        count: snap + 1,
+                        status: status))),
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15.0),
+            child: Image.asset('assets/images/events${snap + 1}.png',
+              width: double.infinity,
+              height: 170,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
-    )
-        : new Padding(
-      padding: const EdgeInsets.all(0.0),
-      child: FlatButton(
-        onPressed: () => {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => RegisterEventPage(
-                  uid: uid, eventsDTO: snapshot.data[snap],count:snap+1,status:status))),
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(15.0),
-          child: Image.asset('assets/images/events${snap+1}.png',
-            width: double.infinity,
-            height: 170,
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-    ),
-  );
+    );
+  }
+
 }
