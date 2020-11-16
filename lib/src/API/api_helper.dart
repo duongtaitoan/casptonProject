@@ -25,31 +25,12 @@ class ApiHelper {
     var response = await http.post(_baseUrl+url, headers: headers,
         body: jsonEncode(map)
     );
+
     return response;
   }
 
   // get list events
   Future<dynamic> get(String url) async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    String token = sp.getString("token_data");
-    var responseJson;
-    try {
-      final response = await http.get(_baseUrl+url,  headers:
-      {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer '+token,
-      },
-      );
-      responseJson = returnResponse(response);
-    } on SocketException {
-      throw FetchDataException('No Internet connection');
-    }
-    return responseJson;
-  }
-
-  // get list events user register
-  Future<dynamic> getList(String url) async {
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
     var responseJson;
@@ -235,7 +216,8 @@ class ApiHelper {
         throw ExpiredException(response.body.toString());
       case 500:
       default:
-            print('value responseJson: '+response.request.method.toString());
+            print('value responseJson: '+response.request.method.toString() +'---'+response.statusCode.toString()+''+response.body);
+
         throw FetchDataException(
             'Error occured while Communication with Server with StatusCode : ${response
                 .statusCode}');

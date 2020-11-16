@@ -1,5 +1,6 @@
-import 'package:designui/src/Model/eventDTO.dart';
+import 'package:designui/src/Model/userDTO.dart';
 import 'package:designui/src/ViewModel/events_viewmodel.dart';
+import 'package:designui/src/ViewModel/history_viewmodel.dart';
 import 'package:designui/src/view/registers_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,28 +14,26 @@ class ActionEventsPage extends StatefulWidget {
   const ActionEventsPage({Key key, this.uid, this.status}) : super(key: key);
 
   @override
-  _ActionEventsPageState createState() => _ActionEventsPageState(uid, status);
+  _ActionEventsPageState createState() => _ActionEventsPageState(uid);
 }
 
 class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerProviderStateMixin {
   final FirebaseUser uid;
-  final status;
   TabController _tabController;
-
-  _ActionEventsPageState(this.uid, this.status);
-
-  List<EventsDTO> _search;
+  List<UserDTO> _search;
+  HistoryVM historyVM;
+  _ActionEventsPageState(this.uid);
   final TextEditingController _controller = TextEditingController();
-  EventsVM vmDao;
 
   @override
   void initState() {
+    historyVM = new HistoryVM();
     _tabController = new TabController(length: 4, vsync: this);
-    _search = List<EventsDTO>();
-    vmDao = new EventsVM();
+    _search = List<UserDTO>();
     super.initState();
   }
 
+  // tabbar and body
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -61,58 +60,51 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
               body: new TabBarView(
                   controller: _tabController,
                   children: <Widget>[
-                    tabTable("Waiting"),
-                    tabTable("Approved"),
-                    tabTable("On Going"),
-                    tabTable("Reject"),
+                    tabTable("Waiting","Pending"),
+                    tabTable("Approved","Accepted"),
+                    // trạng thái on going chưa có đợi api trả về rồi tính
+                    tabTable("On Going",""),
+                    tabTable("Reject","Denied"),
                   ]
               ),
             ),
           ),
-        ));
-  }
-
-  Widget tabTable(String statusTitle){
-    return  Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      mainAxisSize: MainAxisSize.max,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Flexible(
-          flex: 10,
-          fit: FlexFit.tight,
-          child: Container(
-            width: double.infinity,
-            height: 620,
-            color: Colors.grey[100],
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  SizedBox(height: 10,),
-                  getEvent(context, uid, statusTitle, _search, _controller),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+        )
     );
   }
 
-  Widget getEvent(BuildContext context, uid, status, List<EventsDTO> _search, _controller) {
-    DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
+  // button tab table
+  Widget tabTable(String statusTitle, String flowStatus){
     return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 520,
+      width: double.infinity,
+      height: 600,
+      color: Colors.grey[100],
+      child: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 10,),
+            getEvent(context, uid, statusTitle, _search, _controller,flowStatus),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // list events flow status
+  Widget getEvent(BuildContext context, uid, status, List<UserDTO> _search, _controller,flowStatus) {
+    DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
+    return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.only(left: 16,right: 16),
-        child: FutureBuilder<List<EventsDTO>>(
-            future: EventsVM.getAllListEvents(),
+        padding: const EdgeInsets.only(left: 16,right: 16,bottom: 16),
+        child: FutureBuilder<List<UserDTO>>(
+          // get status of user and show
+            future: historyVM.getFlowStatus(flowStatus),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 if (snapshot.data != null) {
                   return ListView.builder(
-                    // get count user register events
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
                     itemCount: snapshot.data.length,
                     itemBuilder: (context, snap) {
                       return Container(
@@ -133,10 +125,10 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                             SizedBox(height: 10,),
                             getListEvents(snapshot, snap, double.infinity, 160.0,status),
                             ListTile(
-                              title: Text(snapshot.data[snap].title,
+                              title: Text(snapshot.data[snap].eventTitle,
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),textAlign: TextAlign.start,
                               ),
-                              subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt)),style: TextStyle(fontSize: 16.0),),
+                              subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].startDate)),style: TextStyle(fontSize: 16.0),),
                             ),
                           ],
                         ),
@@ -148,31 +140,31 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
               return Padding(
                 padding: const EdgeInsets.all(10.0),
                 // loading when not found
-                child: Center(child: CircularProgressIndicator()),
-              );
+                child: Center(child: CircularProgressIndicator()),);
             }),
       ),
     );
   }
 
+  // click events to screen register
   getListEvents(snapshot,snap,width,height,status){
     return Center(
       child:  new Padding(
         padding: const EdgeInsets.all(0.0),
         child: FlatButton(
           onPressed: () {
-            Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) =>
-                        RegisterEventPage(uid: uid,
-                          eventsDTO: snapshot.data[snap],
-                          count: snap + 1, status: status,
-                        )));
+                 Navigator.of(context).push(
+                     MaterialPageRoute(
+                         builder: (context) =>
+                             RegisterEventPage(uid: uid,
+                               idEvents: snapshot.data[snap].id,
+                               status: status,
+                             )));
           },
           child: ClipRRect(
             borderRadius:
             BorderRadius.circular(15.0),
-            child: Image.asset('assets/images/events${snap + 1}.png',
+            child: Image.network('${snapshot.data[snap].thumbnailPicture}',
               width: double.infinity,
               height: 140,
               fit: BoxFit.cover,

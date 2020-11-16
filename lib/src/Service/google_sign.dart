@@ -26,7 +26,7 @@ class GoogleSign {
     String fbToken = fbTokenResult.token;
     logLongString(fbToken);
     // user show status token
-    status = await UserDao.login(fbToken: fbToken);
+    status = await UserDAO.login(fbToken: fbToken);
     return status;
   }
 

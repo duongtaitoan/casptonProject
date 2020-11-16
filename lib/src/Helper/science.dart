@@ -59,7 +59,7 @@ class Course {
 
   static List<Course> getCourse() {
     return <Course>[
-      Course(1, 'not Semester'),
+      Course(1, 'Any'),
       Course(2, '1'),
       Course(3, '2'),
       Course(4, '3'),

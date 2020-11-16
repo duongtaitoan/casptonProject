@@ -113,8 +113,8 @@ class _LoginPageState extends State<LoginPage> {
                               }catch(e){
                                 UIBlock.unblock(_scaffoldGlobalKey.currentContext);
                                 Fluttertoast.showToast(
-                                    msg: "System error Please login again",
-                                    toastLength: Toast.LENGTH_SHORT,
+                                    msg: "Please check your wifi",
+                                    toastLength: Toast.LENGTH_LONG,
                                     gravity: ToastGravity.BOTTOM,
                                     timeInSecForIos: 1,
                                     fontSize: 24.0,

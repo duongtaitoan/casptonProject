@@ -47,7 +47,9 @@ dependencies:
   stacked_services:
   uiblock: ^0.2.0
   smart_select: ^4.3.2
-  loadany: ^0.1.4
+  carousel_slider: ^2.3.1
+  scoped_model: ^1.1.0
+  jwt_decoder: ^1.0.3
 
   #  flutter_datetime_picker: ^1.4.0
   # The following adds the Cupertino Icons font to your application.
@@ -86,17 +88,6 @@ flutter:
      - assets/images/chair.png
      - assets/images/backgroudFPT.png
      - assets/images/logoFPTU.png
-     - assets/images/events1.png
-     - assets/images/events2.png
-     - assets/images/events3.png
-     - assets/images/events4.png
-     - assets/images/events5.png
-     - assets/images/events6.png
-     - assets/images/events7.png
-     - assets/images/events8.png
-     - assets/images/events9.png
-     - assets/images/events10.png
-     - assets/images/events11.png
      - assets/images/backgroud4.png
      - assets/images/backgroud5.png
      - assets/images/backgroud6.png

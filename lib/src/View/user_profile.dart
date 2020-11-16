@@ -1,15 +1,14 @@
-import 'package:designui/src/Helper/list_Semester.dart';
 import 'package:designui/src/Model/user_profileDAO.dart';
 import 'package:designui/src/Model/user_profileDTO.dart';
-import 'package:designui/src/View/menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfilePage extends StatefulWidget {
   final FirebaseUser uid;
-
   const UserProfilePage({Key key, this.uid}) : super(key: key);
 
   @override
@@ -21,14 +20,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
   UserProfileDAO dao;
   _UserProfilePageState(this.uid);
   bool _validate = false;
-
+  Map<String, dynamic> decodedToken;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController controlNumber = TextEditingController();
   final TextEditingController controlMSSV = TextEditingController();
   TextEditingController controlMajor = TextEditingController();
 
   @override
-  void initState() {
+  void initState(){
+    studentCode().then((value) => controlMSSV.text = decodedToken["studentCode"]);
     dao = new UserProfileDAO();
     super.initState();
   }
@@ -153,9 +153,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                             decoration: InputDecoration(
                                               hintText: 'SE63438',
                                               suffixIcon: Icon(Icons.star,color: Colors.red,size: 10,),
-                                              errorText: _validate== true ? 'Student code is can\'t be empty' : null,
+                                              errorText: _validate== true && studentCode() == null ? 'Student code is can\'t be empty' : null,
                                             ),
                                           ),
+                                          // TextField(
+                                          //   controller: controlMSSV,
+                                          //   decoration: InputDecoration(
+                                          //     // counterText: studentCode().toString(),
+                                          //     // labelText: studentCode().toString(),
+                                          //     hintText: studentCode().toString(),
+                                          //     suffixIcon: Icon(Icons.star,color: Colors.red,size: 10,),
+                                          //     errorText: _validate== true ? 'Student code is can\'t be empty' : null,
+                                          //   ),
+                                          // ),
                                         ],
                                       ),
                                     ),
@@ -209,24 +219,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
                                           var status = dao.getInforProfile(
                                               new UserProfileDTO(studentCode: _tmpMSSV,major: _tmpMajor,phone: int.parse(_tmpNum)));
-                                          status.then((value) =>
-                                            Fluttertoast.showToast(
-                                            msg: value,
-                                            toastLength: Toast.LENGTH_SHORT,
-                                            gravity: ToastGravity.BOTTOM,
-                                            timeInSecForIos: 3,
-                                            fontSize: 20.0,
-                                            textColor: Colors.black));
+                                              status.then((value) => showToast(value));
+
                                     }else if(validateMobile(controlNumber.text) != null){
                                       setState(() {
                                         controlNumber.text.isEmpty ? _validate = true : _validate = false;
                                       });
                                       showToast(validateMobile(controlNumber.text));
+
                                     }else if(validateCode(controlMSSV.text) != null){
                                       setState(() {
                                         controlMSSV.text.isEmpty ? _validate = true : _validate = false;
                                       });
                                       showToast(validateCode(controlMSSV.text));
+
                                     }else if(validateMajor(controlMajor.text) != null){
                                       setState(() {
                                         controlMajor.text.isEmpty ? _validate = true : _validate = false;
@@ -292,6 +298,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return null;
   }
 
+  Future<dynamic> studentCode() async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String token = sp.getString("token_data");
+    decodedToken= JwtDecoder.decode(token);
+    return decodedToken["studentCode"];
+  }
+
   // show status toast
   Widget showToast(String tmpStatus){
      Fluttertoast.showToast(
@@ -302,4 +315,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
         fontSize: 20.0,
         textColor: Colors.black);
   }
+
+
 }

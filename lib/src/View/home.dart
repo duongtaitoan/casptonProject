@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/View/action_event.dart';
 import 'package:designui/src/View/menu.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 class HomePage extends StatefulWidget {
   final FirebaseUser uid;
@@ -20,33 +22,52 @@ class HomePage extends StatefulWidget {
   final idEvents;
   final status;
 
-  const HomePage({Key key, this.uid,
-    this.nameEvents, this.timeStart, this.timeStop, this.idEvents,this.status,
+  const HomePage({
+    Key key,
+    this.uid,
+    this.nameEvents,
+    this.timeStart,
+    this.timeStop,
+    this.idEvents,
+    this.status,
   }) : super(key: key);
   @override
-  _HomePageState createState() => _HomePageState(uid, nameEvents,timeStart,timeStop,idEvents,status);
+  _HomePageState createState() =>
+      _HomePageState(uid, nameEvents, timeStart, timeStop, idEvents, status);
 }
 
 class _HomePageState extends State<HomePage> {
   final FirebaseUser uid;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
-  var timeStart ;
+  var timeStart;
   var timeStop;
   var idEvents;
   var status;
   var nameEvents;
-  var checkLocation = false;
   int selectedIndex = 0;
-  _HomePageState(this.uid, this.nameEvents, this.timeStart, this.timeStop, this.idEvents,this.status);
+  int _current = 0;
+  var _tmpCheck = false;
   GlobalKey<ScaffoldState> _scaffoldKey;
   Widget _actionEvents = ActionEventsPage();
+  EventsVM model;
+  static List<EventsDTO> listDTO;
+  static List<Widget> imageSliders;
+
+  _HomePageState(this.uid, this.nameEvents, this.timeStart, this.timeStop, this.idEvents, this.status);
 
   @override
   void initState() {
-    showSmS();
+    handlerHoverImg();
+    showSmS(this.status);
     _actionEvents = ActionEventsPage(uid: uid,);
     _scaffoldKey = new GlobalKey<ScaffoldState>();
     super.initState();
+    try {
+      model = new EventsVM();
+      model.getFirstIndex();
+    }catch(e){
+      showSmS("No Internet connection");
+    }
   }
 
   @override
@@ -54,10 +75,14 @@ class _HomePageState extends State<HomePage> {
     super.setState(fn);
   }
 
+  // home bar
   void onItemTapped(int index) async {
-    setState(() {selectedIndex = index; });
+    setState(() {
+      selectedIndex = index;
+    });
   }
 
+  // body
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -69,76 +94,120 @@ class _HomePageState extends State<HomePage> {
               currentIndex: selectedIndex,
               onTap: onItemTapped,
               backgroundColor: Colors.orange[600],
-              selectedIconTheme: IconThemeData (opacity: 1.0, size: 25),
-              unselectedIconTheme: IconThemeData (opacity: 0.5, size: 20),
+              selectedIconTheme: IconThemeData(opacity: 1.0, size: 25),
+              unselectedIconTheme: IconThemeData(opacity: 0.5, size: 20),
               items: [
                 BottomNavigationBarItem(
-                  icon: new Icon(Icons.home,color: Colors.white),
-                  title: new Text('Home',style: TextStyle(color: Colors.white),),
+                  icon: new Icon(Icons.home, color: Colors.white),
+                  title: new Text(
+                    'Home',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
                 BottomNavigationBarItem(
-                  icon: new Icon(Icons.event,color: Colors.white,),
-                  title: new Text('Registered',style: TextStyle(color: Colors.white),),
+                  icon: new Icon(
+                    Icons.event,
+                    color: Colors.white,
+                  ),
+                  title: new Text(
+                    'Registered',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.person,color: Colors.white),
-                    title: Text('Profile',style: TextStyle(color: Colors.white),)
-                )
+                    icon: Icon(Icons.person, color: Colors.white),
+                    title: Text(
+                      'Profile',
+                      style: TextStyle(color: Colors.white),
+                    ))
               ],
             ),
-            body: screenHome(),
+            body:  screenHome(),
           ),
         ));
   }
 
   // show body in home when user click
-  Widget screenHome( )  {
-    if(this.selectedIndex == 0) {
-      return this.homeBody();
-    } else if(this.selectedIndex==1) {
-      return this._actionEvents ;
+  Widget screenHome() {
+    if (this.selectedIndex == 0) {
+      return SingleChildScrollView(child:this.homeBody());
+    } else if (this.selectedIndex == 1) {
+      return this._actionEvents;
     } else {
-      return HomeMenu(uid:uid);
+      return HomeMenu(uid: uid);
     }
   }
 
   // appbar in show then show
-  Widget myAppBar(){
-    if(this.selectedIndex == 0){
+  Widget myAppBar() {
+    if (this.selectedIndex == 0) {
       return AppBar(
         title: IconSearch(),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.orange[600],
       );
-    }else if(this.selectedIndex == 1){
+    } else if (this.selectedIndex == 1) {
       return null;
-    }else{
+    } else {
       return null;
     }
   }
 
   // body home
-  Widget homeBody(){
+  Widget homeBody() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      mainAxisSize: MainAxisSize.max,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Flexible(
-          fit: FlexFit.tight,
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            color: Colors.white,
-            child: SingleChildScrollView(
+      children: <Widget>[
+        Container(
+          width: MediaQuery.of(context).size.width,
+          color: Colors.grey[200],
+          child: Center(
               child: Column(
                 children: <Widget>[
-                  bodyEvents(),
+                  titleEvents("On going events"),
+                  _tmpCheck == true ? eventsHover(): Center(child: CircularProgressIndicator()),
+                  titleEvents("Upcoming events"),
+                  listEventsUpcoming(),
                 ],
-              ),
-            ),
-          ),
-        )
+              )),
+        ),
+      ],
+    );
+  }
+
+  // screen hover
+  Widget eventsHover(){
+    return Column(
+      children: <Widget>[
+        CarouselSlider(
+          items: imageSliders,
+          options: CarouselOptions(
+              autoPlay: true,
+              enlargeCenterPage: true,
+              aspectRatio: 2.0,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _current = index;
+                });
+              }),
+        ),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.center,
+        //   children: imageSliders.map((url) {
+        //     int index = imageSliders.indexOf(url);
+        //     return Container(
+        //       width: 8.0,
+        //       height: 8.0,
+        //       margin: EdgeInsets.symmetric(
+        //           vertical: 10.0, horizontal: 2.0),
+        //       decoration: BoxDecoration(
+        //         shape: BoxShape.circle,
+        //         color: _current == index
+        //             ? Color.fromRGBO(0, 0, 0, 0.9)
+        //             : Color.fromRGBO(0, 0, 0, 0.4),
+        //       ),
+        //     );
+        //   }).toList(),
+        // ),
       ],
     );
   }
@@ -148,54 +217,44 @@ class _HomePageState extends State<HomePage> {
     return Center(
       child: Row(
         children: <Widget>[
-          SizedBox(width: 135,),
+          SizedBox(
+            width: 135,
+          ),
           Text('Home'),
-          SizedBox(width: 90,),
+          SizedBox(
+            width: 90,
+          ),
           IconButton(
             icon: Icon(Icons.search, color: Colors.white),
-            onPressed: () => Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ShowAllEventsPage(uid: uid,)),
-                    (Route<dynamic> route) => false),
+            onPressed: () =>
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ShowAllEventsPage(
+                              uid: uid,
+                            )),
+                        (Route<dynamic> route) => false),
           ),
         ],
       ),
     );
   }
 
-  // body
-  Widget bodyEvents() {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height,
-      color: Colors.grey[200],
-      child: ListView(
-        scrollDirection: Axis.vertical,
-        children: <Widget>[
-          // title of current events
-          titleEvents("On going events"),
-          // list events current
-          listEventsCurrent(),
-          // title events upcoming
-          titleEvents("Upcoming events"),
-          // list events upcoming
-          listEventsUpcoming(),
-        ],
-      ),
-    );
-  }
-
   // Title current events
-  Widget titleEvents(String title){
+  Widget titleEvents(String title) {
     return Container(
-      width: MediaQuery.of(context).size.width,
+      width: MediaQuery
+          .of(context)
+          .size
+          .width,
       height: 50,
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Text('$title',
+            Text(
+              '$title',
               style: TextStyle(
                   color: Colors.orange[600],
                   fontSize: 21,
@@ -204,8 +263,7 @@ class _HomePageState extends State<HomePage> {
             FlatButton(
               child: Text(
                 "Show All",
-                style: TextStyle(
-                    color: Colors.orange[600], fontSize: 18),
+                style: TextStyle(color: Colors.orange[600], fontSize: 18),
               ),
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
@@ -216,181 +274,192 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // list events occurring
-  Widget listEventsCurrent(){
-    return Container(
-        width: MediaQuery.of(context).size.width,
-        height: 220.0,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(
-            Radius.circular(30.0),
-          ),
-        ),
-        margin: EdgeInsets.fromLTRB(16, 0, 16, 0),
-        child: FutureBuilder<List<EventsDTO>>(
-          // get count user register events
-            future: EventsVM.getAllListEvents() ,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (snapshot.data != null) {
-                  return Container(
-                    padding: EdgeInsets.fromLTRB(0,12,0,0),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      border: Border.all(color: Colors.grey[200], width: 1),
-                      borderRadius: BorderRadius.all(Radius.circular(15.0)), // set rounded corner radius
-                    ),
-                    child : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: snapshot.data.length,
-                      itemBuilder: (context,snap){
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(10.0),
-                          child: Column(
-                            children: <Widget>[
-                              getListEvents(snapshot, snap, 250.0, 160.0,snapshot.data[snap].id),
-                              Text(snapshot.data[snap].title,style: TextStyle(fontSize: 19),),
-                              Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt))),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                };
-              }
+  // list event upcoming
+  Widget listEventsUpcoming() {
+    return ScopedModel(
+      model: model,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16, right: 16),
+        child: ScopedModelDescendant<EventsVM>(
+          builder: (context, child, model) {
+            if (model.isLoading) {
               return Padding(
                 padding: const EdgeInsets.all(10.0),
-                // loading when not found
                 child: Center(child: CircularProgressIndicator()),
               );
-            }));
-  }
-
-  // list event upcoming
-  Widget listEventsUpcoming(){
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height*1.4,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16,right: 16),
-        child: FutureBuilder<List<EventsDTO>>(
-            future: EventsVM.getAllListEvents(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (snapshot.data != null) {
-                  return ListView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    // get count user register events
-                    itemCount: snapshot.data.length,
-                    itemBuilder: (context, snap) {
-                      return Container(
-                        margin: const EdgeInsets.only(top: 20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.white, width: 1),
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(10.0),
-                          ),
-                          boxShadow: [BoxShadow(blurRadius: 9,color: Colors.grey[300],offset: Offset(0,3))]
+            } else if (model.listEvent != null && model.listEvent.isNotEmpty) {
+              List<Widget> list = List();
+              model.listEvent.forEach((element) {
+                list.add(Container(
+                  margin: const EdgeInsets.only(top: 20),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.white, width: 1),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(10.0),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                            blurRadius: 9,
+                            color: Colors.grey[300],
+                            offset: Offset(0, 3))
+                      ]),
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      getListEvents(double.infinity, 160.0, element),
+                      ListTile(
+                        title: Text(
+                          element.title,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18.0),
+                          textAlign: TextAlign.start,
                         ),
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              getListEvents(snapshot, snap, double.infinity, 160.0,snapshot.data[snap].id),
-                              ListTile(
-                                title: Text(snapshot.data[snap].title,
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),textAlign: TextAlign.start,),
-                                subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].startedAt)),style: TextStyle(fontSize: 16.0),),
-                              ),
-                            ],
-                          ),
-                      );
+                        subtitle: Text(
+                          dtf.format(DateTime.parse(
+                              element.startedAt)),
+                          style: TextStyle(fontSize: 16.0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ));
+              });
+              // button load more
+              return Column(
+                children: [
+                  ...list,
+                  model.isAdd
+                      ? Center(child: CircularProgressIndicator(),)
+                      : FlatButton(
+                    child: Center(
+                      child:Text("Load more..."),
+                    ),
+                    onPressed: () async {
+                      await model.changPageIndex();
                     },
-                  );
-                };
-              };
-              return Padding(
-                padding: const EdgeInsets.all(10.0),
-                // loading when not found
-                child: Center(
-                    child: CircularProgressIndicator()),
+                  )
+                ],
               );
             }
+            return Container();
+          },
         ),
       ),
     );
   }
 
   // show toast messasign login success
-  showSmS(){
-    if(status == null){
+  showSmS(status) {
+    if (status == null) {
       Fluttertoast.cancel();
-    }else{
+    } else {
       Fluttertoast.showToast(
           msg: status,
           gravity: ToastGravity.BOTTOM,
+          toastLength: Toast.LENGTH_LONG,
           timeInSecForIos: 1,
           fontSize: 24.0,
           textColor: Colors.black);
-      sleep(Duration(seconds: 0));
+      sleep(Duration(seconds: 2));
     }
   }
 
   // get list events and flow
-  getListEvents(snapshot,snap,width,height,id){
+  getListEvents(width, height, dto) {
+    var tmpImg = dto.thumbnailPicture;
     return Center(
-        child: status == null || status != "Người dùng đã đăng ký sự kiện" && snapshot.data[snap].id != idEvents
-            ? new Padding(
+        child: Padding(
           padding: const EdgeInsets.all(0.0),
           child: FlatButton(
             onPressed: () {
-              // status ="Người dùng đăng ký sự kiện";
-              status = null;
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => RegisterEventPage(
-                      uid: uid, eventsDTO: snapshot.data[snap],count:snap+1,status:status,)));
+                            builder: (context) => RegisterEventPage(uid: uid,
+                                  idEvents: dto.id,)));
             },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15.0),
-              child: Image.asset('assets/images/events${snap+1}.png',
-                width: width, height: height, fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        )
-            : new Padding(
-          padding: const EdgeInsets.all(0.0),
-          child: FlatButton(
-            onPressed: () => {
-              for(int  i = 0;i < snapshot.data[snap].id; i++){
-                if(snapshot.data[snap].id == idEvents){
-                  status = 'Người dùng đã đăng ký sự kiện',
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => RegisterEventPage(uid: uid,
-                          eventsDTO: snapshot.data[snap],
-                          count: snap + 1, status: status,))),
-                }else if(snapshot.data[snap].id != idEvents){
-                  status = "Người dùng đăng ký sự kiện",
-                  Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => RegisterEventPage(
-                  uid: uid, eventsDTO: snapshot.data[snap],count:snap+1,status: status,))),
-                }
-              }
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15.0),
-              child: Image.asset('assets/images/events${snap+1}.png',
-                width: width,
-                height: height,
-                fit: BoxFit.cover,
-              ),
+              child:Image.network('${tmpImg}',width: width, height: height, fit: BoxFit.cover,),
             ),
           ),
         )
     );
+  }
+
+  // check list events img on going
+  handlerHoverImg() async {
+    try {
+      listDTO = await EventsVM.getEventsOnGoing();
+      if (listDTO.isNotEmpty) {
+        _tmpCheck = true;
+        imageSliders = listDTO.map((item) =>
+            Container(
+              width: double.infinity,
+              child: Container(
+                margin: EdgeInsets.all(6),
+                    padding: EdgeInsets.all(3),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      border: Border.all(color: Colors.grey[200], width: 1),
+                      borderRadius: BorderRadius.all(Radius.circular(15.0)), // set rounded corner radius
+                    ),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          InkWell (
+                              onTap: () {
+                                setState(() {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => RegisterEventPage(
+                                      uid: uid, idEvents: item.id,)));
+                              });
+                              },
+                              child : Image.network('${item.thumbnailPicture}', fit: BoxFit.cover, width: 1000.0),),
+                          Positioned(
+                            bottom: 0.0,
+                            left: 0.0,
+                            right: 0.0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color.fromARGB(0, 0, 0, 0),
+                                    Color.fromARGB(0, 0, 0, 0)
+                                  ],
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                ),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 10.0, horizontal: 20.0),
+                              child: Text(
+                                'No. ${item.id} image',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )),
+              ),
+            )).toList();
+        setState(() { });
+      } else {
+        _tmpCheck = false;
+        await Future.delayed(Duration(seconds: 1), () => '1');
+        Center(child: CircularProgressIndicator());
+      }
+    }catch(e){
+        showSmS("The system is waitting for an update");
+    }
   }
 }
