@@ -15,19 +15,18 @@ class _LoginPageState extends State<LoginPage> {
   GlobalKey _scaffoldGlobalKey = GlobalKey();
   bool showLoader = false;
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   void onSignInPressed() async {
       FirebaseUser user = await GoogleSign.handleSignIn();
       String status = await GoogleSign.onSignInFinished(user);
       RegExp regExp = RegExp("^[a-z0-9_\.]{8,}@[fpt|fu]{1,4}(\.[edu]{3})(\.[vn]{2})");
 
     if (status != "Signin successful" || !regExp.hasMatch(user.email.toString())) {
-        Fluttertoast.showToast(
-            msg: status,
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIos: 1,
-            fontSize: 24.0,
-            textColor: Colors.black);
+          showToast(status);
       } else if(status == "Signin successful") {
          Padding(
             padding: const EdgeInsets.all(10.0),
@@ -112,15 +111,8 @@ class _LoginPageState extends State<LoginPage> {
                                 UIBlock.unblock(_scaffoldGlobalKey.currentContext);
                               }catch(e){
                                 UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-                                Fluttertoast.showToast(
-                                    msg: "Please check your wifi",
-                                    toastLength: Toast.LENGTH_LONG,
-                                    gravity: ToastGravity.BOTTOM,
-                                    timeInSecForIos: 1,
-                                    fontSize: 24.0,
-                                    textColor: Colors.black);
+                                showToast("Your are not connected to wifi");
                               }
-
                             })),
                   ],
                 ),
@@ -129,5 +121,15 @@ class _LoginPageState extends State<LoginPage> {
           ),
       )
     );
+  }
+
+  showToast(content){
+    Fluttertoast.showToast(
+        msg: content,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIos: 1,
+        fontSize: 24.0,
+        textColor: Colors.black);
   }
 }

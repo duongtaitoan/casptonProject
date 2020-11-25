@@ -21,6 +21,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
   _UserProfilePageState(this.uid);
   bool _validate = false;
   Map<String, dynamic> decodedToken;
+  var _tmpInfor;
+
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController controlNumber = TextEditingController();
   final TextEditingController controlMSSV = TextEditingController();
@@ -28,9 +30,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   @override
   void initState(){
-    studentCode().then((value) => controlMSSV.text = decodedToken["studentCode"]);
     dao = new UserProfileDAO();
     super.initState();
+    try {
+      getstudentCode().then((value) {
+        controlMSSV.text = value["studentCode"];
+        controlMajor.text = value["major"];
+        if (value["phoneNumber"] == null) {
+          showToast("Please check your information again!");
+        } else {
+          controlNumber.text = value["phoneNumber"];
+        }
+      });
+    }catch(e){
+      throw(e);
+    }
   }
 
   @override
@@ -126,7 +140,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                                decoration: InputDecoration(
                                                  hintText: '0836831237',
                                                  suffixIcon: Icon(Icons.star,color: Colors.red,size: 10,),
-                                                 errorText: _validate == true ? 'Phone number can\'t be empty' : null
+                                                 errorText: _validate== true && getstudentCode() == null ? 'Phone number can\'t be empty' : null
                                                ),
                                              ),
                                            ],
@@ -153,19 +167,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                             decoration: InputDecoration(
                                               hintText: 'SE63438',
                                               suffixIcon: Icon(Icons.star,color: Colors.red,size: 10,),
-                                              errorText: _validate== true && studentCode() == null ? 'Student code is can\'t be empty' : null,
+                                              errorText: _validate== true && getstudentCode() == null ? 'Student code is can\'t be empty' : null,
                                             ),
                                           ),
-                                          // TextField(
-                                          //   controller: controlMSSV,
-                                          //   decoration: InputDecoration(
-                                          //     // counterText: studentCode().toString(),
-                                          //     // labelText: studentCode().toString(),
-                                          //     hintText: studentCode().toString(),
-                                          //     suffixIcon: Icon(Icons.star,color: Colors.red,size: 10,),
-                                          //     errorText: _validate== true ? 'Student code is can\'t be empty' : null,
-                                          //   ),
-                                          // ),
                                         ],
                                       ),
                                     ),
@@ -191,7 +195,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                              decoration: InputDecoration(
                                                hintText: 'information system',
                                                suffixIcon: Icon(Icons.star,color: Colors.red,size: 10,),
-                                               errorText: _validate== true ? 'Major is can\'t be empty' : null,
+                                               errorText: _validate== true && getstudentCode() == null ? 'Major is can\'t be empty' : null,
                                              ),
                                            ),
                                          ],
@@ -211,34 +215,34 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                 height: 52,
                                 child: RaisedButton(
                                   onPressed: () async {
-                                    if(validateMobile(controlNumber.text) == null &&
-                                        validateCode(controlMSSV.text.toLowerCase()) == null &&validateMajor(controlMajor.text) == null ) {
-                                          String _tmpNum = controlNumber.text;
-                                          String _tmpMajor = controlMajor.text;
-                                          String _tmpMSSV = controlMSSV.text;
+                                      if(validateMobile(controlNumber.text) != null){
+                                        setState(() {
+                                          controlNumber.text.isEmpty ? _validate = true : _validate = false;
+                                        });
+                                        showToast(validateMobile(controlNumber.text));
 
-                                          var status = dao.getInforProfile(
-                                              new UserProfileDTO(studentCode: _tmpMSSV,major: _tmpMajor,phone: int.parse(_tmpNum)));
-                                              status.then((value) => showToast(value));
+                                      }else if(validateCode(controlMSSV.text) != null){
+                                        setState(() {
+                                          controlMSSV.text.isEmpty ? _validate = true : _validate = false;
+                                        });
+                                        showToast(validateCode(controlMSSV.text));
 
-                                    }else if(validateMobile(controlNumber.text) != null){
-                                      setState(() {
-                                        controlNumber.text.isEmpty ? _validate = true : _validate = false;
-                                      });
-                                      showToast(validateMobile(controlNumber.text));
+                                      }else if(validateMajor(controlMajor.text) != null){
+                                        setState(() {
+                                          controlMajor.text.isEmpty ? _validate = true : _validate = false;
+                                        });
+                                        showToast(validateMajor(controlMajor.text));
 
-                                    }else if(validateCode(controlMSSV.text) != null){
-                                      setState(() {
-                                        controlMSSV.text.isEmpty ? _validate = true : _validate = false;
-                                      });
-                                      showToast(validateCode(controlMSSV.text));
-
-                                    }else if(validateMajor(controlMajor.text) != null){
-                                      setState(() {
-                                        controlMajor.text.isEmpty ? _validate = true : _validate = false;
-                                      });
-                                      showToast(validateMajor(controlMajor.text));
-                                    }
+                                      } else{
+                                        // update userprofile
+                                        String _tmpNum = controlNumber.text;
+                                        String _tmpMajor = controlMajor.text;
+                                        String _tmpMSSV = controlMSSV.text;
+                                        var status = await dao.updateInforUser(new UserProfileDTO(
+                                            studentCode: _tmpMSSV,phone: _tmpNum,major: _tmpMajor)
+                                        ,_tmpInfor);
+                                        showToast(status);
+                                      }
                                   },
                                   child: Text('Update information', style: TextStyle(fontSize: 18.0, color: Colors.white),),
                                   color: Colors.orange[600],
@@ -261,7 +265,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   // check mobile phone
   validateMobile(String value) {
-    String pattern = r'(^(?:[+0]9)?[0-9]{10,12}$)';
+    String pattern = r'((84|0[1-9]{1})+([0-9]{8})$)';
     RegExp regExp = new RegExp(pattern);
     if (value.length == 0) {
       return 'Please phone number is blank';
@@ -279,7 +283,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     if (value.length == 0) {
       return 'Please students code is blank';
     }
-    else if (!regExp.hasMatch(value)) {
+    else if (!regExp.hasMatch(value.toUpperCase())) {
       return 'Your students code invalid \n Ex: SE62334';
     }
     return null;
@@ -298,11 +302,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return null;
   }
 
-  Future<dynamic> studentCode() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    String token = sp.getString("token_data");
-    decodedToken= JwtDecoder.decode(token);
-    return decodedToken["studentCode"];
+  Future<dynamic> getstudentCode() async {
+    try {
+      SharedPreferences sp = await SharedPreferences.getInstance();
+      String token = sp.getString("token_data");
+      decodedToken = JwtDecoder.decode(token);
+      _tmpInfor = await UserProfileDAO().getInforUser(int.parse(decodedToken["userId"]));
+      return _tmpInfor;
+    }catch(e){
+      return "System is update waiting for minus";
+    }
   }
 
   // show status toast
@@ -315,6 +324,4 @@ class _UserProfilePageState extends State<UserProfilePage> {
         fontSize: 20.0,
         textColor: Colors.black);
   }
-
-
 }

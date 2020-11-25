@@ -16,34 +16,26 @@ import 'package:scoped_model/scoped_model.dart';
 
 class HomePage extends StatefulWidget {
   final FirebaseUser uid;
-  final nameEvents;
-  final timeStart;
-  final timeStop;
+  // final nameEvents;
   final idEvents;
   final status;
 
   const HomePage({
     Key key,
     this.uid,
-    this.nameEvents,
-    this.timeStart,
-    this.timeStop,
     this.idEvents,
     this.status,
   }) : super(key: key);
   @override
   _HomePageState createState() =>
-      _HomePageState(uid, nameEvents, timeStart, timeStop, idEvents, status);
+      _HomePageState(uid, idEvents, status);
 }
 
 class _HomePageState extends State<HomePage> {
   final FirebaseUser uid;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
-  var timeStart;
-  var timeStop;
   var idEvents;
   var status;
-  var nameEvents;
   int selectedIndex = 0;
   int _current = 0;
   var _tmpCheck = false;
@@ -53,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   static List<EventsDTO> listDTO;
   static List<Widget> imageSliders;
 
-  _HomePageState(this.uid, this.nameEvents, this.timeStart, this.timeStop, this.idEvents, this.status);
+  _HomePageState(this.uid, this.idEvents, this.status);
 
   @override
   void initState() {
@@ -190,24 +182,6 @@ class _HomePageState extends State<HomePage> {
                 });
               }),
         ),
-        // Row(
-        //   mainAxisAlignment: MainAxisAlignment.center,
-        //   children: imageSliders.map((url) {
-        //     int index = imageSliders.indexOf(url);
-        //     return Container(
-        //       width: 8.0,
-        //       height: 8.0,
-        //       margin: EdgeInsets.symmetric(
-        //           vertical: 10.0, horizontal: 2.0),
-        //       decoration: BoxDecoration(
-        //         shape: BoxShape.circle,
-        //         color: _current == index
-        //             ? Color.fromRGBO(0, 0, 0, 0.9)
-        //             : Color.fromRGBO(0, 0, 0, 0.4),
-        //       ),
-        //     );
-        //   }).toList(),
-        // ),
       ],
     );
   }
@@ -241,7 +215,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Title current events
+  // Title events
   Widget titleEvents(String title) {
     return Container(
       width: MediaQuery
@@ -335,8 +309,8 @@ class _HomePageState extends State<HomePage> {
                   model.isAdd
                       ? Center(child: CircularProgressIndicator(),)
                       : FlatButton(
-                    child: Center(
-                      child:Text("Load more..."),
+                     child: Center(
+                        child: model.showToast == null ?Text("Load more"): Text("${model.showToast}"),
                     ),
                     onPressed: () async {
                       await model.changPageIndex();
@@ -378,7 +352,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => RegisterEventPage(uid: uid,
-                                  idEvents: dto.id,)));
+                                  idEvents: dto.id,tracking:dto.gpsTrackingRequired)));
             },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15.0),
@@ -417,8 +391,8 @@ class _HomePageState extends State<HomePage> {
                                 setState(() {
                                   Navigator.of(context).push(MaterialPageRoute(
                                     builder: (context) => RegisterEventPage(
-                                      uid: uid, idEvents: item.id,)));
-                              });
+                                      uid: uid, idEvents: item.id, tracking:item.gpsTrackingRequired)));
+                               });
                               },
                               child : Image.network('${item.thumbnailPicture}', fit: BoxFit.cover, width: 1000.0),),
                           Positioned(
@@ -439,7 +413,7 @@ class _HomePageState extends State<HomePage> {
                               padding: EdgeInsets.symmetric(
                                   vertical: 10.0, horizontal: 20.0),
                               child: Text(
-                                'No. ${item.id} image',
+                                '${limitTitle(item.title)}',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20.0,
@@ -462,4 +436,16 @@ class _HomePageState extends State<HomePage> {
         showSmS("The system is waitting for an update");
     }
   }
+
+  // limit name title of event
+  limitTitle(String text){
+    String firstHalf;
+    if (text.length >= 20 && text != null) {
+      firstHalf = text.substring(0, 20)+' ... ';
+      return firstHalf;
+    }else{
+      return text;
+    }
+  }
+
 }

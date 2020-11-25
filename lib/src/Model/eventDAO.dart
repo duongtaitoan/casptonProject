@@ -10,16 +10,14 @@ class EventsDAO{
     return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
   }
 
-  // get api flow page index events
+  // get api flow page index events anh status
   Future<List<EventsDTO>> pageIndex(int index) async {
     ApiHelper _api = new ApiHelper();
     try {
-      dynamic json = await _api.get(
-          "api/events?PageIndex=${index}&PageSize=5?Status=Opening");
+      dynamic json = await _api.get("api/events?PageIndex=${index}&PageSize=5?Status=Opening");
       var eventJson = json["data"] as List;
       return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
     }catch(e){
-      print('e ${e.toString()}');
     }
   }
 

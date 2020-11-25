@@ -2,7 +2,7 @@ import 'package:designui/src/API/api_helper.dart';
 import 'package:designui/src/Model/imageDTO.dart';
 
 class ImageDAO{
-
+  // send img
   Future imageTracking(ImageDTO dto) async {
     try {
       ApiHelper _api = new ApiHelper();

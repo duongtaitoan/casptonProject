@@ -22,7 +22,6 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
   TextEditingController _controller;
   EventsVM vmDao;
   GlobalKey<ScaffoldState> _scaffoldKey;
-
   _ShowAllEventsPageState(this.uid);
 
   var checkSearch = false;
@@ -120,7 +119,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
 
     listEvents.forEach((ex) {
       if (ex.title.toUpperCase().contains(input.toUpperCase()) ||
-          ex.description.toString().contains(input.toUpperCase())) {
+          ex.content.toString().contains(input.toUpperCase())) {
         tmpList.add(ex);
         for (int i = 0; i < tmpList.length; i++) {
           if (ex.id.toString().compareTo(tmpList[i].id.toString()) == 0) {
@@ -188,10 +187,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                           MaterialPageRoute(
                                                               builder: (context) =>
                                                                   RegisterEventPage(
-                                                                    uid: uid,
-                                                                    idEvents:
-                                                                        _search[i]
-                                                                            .id,
+                                                                    uid: uid, idEvents: _search[i].id,
                                                                   )));
                                                     },
                                                     child: ClipRRect(

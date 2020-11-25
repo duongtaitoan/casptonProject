@@ -12,7 +12,7 @@ class EventsVM extends Model {
   bool isLoading = false;
   bool isAdd = false;
   List<EventsDTO> listEvent;
-
+  var showToast;
   // get 100 events in db
   static Future<List<EventsDTO>> getAllListEvents() async {
     try {
@@ -28,7 +28,7 @@ class EventsVM extends Model {
     }
   }
 
-  // load more
+  // load more page events
   Future<void> changPageIndex() async {
     try {
       // isAdd load more
@@ -44,6 +44,7 @@ class EventsVM extends Model {
     } catch (e) {
       isAdd = false;
       notifyListeners();
+      showToast = "No Events";
     } finally {
       isAdd = false;
       notifyListeners();
@@ -86,14 +87,13 @@ class EventsVM extends Model {
     }
   }
 
-  // user click events => id get data
+  // loading event flow id user event
   Future<EventsDTO> getEventFlowId(int id) async{
     try {
       EventsDAO dao = new EventsDAO();
       EventsDTO eventsDTO = await dao.idEvents(id);
       return eventsDTO;
     }catch(e){
-      print('ERROR : ${e.toString()}');
     }
   }
 }

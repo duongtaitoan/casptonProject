@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserDAO {
   static Future login({@required String fbToken}) async {
     ApiHelper _api = new ApiHelper();
-    var response = await _api.LoginAPI(fbToken: fbToken, url: "api/users/firebase-signin",);
+    var response = await _api.LoginAPI(fbToken: fbToken, url: "api/accounts/student/firebase-signin",);
     if (response.statusCode == 200) {
       print('Response body: ${response.body}');
 
@@ -24,20 +24,12 @@ class UserDAO {
     }
   }
 
-  // get flow to id event
-  Future<List<UserDTO>> getStatus(int id) async {
-    ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/registrations/${id}");
-    var eventJson = json["data"] as List;
-    return eventJson.map((e) => UserDTO.fromJson(e)).toList();
-  }
-
-  // get flow id of student
-  Future<List<UserDTO>> getListStatusEvents(bool check) async {
-    ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/registrations?OnlyRegistered=${check}");
-    var eventJson = json["data"] as List;
-    return eventJson.map((e) => UserDTO.fromJson(e)).toList();
-  }
+  // // get flow to id event
+  // Future<List<UserDTO>> getStatus(int id) async {
+  //   ApiHelper _api = new ApiHelper();
+  //   dynamic json = await _api.get("api/registrations/${id}");
+  //   var eventJson = json["data"] as List;
+  //   return eventJson.map((e) => UserDTO.fromJson(e)).toList();
+  // }
 
 }

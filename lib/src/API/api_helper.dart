@@ -49,18 +49,19 @@ class ApiHelper {
     return responseJson;
   }
 
-  Future<dynamic> put(String idStudent,String url) async {
+  // update
+  Future<dynamic> put(String status ,String url) async {
     var responseJson;
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
     try {
       final response = await http.put(_baseUrl +url, headers: <String, String>{
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
         'accept': '*/*',
         'Authorization': 'Bearer '+token,
       },
         body: jsonEncode(<String, String>{
-          'idStudents': idStudent,
+          'status': status,
         }),
       );
       responseJson = returnResponse(response);
@@ -85,6 +86,7 @@ class ApiHelper {
           'phone': dto.phone.toString(),
           'major': dto.major,
           'studentCode': dto.studentCode,
+          'fullName':dto.fullname,
         }),
       );
       responseJson = returnResponse(response);
@@ -93,6 +95,7 @@ class ApiHelper {
     }
     return responseJson;
   }
+
 
   // Future<dynamic> patch(String url, Map<String, dynamic> nameValues) async {
   //   var responseJson;
@@ -175,13 +178,16 @@ class ApiHelper {
     var responseJson;
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
-    Map map = {'eventId': dto.eventId};
+    Map map = {
+      'eventId': dto.eventId,
+      'semester': dto.semester,
+      'studentCode': dto.studentCode
+    };
     try {
       final response = await http.post(_baseUrl+url,
         body:utf8.encode(json.encode(map))
         , headers: {
           'Content-Type': 'application/json',
-          'Content-Length': '13',
           'accept': '*/*',
           'Authorization': 'Bearer '+token,},
       );

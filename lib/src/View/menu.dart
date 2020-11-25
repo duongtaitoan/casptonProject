@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:designui/src/view/history.dart';
 import 'package:designui/src/view/login.dart';
 import 'package:designui/src/view/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,7 +22,7 @@ class _HomeMenuState extends State<HomeMenu> {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseUser uid;
-
+  var status;
   _HomeMenuState(this.uid);
 
   @override
@@ -41,7 +44,6 @@ class _HomeMenuState extends State<HomeMenu> {
                       borderRadius: BorderRadius.circular(100.0),
                       child: Image.network(account,width: 120,height: 120,fit: BoxFit.cover,),
                     ),
-
                   ),
                 ),
                 SizedBox(height: 30,),
@@ -122,6 +124,14 @@ class _HomeMenuState extends State<HomeMenu> {
                           sp.remove("token_data");
                           // back to login and when user click button back => logout app
                           Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)=>LoginPage()), (Route<dynamic> route) => false);
+                          sleep(Duration(seconds: 2));
+                          Fluttertoast.showToast(
+                              msg: "Logout successful",
+                              toastLength: Toast.LENGTH_LONG,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIos: 1,
+                              fontSize: 24.0,
+                              textColor: Colors.black);
                         },
                       ),
                     ),

@@ -1,5 +1,4 @@
 import 'package:designui/src/Model/userDTO.dart';
-import 'package:designui/src/ViewModel/events_viewmodel.dart';
 import 'package:designui/src/ViewModel/history_viewmodel.dart';
 import 'package:designui/src/view/registers_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,7 +27,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
   @override
   void initState() {
     historyVM = new HistoryVM();
-    _tabController = new TabController(length: 4, vsync: this);
+    _tabController = new TabController(length: 3, vsync: this);
     _search = List<UserDTO>();
     super.initState();
   }
@@ -39,32 +38,28 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
     return SafeArea(
         child: SizedBox.expand(
           child: DefaultTabController(
-            length: 4,
+            length: 3,
             child: Scaffold(
               backgroundColor: Colors.orange[600],
               appBar: TabBar(
                 controller: _tabController,
-                indicatorWeight: 4,
+                indicatorWeight: 3,
                 indicatorColor: Colors.white,
                 tabs: [
                   Tab(icon: new Icon(Icons.history, ),
                     child: Text('Waiting',style: TextStyle(color: Colors.white),),),
                   Tab(icon: new Icon(Icons.check_circle_outline, ),
-                        child:Text('Approve',style: TextStyle(color: Colors.white))),
-                  Tab(icon: new Icon(Icons.insert_invitation,),
-                    child: Text('On going',style: TextStyle(color: Colors.white),),),
+                        child:Text('Approved',style: TextStyle(color: Colors.white))),
                   Tab(icon: new Icon(Icons.cancel, ),
-                    child: Text('Reject',style: TextStyle(color: Colors.white),),),
+                    child: Text('Canceled',style: TextStyle(color: Colors.white),),),
                 ],
               ),
               body: new TabBarView(
                   controller: _tabController,
                   children: <Widget>[
-                    tabTable("Waiting","Pending"),
-                    tabTable("Approved","Accepted"),
-                    // trạng thái on going chưa có đợi api trả về rồi tính
-                    tabTable("On Going",""),
-                    tabTable("Reject","Denied"),
+                    tabTable("Pending"),
+                    tabTable("ACCEPTED"),
+                    tabTable("CANCELED"),
                   ]
               ),
             ),
@@ -74,7 +69,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
   }
 
   // button tab table
-  Widget tabTable(String statusTitle, String flowStatus){
+  Widget tabTable( String flowStatus){
     return Container(
       width: double.infinity,
       height: 600,
@@ -83,21 +78,20 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
         child: Column(
           children: <Widget>[
             SizedBox(height: 10,),
-            getEvent(context, uid, statusTitle, _search, _controller,flowStatus),
+            getEvent(context, uid, _search, _controller,flowStatus),
           ],
         ),
       ),
     );
   }
 
-  // list events flow status
-  Widget getEvent(BuildContext context, uid, status, List<UserDTO> _search, _controller,flowStatus) {
+  // list events flow status registered of user
+  Widget getEvent(BuildContext context, uid, List<UserDTO> _search, _controller,flowStatus) {
     DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.only(left: 16,right: 16,bottom: 16),
         child: FutureBuilder<List<UserDTO>>(
-          // get status of user and show
             future: historyVM.getFlowStatus(flowStatus),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
@@ -123,7 +117,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             SizedBox(height: 10,),
-                            getListEvents(snapshot, snap, double.infinity, 160.0,status),
+                            getListEvents(snapshot, snap, double.infinity, 160.0),
                             ListTile(
                               title: Text(snapshot.data[snap].eventTitle,
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),textAlign: TextAlign.start,
@@ -135,43 +129,50 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                       );
                     },
                   );
-                };
-              };
+                }
+              }
               return Padding(
-                padding: const EdgeInsets.all(10.0),
-                // loading when not found
-                child: Center(child: CircularProgressIndicator()),);
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(child: loading(),),
+                );
             }),
       ),
     );
   }
 
   // click events to screen register
-  getListEvents(snapshot,snap,width,height,status){
+  getListEvents(snapshot,snap,width,height){
     return Center(
-      child:  new Padding(
-        padding: const EdgeInsets.all(0.0),
-        child: FlatButton(
-          onPressed: () {
-                 Navigator.of(context).push(
-                     MaterialPageRoute(
-                         builder: (context) =>
-                             RegisterEventPage(uid: uid,
-                               idEvents: snapshot.data[snap].id,
-                               status: status,
-                             )));
-          },
-          child: ClipRRect(
-            borderRadius:
-            BorderRadius.circular(15.0),
-            child: Image.network('${snapshot.data[snap].thumbnailPicture}',
-              width: double.infinity,
-              height: 140,
-              fit: BoxFit.cover,
+        child:  new Padding(
+          padding: const EdgeInsets.all(0.0),
+          child: FlatButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) =>
+                  RegisterEventPage(uid: uid, idEvents: snapshot.data[snap].eventId,)));
+            },
+            child: ClipRRect(
+              borderRadius:
+              BorderRadius.circular(15.0),
+              child: Image.network('${snapshot.data[snap].thumbnailPicture}',
+                width: double.infinity,
+                height: 140,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
-      )
+        )
     );
   }
+
+  // loading status 2 seconds
+  loading(){
+    return FutureBuilder(
+      future: Future.delayed(Duration(seconds: 3),),
+      builder: (c, s) => s.connectionState == ConnectionState.done
+          ? Text('No event',style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold,color: Colors.black),)
+          : CircularProgressIndicator());
+  }
+
 }
+
