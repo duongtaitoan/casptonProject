@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/View/action_event.dart';
 import 'package:designui/src/View/menu.dart';
@@ -16,41 +16,32 @@ import 'package:scoped_model/scoped_model.dart';
 
 class HomePage extends StatefulWidget {
   final FirebaseUser uid;
-  // final nameEvents;
-  final idEvents;
   final status;
 
-  const HomePage({
-    Key key,
-    this.uid,
-    this.idEvents,
-    this.status,
-  }) : super(key: key);
+  const HomePage({Key key, this.uid, this.status,}) : super(key: key);
   @override
-  _HomePageState createState() =>
-      _HomePageState(uid, idEvents, status);
+  _HomePageState createState() => _HomePageState(uid, status);
 }
 
 class _HomePageState extends State<HomePage> {
   final FirebaseUser uid;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
-  var idEvents;
   var status;
   int selectedIndex = 0;
-  int _current = 0;
   var _tmpCheck = false;
   GlobalKey<ScaffoldState> _scaffoldKey;
   Widget _actionEvents = ActionEventsPage();
   EventsVM model;
-  static List<EventsDTO> listDTO;
+
+  static List<EventsDTO> listEventDTO;
   static List<Widget> imageSliders;
 
-  _HomePageState(this.uid, this.idEvents, this.status);
+  _HomePageState(this.uid, this.status);
 
   @override
   void initState() {
     handlerHoverImg();
-    showSmS(this.status);
+    handlerShowMessage(this.status);
     _actionEvents = ActionEventsPage(uid: uid,);
     _scaffoldKey = new GlobalKey<ScaffoldState>();
     super.initState();
@@ -58,7 +49,7 @@ class _HomePageState extends State<HomePage> {
       model = new EventsVM();
       model.getFirstIndex();
     }catch(e){
-      showSmS("No Internet connection");
+      handlerShowMessage("No Internet connection");
     }
   }
 
@@ -160,7 +151,8 @@ class _HomePageState extends State<HomePage> {
                   titleEvents("Upcoming events"),
                   listEventsUpcoming(),
                 ],
-              )),
+              )
+          ),
         ),
       ],
     );
@@ -178,7 +170,6 @@ class _HomePageState extends State<HomePage> {
               aspectRatio: 2.0,
               onPageChanged: (index, reason) {
                 setState(() {
-                  _current = index;
                 });
               }),
         ),
@@ -258,7 +249,7 @@ class _HomePageState extends State<HomePage> {
           builder: (context, child, model) {
             if (model.isLoading) {
               return Padding(
-                padding: const EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Center(child: CircularProgressIndicator()),
               );
             } else if (model.listEvent != null && model.listEvent.isNotEmpty) {
@@ -266,6 +257,7 @@ class _HomePageState extends State<HomePage> {
               model.listEvent.forEach((element) {
                 list.add(Container(
                   margin: const EdgeInsets.only(top: 20),
+                  width: double.infinity,
                   decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(color: Colors.white, width: 1),
@@ -277,29 +269,44 @@ class _HomePageState extends State<HomePage> {
                             blurRadius: 9,
                             color: Colors.grey[300],
                             offset: Offset(0, 3))
-                      ]),
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      getListEvents(double.infinity, 160.0, element),
-                      ListTile(
-                        title: Text(
-                          element.title,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18.0),
-                          textAlign: TextAlign.start,
-                        ),
-                        subtitle: Text(
-                          dtf.format(DateTime.parse(
-                              element.startedAt)),
-                          style: TextStyle(fontSize: 16.0),
-                        ),
-                      ),
-                    ],
+                      ]
                   ),
+                    padding: const EdgeInsets.only(top:10),
+                    child: Column(
+                      children: <Widget>[
+                        Center(
+                          child: FlatButton(
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => RegisterEventPage(uid: uid,
+                                      idEvents: element.id,tracking:element.gpsTrackingRequired)));
+                            },
+                            child: ClipRRect(
+                              child:Image.network('${element.thumbnailPicture}',width: double.infinity, height: 160.0, fit: BoxFit.cover,),
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                          ),
+                        ),
+                        ListTile(
+                          title: Text(
+                            element.title,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18.0),
+                            textAlign: TextAlign.start,
+                          ),
+                          subtitle: Text(
+                            dtf.format(DateTime.parse(
+                                element.startedAt)),
+                            style: TextStyle(fontSize: 16.0),
+                          ),
+                          trailing: Padding(
+                            padding: const EdgeInsets.only(top:35.0,right: 4),
+                            child: Text('Join now',style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.end,),
+                          ),
+                        ),
+                      ],
+                    ),
                 ));
               });
               // button load more
@@ -327,49 +334,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   // show toast messasign login success
-  showSmS(status) {
+  handlerShowMessage(status) {
     if (status == null) {
       Fluttertoast.cancel();
     } else {
-      Fluttertoast.showToast(
-          msg: status,
-          gravity: ToastGravity.BOTTOM,
-          toastLength: Toast.LENGTH_LONG,
-          timeInSecForIos: 1,
-          fontSize: 24.0,
-          textColor: Colors.black);
-      sleep(Duration(seconds: 2));
+      ShowMessage.functionShowMessage(status);
     }
-  }
-
-  // get list events and flow
-  getListEvents(width, height, dto) {
-    var tmpImg = dto.thumbnailPicture;
-    return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(0.0),
-          child: FlatButton(
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => RegisterEventPage(uid: uid,
-                                  idEvents: dto.id,tracking:dto.gpsTrackingRequired)));
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15.0),
-              child:Image.network('${tmpImg}',width: width, height: height, fit: BoxFit.cover,),
-            ),
-          ),
-        )
-    );
   }
 
   // check list events img on going
   handlerHoverImg() async {
     try {
-      listDTO = await EventsVM.getEventsOnGoing();
-      if (listDTO.isNotEmpty) {
+      listEventDTO = await EventsVM.getEventsOnGoing();
+      if (listEventDTO.isNotEmpty) {
         _tmpCheck = true;
-        imageSliders = listDTO.map((item) =>
+        imageSliders = listEventDTO.map((item) =>
             Container(
               width: double.infinity,
               child: Container(
@@ -413,7 +392,7 @@ class _HomePageState extends State<HomePage> {
                               padding: EdgeInsets.symmetric(
                                   vertical: 10.0, horizontal: 20.0),
                               child: Text(
-                                '${limitTitle(item.title)}',
+                                '${limitName(item.title)}',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20.0,
@@ -433,12 +412,12 @@ class _HomePageState extends State<HomePage> {
         Center(child: CircularProgressIndicator());
       }
     }catch(e){
-        showSmS("The system is waitting for an update");
+      handlerShowMessage("The system is waitting for an update");
     }
   }
 
   // limit name title of event
-  limitTitle(String text){
+  limitName(String text){
     String firstHalf;
     if (text.length >= 20 && text != null) {
       firstHalf = text.substring(0, 20)+' ... ';
@@ -447,5 +426,4 @@ class _HomePageState extends State<HomePage> {
       return text;
     }
   }
-
 }

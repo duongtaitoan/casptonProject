@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/view/history.dart';
 import 'package:designui/src/view/login.dart';
 import 'package:designui/src/view/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -62,48 +62,18 @@ class _HomeMenuState extends State<HomeMenu> {
               child: Text('_______________________________________',style: TextStyle(color: Colors.black),),
             ),
             SizedBox(height: 30,),
-            // profile
-            Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    SizedBox( width: 25,),
-                    Expanded(
-                      flex: 5,
-                      child: ListTile(
-                        leading: Image.asset("assets/images/acc.png",width: 30,height: 30),
-                        title: Text("Personal Information", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
-                        onTap: () {
-                          // back to login and when user click button back => logout app
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>UserProfilePage(uid: uid)));
-                        },
-                      ),
-                    ),
-                  ],
-                )
-              ],
+            // user profile
+            handlerItemMenu(
+              'assets/images/acc.png',
+              'Personal Information',
+              UserProfilePage(uid: uid)
             ),
             SizedBox(height: 10,),
-            // history
-            Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    SizedBox( width: 25,),
-                    Expanded(
-                      flex: 5,
-                      child: ListTile(
-                        leading: Image.asset("assets/images/history.png",width: 30,height: 30),
-                        title: Text("History", style: TextStyle(fontSize: 18, color: Color(0xff323643)),),
-                        onTap: () {
-                          // back to login and when user click button back => logout app
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HistoryPage(uid: uid)));
-                        },
-                      ),
-                    ),
-                  ],
-                )
-              ],
+            // your history
+            handlerItemMenu(
+              'assets/images/history.png',
+              'History',
+              HistoryPage(uid: uid)
             ),
             SizedBox(height: 10,),
             // logout
@@ -124,14 +94,7 @@ class _HomeMenuState extends State<HomeMenu> {
                           sp.remove("token_data");
                           // back to login and when user click button back => logout app
                           Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)=>LoginPage()), (Route<dynamic> route) => false);
-                          sleep(Duration(seconds: 2));
-                          Fluttertoast.showToast(
-                              msg: "Logout successful",
-                              toastLength: Toast.LENGTH_LONG,
-                              gravity: ToastGravity.BOTTOM,
-                              timeInSecForIos: 1,
-                              fontSize: 24.0,
-                              textColor: Colors.black);
+                          ShowMessage.functionShowMessage("Logout successful");
                         },
                       ),
                     ),
@@ -142,6 +105,30 @@ class _HomeMenuState extends State<HomeMenu> {
           ],
         )
       )
+    );
+  }
+
+
+  Widget handlerItemMenu(String img,String nameTitle, pushButton){
+    return Column(
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            SizedBox( width: 25,),
+            Expanded(
+              flex: 5,
+              child: ListTile(
+                leading: Image.asset('${img}',width: 30,height: 30),
+                title: Text(nameTitle,style: TextStyle(fontSize: 18, color: Color(0xff323643))),
+                onTap: () {
+                  // go to screen
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>pushButton));
+                },
+              ),
+            ),
+          ],
+        )
+      ],
     );
   }
 }

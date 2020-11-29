@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:designui/src/API/api_helper.dart';
-import 'package:designui/src/Model/userDTO.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,13 +22,4 @@ class UserDAO {
       return "Email address is not valid\n Vd: example@fpt.edu.vn";
     }
   }
-
-  // // get flow to id event
-  // Future<List<UserDTO>> getStatus(int id) async {
-  //   ApiHelper _api = new ApiHelper();
-  //   dynamic json = await _api.get("api/registrations/${id}");
-  //   var eventJson = json["data"] as List;
-  //   return eventJson.map((e) => UserDTO.fromJson(e)).toList();
-  // }
-
 }

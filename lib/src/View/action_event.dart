@@ -23,6 +23,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
   HistoryVM historyVM;
   _ActionEventsPageState(this.uid);
   final TextEditingController _controller = TextEditingController();
+  static DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
 
   @override
   void initState() {
@@ -51,15 +52,15 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                   Tab(icon: new Icon(Icons.check_circle_outline, ),
                         child:Text('Approved',style: TextStyle(color: Colors.white))),
                   Tab(icon: new Icon(Icons.cancel, ),
-                    child: Text('Canceled',style: TextStyle(color: Colors.white),),),
+                    child: Text('Rejected',style: TextStyle(color: Colors.white),),),
                 ],
               ),
               body: new TabBarView(
                   controller: _tabController,
                   children: <Widget>[
-                    tabTable("Pending"),
+                    tabTable("PENDING"),
                     tabTable("ACCEPTED"),
-                    tabTable("CANCELED"),
+                    tabTable("REJECTED"),
                   ]
               ),
             ),
@@ -78,7 +79,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
         child: Column(
           children: <Widget>[
             SizedBox(height: 10,),
-            getEvent(context, uid, _search, _controller,flowStatus),
+            getListEvents(context, uid, _search, _controller,flowStatus),
           ],
         ),
       ),
@@ -86,93 +87,90 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
   }
 
   // list events flow status registered of user
-  Widget getEvent(BuildContext context, uid, List<UserDTO> _search, _controller,flowStatus) {
-    DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
+  Widget getListEvents(BuildContext context, uid, List<UserDTO> _search, _controller,flowStatus) {
+    var _tmpChange ;
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.only(left: 16,right: 16,bottom: 16),
-        child: FutureBuilder<List<UserDTO>>(
-            future: historyVM.getFlowStatus(flowStatus),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (snapshot.data != null) {
-                  return ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: snapshot.data.length,
-                    itemBuilder: (context, snap) {
-                      return Container(
-                        margin: const EdgeInsets.only(top: 20),
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.white, width: 1),
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(10.0),
+        child: FutureBuilder(
+            future: Future.delayed(Duration(milliseconds: 1000)),
+            builder: (c, s) => s.connectionState == ConnectionState.done
+                ?  FutureBuilder<List<UserDTO>>(
+                future: historyVM.getFlowStatus(flowStatus),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data != null) {
+                      return ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (context, snap) {
+                          return Container(
+                            margin: const EdgeInsets.only(top: 20),
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(color: Colors.white, width: 1),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(10.0),
+                                ),
+                                boxShadow: [BoxShadow(blurRadius: 9,color: Colors.grey[300],offset: Offset(0,3))]
                             ),
-                            boxShadow: [BoxShadow(blurRadius: 9,color: Colors.grey[300],offset: Offset(0,3))]
-                        ),
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            SizedBox(height: 10,),
-                            getListEvents(snapshot, snap, double.infinity, 160.0),
-                            ListTile(
-                              title: Text(snapshot.data[snap].eventTitle,
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),textAlign: TextAlign.start,
-                              ),
-                              subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].startDate)),style: TextStyle(fontSize: 16.0),),
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                SizedBox(height: 10,),
+                                Center(
+                                    child:  new Padding(
+                                      padding: const EdgeInsets.all(0.0),
+                                      child: FlatButton(
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(builder: (context) =>
+                                                  RegisterEventPage(uid: uid, idEvents: snapshot.data[snap].eventId,)));
+                                        },
+                                        child: ClipRRect(
+                                          borderRadius:
+                                          BorderRadius.circular(15.0),
+                                          child: Image.network('${snapshot.data[snap].thumbnailPicture}',
+                                            width: double.infinity,
+                                            height: 140,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                ),
+                                ListTile(
+                                  title: Text(snapshot.data[snap].eventTitle,
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),textAlign: TextAlign.start,
+                                  ),
+                                  subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].startDate)),style: TextStyle(fontSize: 16.0),),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       );
-                    },
-                  );
-                }
-              }
-              return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(child: loading(),),
-                );
-            }),
+                    }
+                  }else if(snapshot.data == null){
+                    _tmpChange = "Not found events";
+                  }else if(snapshot.error || snapshot.hasError){
+                    _tmpChange = "Not found events";
+                  }
+                  return Center(child:Text('${_tmpChange}',style: TextStyle(fontSize: 20.0,color: Colors.black),));
+                })
+                : Center(
+                  child: Column(children: <Widget>[
+                    CircularProgressIndicator(),
+                    Text('Loading....')
+                  ],
+                )
+            )
+        ),
       ),
     );
   }
-
-  // click events to screen register
-  getListEvents(snapshot,snap,width,height){
-    return Center(
-        child:  new Padding(
-          padding: const EdgeInsets.all(0.0),
-          child: FlatButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) =>
-                  RegisterEventPage(uid: uid, idEvents: snapshot.data[snap].eventId,)));
-            },
-            child: ClipRRect(
-              borderRadius:
-              BorderRadius.circular(15.0),
-              child: Image.network('${snapshot.data[snap].thumbnailPicture}',
-                width: double.infinity,
-                height: 140,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        )
-    );
-  }
-
-  // loading status 2 seconds
-  loading(){
-    return FutureBuilder(
-      future: Future.delayed(Duration(seconds: 3),),
-      builder: (c, s) => s.connectionState == ConnectionState.done
-          ? Text('No event',style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold,color: Colors.black),)
-          : CircularProgressIndicator());
-  }
-
 }
 

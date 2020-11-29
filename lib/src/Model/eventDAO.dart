@@ -11,10 +11,10 @@ class EventsDAO{
   }
 
   // get api flow page index events anh status
-  Future<List<EventsDTO>> pageIndex(int index) async {
+  Future<List<EventsDTO>> pageIndex(int index,int page) async {
     ApiHelper _api = new ApiHelper();
     try {
-      dynamic json = await _api.get("api/events?PageIndex=${index}&PageSize=5?Status=Opening");
+      dynamic json = await _api.get("api/events?PageIndex=${index}&PageSize=${page}?Status=Opening");
       var eventJson = json["data"] as List;
       return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
     }catch(e){
@@ -29,7 +29,15 @@ class EventsDAO{
     return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
   }
 
-  // get api events flow id events
+  // get pageFirst in viewAll events
+  Future<List<EventsDTO>> viewAllPageFirst(int index) async {
+    ApiHelper _api = new ApiHelper();
+    dynamic json = await _api.get("api/events?PageIndex=${index}&PageSize=20");
+    var eventJson = json["data"] as List;
+    return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
+  }
+
+  // get events flow id events
   Future<dynamic> idEvents(int index) async {
     ApiHelper _api = new ApiHelper();
     dynamic json = await _api.get("api/events/${index}");

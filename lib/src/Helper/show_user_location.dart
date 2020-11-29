@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:designui/src/Model/TrackingDTO.dart';
 import 'package:designui/src/ViewModel/tracking_viewmodel.dart';
@@ -6,7 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:location/location.dart';
 
 class show {
-  showLocationDiaLog(duration,idEvents) async {
+  showLocationDiaLog(duration,idEvents,show) async {
     Location location = new Location();
     bool _serviceEnabled;
     PermissionStatus _permissionGranted;
@@ -37,30 +38,40 @@ class show {
     print('Last Time :' + lastTime.toString());
 
     // get times when %
-    int num = 0;
+    int counts = 0;
     for (int j = 0; j < lastTime; j++) {
       if (j % 5 == 0) {
-        num++;
+        counts++;
       }
     }
-
-    Stopwatch s = new Stopwatch();
-      print('----------Start------------');
-      for (int i = 0; i < 8; i++) {
-        // set minus == 5
-        sleep(new Duration(seconds: 3));
-        var locationUser = "Latitude ${_locationData.latitude.toString()}\n Longtitude ${_locationData.longitude.toString()}";
-        showToast(locationUser);
-        print('location :'+_locationData.longitude.toString()+ " - - - "+_locationData.latitude.toString());
-        // getLocation(new TrackingDTO(eventId: idEvents,longitude: _locationData.longitude,latitude: _locationData.latitude));
-        s.stop();
-      }
-      print('-----------Stop-----------');
+    // get location
+    timeLocation(_locationData,counts,show,idEvents);
   }
+}
+
+Future timeLocation(_locationData,counts,show,idEvents) {
+  return new Future.delayed(const Duration(milliseconds: 1), () async {
+    Stopwatch s = new Stopwatch();
+
+    for (int i = 0; i < counts; i++) {
+      sleep(const Duration(milliseconds: 1));
+      await Future.delayed(new Duration(minutes: 5),() async {
+        var locationUser = "Your location\n Latitude ${_locationData.latitude.toString()} \t Longtitude ${_locationData.longitude.toString()}";
+        if(show == true) {
+          await showToast(locationUser);
+        }
+
+        print('counts :${i}----- >location :'+ _locationData.longitude.toString()+ " - - - "+ _locationData.latitude.toString());
+        getLocation(new TrackingDTO(eventId: idEvents,longitude: _locationData.longitude,latitude: _locationData.latitude));
+        s.stop();
+      });
+    }
+  });
 }
 
 // show toast
 showToast(_tmpStatus){
+  sleep(Duration(seconds: 2));
   return  Fluttertoast.showToast(
       msg: _tmpStatus,
       toastLength: Toast.LENGTH_LONG,

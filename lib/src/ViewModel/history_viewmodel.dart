@@ -9,7 +9,7 @@ class HistoryVM extends Model{
   bool isLoading = false;
   bool isAdd = false;
   List<UserDTO> listEvent;
-  var showToast;
+  var mgs;
 
   // get list events flow status
   Future<List<UserDTO>> getFlowStatus(String status) async {
@@ -17,10 +17,9 @@ class HistoryVM extends Model{
       SharedPreferences sp = await SharedPreferences.getInstance();
       String token = sp.getString("token_data");
       var decodedToken= JwtDecoder.decode(token);
-
-      var listEvents = await RegisterEventDAO().listEventHistory(decodedToken["studentCode"]);
+      var listEvents = await RegisterEventDAO().listEventHistory(int.parse(decodedToken["userId"]));
       List<UserDTO> saveEvents = new List<UserDTO>();
-        for (int i = 0; i < listEvents.length; i++) {
+      for (int i = 0; i < listEvents.length; i++) {
         if (listEvents[i].status == status) {
             saveEvents.add(listEvents[i]);
           }
@@ -39,7 +38,6 @@ class HistoryVM extends Model{
     return listEvent;
   }
 
-
   // get first 10 record for history events
   Future<void> pageFristHistory() async {
     try {
@@ -56,7 +54,7 @@ class HistoryVM extends Model{
         listEvent.addAll(listEvents);
       }
     } catch (e) {
-      showToast("The system is update");
+      mgs("The system is update");
     } finally {
       isLoading = false;
       notifyListeners();
@@ -83,15 +81,12 @@ class HistoryVM extends Model{
     } catch (e) {
       isAdd = false;
       notifyListeners();
-      showToast = "No Events";
+      mgs = "No Events";
     } finally {
       isAdd = false;
       notifyListeners();
     }
   }
-
-
-
 
 }
 

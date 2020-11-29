@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'package:designui/src/Helper/camera_plugin.dart';
+import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/eventDTO.dart';
+import 'package:designui/src/Model/registerEventDAO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
 import 'package:designui/src/Model/user_profileDAO.dart';
 import 'package:designui/src/View/feedback.dart';
+import 'package:designui/src/View/home.dart';
 import 'package:designui/src/ViewModel/events_viewmodel.dart';
 import 'package:designui/src/ViewModel/register_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,18 +22,20 @@ class RegisterEventPage extends StatefulWidget {
   final status;
   final tracking;
   final nameEvents;
+  final screenHome;
   static GlobalKey scaffoldGlobalKey;
 
-  const RegisterEventPage({Key key, this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,scaffoldGlobalKey}) : super(key: key);
+  const RegisterEventPage({Key key, this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,scaffoldGlobalKey,this.screenHome}) : super(key: key);
 
   @override
-  _RegisterEventPageState createState() => _RegisterEventPageState(uid,idEvents,status,tracking,nameEvents,scaffoldGlobalKey);
+  _RegisterEventPageState createState() => _RegisterEventPageState(uid,idEvents,status,tracking,nameEvents,scaffoldGlobalKey,screenHome);
 }
 
 class _RegisterEventPageState extends State<RegisterEventPage> {
   final FirebaseUser uid;
   final tracking;
   final nameEvents;
+  final screenHome;
   GlobalKey scaffoldGlobalKey;
   var idEvents;
   var _timeStart;
@@ -45,11 +49,11 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   String dropdownValue;
 
   Map<String, dynamic> decodedToken;
-  _RegisterEventPageState(this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,this.scaffoldGlobalKey);
+  _RegisterEventPageState(this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,this.scaffoldGlobalKey,this.screenHome);
 
   @override
   void initState(){
-    print('idEvent ${idEvents}');
+    print('idEvent ${idEvents} ----------- ');
     dropdownValue = "Any";
     dropdownSemester();
     super.initState();
@@ -68,25 +72,26 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
             child: Scaffold(
               key: scaffoldGlobalKey,
               appBar: myAppBar(),
-              body: FutureBuilder<EventsDTO>(
-                future: EventsVM().getEventFlowId(idEvents),
-                builder: (context, snapshot) {
-                  if(snapshot.hasData){
-                    converDateTime(snapshot.data);
-                    if(snapshot.data != null) {
-                       return myBody(snapshot.data);
-                    }
-                  }
-                  else{
-                    Center(child: Text('The system is waitting for an update'),);
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child:Center(
-                      child: loading(),
-                    ),);
-                },
-              ),
+              body: FutureBuilder(
+                future: Future.delayed(Duration(milliseconds: 1000)),
+                builder: (c, s) => s.connectionState == ConnectionState.done
+                  ? FutureBuilder<EventsDTO>(
+                      future: EventsVM().getEventFlowId(idEvents),
+                      builder: (context, snapshot) {
+                        try {
+                          convertDateTime(snapshot.data);
+                        }catch(e){
+                        }
+                        return myBody(snapshot.data);
+                  })
+                  : Center(
+                    child: Column(children: <Widget>[
+                      CircularProgressIndicator(),
+                      Text('Loading....')
+                    ],
+                    )
+                )
+              )
             ),
     ));
   }
@@ -99,10 +104,11 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       color: Colors.white,
       child: SingleChildScrollView(
         child:FutureBuilder(
-          future: statusUserCode(),
+          future: statusUserRegistation(),
           builder: (context, snapshot) {
             if(snapshot.hasData){
-              return Column(
+              try {
+                return Column(
                   children: <Widget>[
                     Image.network("${dto.picture}",
                       width: MediaQuery.of(context).size.width,
@@ -110,21 +116,22 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                       fit: BoxFit.fill,
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 5,bottom: 5),
-                      child: Text('${dto.title}' ,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25.0,),textAlign: TextAlign.center,
+                      padding: const EdgeInsets.only(top: 5, bottom: 5),
+                      child: Text('${dto.title}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 25.0,),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                     timeEvent(dto),
                     SizedBox(height: 20,),
-                    contentEvent(dto,snapshot.data),
-                    registerEvent(dto,snapshot.data),
+                    contentEvent(dto, snapshot.data),
+                    registerEvent(dto, snapshot.data),
                   ],
-              );
+                );
+              }catch(e){}
             }
-            return Center(
-              child: CircularProgressIndicator(),
-            );
+            return Center();
           },
         ),
       ),
@@ -138,10 +145,16 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       backgroundColor: Colors.orange[600],
       elevation: 0,
       leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-              Navigator.of(context).pop();
+        icon: Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () async {
+          if(screenHome == "HomePage") {
+            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                builder: (context) => HomePage(uid: uid)), (
+                Route<dynamic> route) => false);
+          }else{
+            Navigator.of(context).pop();
           }
+        }
       ),
     );
   }
@@ -196,8 +209,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   Widget contentEvent(EventsDTO dto,statusUser){
     var _tmpStatusUser = statusUser.toString().toLowerCase();
     return SingleChildScrollView(
-      // width: MediaQuery.of(context).size.width,
-      // height: MediaQuery.of(context).size.height*33/100,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
         child: Column(
@@ -234,10 +245,10 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 SizedBox(width: 9,),
                 Text('Status',style: TextStyle(color: Colors.black, fontSize: 17.0),textAlign: TextAlign.start,),
                 SizedBox(width: 80,),
-                _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" ? Center(
+                _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" && _tmpStatusUser != "canceled"? Center(
                   child: _tmpStatusUser != "pending" ? Center(
                     child: _tmpStatusUser != "accepted" ?Center(
-                      child: Text('Canceled',style: TextStyle(color: Colors.red, fontSize: 16.0),textAlign: TextAlign.start,),
+                      child: Text('Rejected',style: TextStyle(color: Colors.red, fontSize: 16.0),textAlign: TextAlign.start,),
                     ):Text('Events is accepted',style: TextStyle(color: Colors.green, fontSize: 16.0),textAlign: TextAlign.start,),
                   ):Text('Events is not unapproved',style: TextStyle(color: Colors.amber, fontSize: 15.0),textAlign: TextAlign.start,),
                 ):Text('Not registered yet',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold, fontSize: 16.0),textAlign: TextAlign.start,),
@@ -282,19 +293,19 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
             child: status != "This event you have completed" ? Center(
-              child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" ? Center(
+              child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" && _tmpStatusUser != "canceled"? Center(
                 child: _tmpStatusUser != "pending" ? Center(
-                    child: _tmpStatusUser == "canceled" && _tmpStatusUser !="accepted"? Center(
-                        child:detailsButton(3.0, 3.0,"reject")
+                    child: _tmpStatusUser == "rejected" && _tmpStatusUser !="accepted"? Center(
+                        child:buttonDetails(3.0, 3.0,"Rejected")
                     ): Container(
                         width: MediaQuery.of(context).size.width,
                         height: 52,
-                          child:  buttonJoin(dto)),
-                ): detailsButton(3.0,3.0,"Cancel"),
+                          child: buttonCheckin(dto)),
+                ): buttonDetails(3.0,3.0,"Cancel"),
               ):Container(
                   width: MediaQuery.of(context).size.width,
                   height: 52,
-                  child:eventsRegister(dto)),
+                  child:buttonRegister(dto)),
             ) : buttonFeedBack(4.0, 4.0,dto),
         ),
       ),
@@ -303,7 +314,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   }
 
   // button cancel events and reject events
-  Widget detailsButton(bottom,top,title){
+  Widget buttonDetails(bottom,top,title){
     return Row(
       children: <Widget>[
         Visibility(
@@ -322,18 +333,29 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                         await showDialog(
                         context: this.context,
                         child: AlertDialog(
-                        title: Text("Notification"),
+                          title: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children:[
+                                Icon(Icons.info_outline),
+                                SizedBox(width: 10,),
+                                Text("Notification"),
+                              ]
+                          ),
                         content:  Text("Cancel registered the event",style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.center,),
                           actions: [
                             new FlatButton(
                               child: Text("Agree",style: TextStyle(color: Colors.blue[500]),),
                               onPressed: () async {
+                                //get this id events
+                                var id = await RegisterEventDAO().id(idEvents);
+
                                 // if user cancel this event then show messages
                                 RegisterVM regVM = new RegisterVM();
-                                var _tmpMessage = await regVM.cancelEvent("Pending", idEvents);
+                                var _tmpMessage = await regVM.updateStatusEvent("CANCELED", id, false);
                                 Navigator.pop(context);
-                                Future.delayed(Duration(microseconds: 1),() async {
-                                  showToast(_tmpMessage);
+
+                                Future.delayed(Duration(seconds: 2),() async {
+                                  ShowMessage.functionShowMessage("Canceled "+_tmpMessage);
                                 });
                                 setState(() { });
                               },
@@ -349,7 +371,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     :RaisedButton(
                     color: Colors.orange[600],
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
-                    child: Text("Canceled",style: TextStyle(color: Colors.white))),
+                    child: Text("Rejected",style: TextStyle(color: Colors.white))),
               ),
           ),
         ),
@@ -386,18 +408,25 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     );
   }
 
-  // showdialog event user register
-  Widget eventsRegister(EventsDTO dto){
-
+  // button user register
+  Widget buttonRegister(EventsDTO dto){
     return Padding(
       padding: const EdgeInsets.only(right: 16, left: 16),
       child: new RaisedButton(
-          child: Text('Register', style: TextStyle(fontSize: 18.0, color: Colors.white),),
+          child: Text('Register', style: TextStyle(fontSize: 16.0, color: Colors.white),),
           onPressed: () async {
            await showDialog(
               context: this.context,
               child: AlertDialog(
-                title: Text('Confirm your information to register'),
+                title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment:CrossAxisAlignment.center,
+                    children:[
+                      Icon(Icons.info_outline),
+                      SizedBox(width: 10,),
+                      Text('Confirm information'),
+                    ]
+                ),
                 content: Container(
                   height: MediaQuery.of(context).copyWith().size.height/9.2,
                   child: Column(
@@ -423,18 +452,19 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                               dropdownValue= "0";
                             });
                           }
-                          // get student code
-                          var tmpStudentCode = await UserProfileDAO().getStudentCode(int.parse(decodedToken["userId"]));
+                            // get student code
+                            var tmpStudentCode = await UserProfileDAO().getStudentCode(int.parse(decodedToken["userId"]));
+                            // register event
+                            var _tmpStatus = await RegisterVM().register(new RegisterEventsDTO
+                              (eventId: idEvents,semester: int.parse(dropdownValue),studentCode: tmpStudentCode),dto.approvalRequired);
 
-                          var _tmpStatus = await RegisterVM().register(new RegisterEventsDTO
-                            (eventId: idEvents,semester: int.parse(dropdownValue),studentCode: tmpStudentCode),dto.approvalRequired);
-
-                          Navigator.of(context).pop();
-                          // show message when registered
-                          Future.delayed(Duration(microseconds:1),()async{
-                            showToast(_tmpStatus);
+                            Navigator.of(context).pop();
+                            // show message when registered
+                            Future.delayed(Duration(microseconds:1),()async{
+                            ShowMessage.functionShowMessage(_tmpStatus);
+                              setState(()  {
+                              });
                           });
-                          setState(() { });
                         },
                       ),
                       CupertinoButton(
@@ -455,25 +485,32 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     );
   }
 
-  // button not apply in admin or apply in admin
-  Widget buttonJoin(EventsDTO dto){
+  // button user is approved and go to checkin
+  Widget buttonCheckin(EventsDTO dto){
     return Padding(
       padding: const EdgeInsets.all(0),
       child:
       // timeToCancel(dto) == true ? Padding(
       //       padding: const EdgeInsets.only(right: 16, left: 16,bottom: 1),
-      //       child: timeToJoin(dto) == true ?
+      //       child: timeToCheckin(dto) == true ?
             RaisedButton(
-                    child: Text('Join', style: TextStyle(fontSize: 18.0, color: Colors.white),),
+                    child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
                     onPressed: () async {
-                        await Future.delayed(Duration.zero, () {
+                      // get id register
+                      var idRegister = await RegisterEventDAO().id(idEvents);
+                      // get status user register
+                      var statusCheckin = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
+                      await Future.delayed(Duration.zero, () {
                         Navigator.pushAndRemoveUntil(
                             context, MaterialPageRoute(builder: (BuildContext context) =>
                             CameraApp(uid: uid,
                                 duration: dto.duration,
                                 nameEvents: dto.title,
-                                tracking:tracking,
-                                idEvents: dto.id)), (
+                                tracking:dto.gpsTrackingRequired,
+                                idEvents: dto.id,
+                                idRegister: idRegister,
+                                statusCheckin :statusCheckin,
+                            )), (
                             Route<dynamic> route) => false);
                       });
                     },
@@ -481,20 +518,8 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
                 )
         //         : RaisedButton(
-        //             child: Text('Join', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
+        //             child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
         // ):detailsButton(3.0,3.0,"Cancel"),
-    );
-  }
-
-  // show toast
-  showToast(_tmpStatus){
-    return  Fluttertoast.showToast(
-        msg: _tmpStatus,
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIos: 1,
-        fontSize: 20.0,
-        textColor: Colors.black
     );
   }
 
@@ -503,7 +528,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     DateTime tmpDT = DateTime.parse(dto.startedAt);
     tmpDT = tmpDT.add(new Duration(hours:-12));
     var now = DateTime.now();
-    //&& now.isBefore(DateTime.parse(timeStop))
     if(dto.cancelUnavailableAt == null){
       if (now.isAfter(tmpDT)) {
         checkValue = true;
@@ -524,7 +548,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   }
 
   // check time events is in an on going range
-  timeToJoin(EventsDTO dto) async{
+  timeToCheckin(EventsDTO dto) async{
     var now = DateTime.now();
     if (now.isAfter(DateTime.parse(dto.startedAt)) && now.isBefore(DateTime.parse(timeStop))) {
       checkValue = true;
@@ -536,18 +560,22 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   }
 
   // convert Date time db => data time ('HH:mm dd/MM/yyyy')
-  converDateTime(EventsDTO dto) async{
-    int hours = int.parse(dto.duration.toString());
-    // get Time in json
-    _timeStart = dto.startedAt;
-    // format time to sqlDF
-    DateTime pTimeStart = sqlDF.parse(_timeStart);
-    //add hours finish events
-    timeStop = pTimeStart.add(new Duration(hours:hours)).toString();
+  convertDateTime(EventsDTO dto) async{
+    try {
+      int hours = int.parse(dto.duration.toString());
+      // get Time in json
+      _timeStart = dto.startedAt;
+      // format time to sqlDF
+      DateTime pTimeStart = sqlDF.parse(_timeStart);
+      //add hours finish events
+      timeStop = pTimeStart.add(new Duration(hours: hours)).toString();
+    }catch(e){
+
+    }
   }
 
   // get status event
-  Future<dynamic> statusUserCode() async {
+  Future<dynamic> statusUserRegistation() async {
     try {
       SharedPreferences sp = await SharedPreferences.getInstance();
       String token = sp.getString("token_data");
@@ -560,15 +588,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     }catch(e){
     }
     return _tmpStatusEvent;
-  }
-
-  // loading event details
-  loading(){
-    return FutureBuilder(
-      future: Future.delayed(Duration(seconds: 3)),
-      builder: (c, s) => s.connectionState == ConnectionState.done
-        ? Text('The system is reloading',style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold),)
-        : CircularProgressIndicator());
   }
 
   // button dropdown semester

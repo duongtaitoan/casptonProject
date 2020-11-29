@@ -4,11 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class EventsVM extends Model {
-  static var now = DateTime.now();
-  static DateFormat sqlDF = DateFormat('yyyy-MM-ddTHH:mm:ss');
-  static DateFormat converdtf = DateFormat('yyyy-MM-dd HH:mm:ss');
-
   int index = 1;
+  int page = 5;
   bool isLoading = false;
   bool isAdd = false;
   List<EventsDTO> listEvent;
@@ -37,7 +34,7 @@ class EventsVM extends Model {
       index++;
       EventsDAO dao = new EventsDAO();
       // get next
-      var listEvents = await dao.pageIndex(index);
+      var listEvents = await dao.pageIndex(index,page);
         if (listEvents.toString() != null) {
         listEvent.addAll(listEvents);
       }

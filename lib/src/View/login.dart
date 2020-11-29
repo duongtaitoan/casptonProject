@@ -1,9 +1,9 @@
+import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Service/google_sign.dart';
 import 'package:designui/src/View/home.dart';
 import 'package:designui/src/View/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:uiblock/uiblock.dart';
 
 class LoginPage extends StatefulWidget {
@@ -14,7 +14,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   GlobalKey _scaffoldGlobalKey = GlobalKey();
   bool showLoader = false;
-
+  var _tmpStatus = "You need to update information";
   @override
   void initState() {
     super.initState();
@@ -25,8 +25,11 @@ class _LoginPageState extends State<LoginPage> {
       String status = await GoogleSign.onSignInFinished(user);
       RegExp regExp = RegExp("^[a-z0-9_\.]{8,}@[fpt|fu]{1,4}(\.[edu]{3})(\.[vn]{2})");
 
-    if (status != "Signin successful" || !regExp.hasMatch(user.email.toString())) {
-          showToast(status);
+      if (status != "Signin successful" && status != "Need Information" || !regExp.hasMatch(user.email.toString())) {
+        try{
+          ShowMessage.functionShowMessage(status);
+        }catch(e){
+        }
       } else if(status == "Signin successful") {
          Padding(
             padding: const EdgeInsets.all(10.0),
@@ -40,14 +43,14 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ));
       } else if(status == "Need Information") {
-        Padding(
+          Padding(
             padding: const EdgeInsets.all(10.0),
             // loading when not found
             child: Column(
               children: <Widget>[
                 Center(child: CircularProgressIndicator(),),
                 await Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (context) => UserProfilePage(uid: user,),),
+                  builder: (context) => UserProfilePage(uid: user,status:_tmpStatus),),
                 ),
               ],
             ));
@@ -74,13 +77,10 @@ class _LoginPageState extends State<LoginPage> {
                   children: <Widget>[
                     SizedBox(height: 215,),
                     Center(
-                        child:Text(
-                          "Events Tracking",style: TextStyle(color: Colors.orange,fontSize: 35, fontWeight: FontWeight.bold),
-                        ),
+                      child:Text("Events Tracking",style: TextStyle(color: Colors.orange,fontSize: 35, fontWeight: FontWeight.bold),),
                     ),
                     Image.asset('assets/images/logoFPTU.png',
                         width: 200, height: 140),
-                    // image login by gmail
                     Container(
                         width: 200,
                         height: 50,
@@ -105,13 +105,14 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             onPressed: () async {
                               try{
-                                UIBlock.block(_scaffoldGlobalKey.currentContext);
-                                await Future.delayed(Duration(seconds: 1), () => '1');
-                                await onSignInPressed();
+                                UIBlock.block(_scaffoldGlobalKey.currentContext,);
+                                await Future.delayed(Duration(microseconds: 1), () async => {
+                                  await onSignInPressed(),
+                                });
                                 UIBlock.unblock(_scaffoldGlobalKey.currentContext);
                               }catch(e){
                                 UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-                                showToast("Your are not connected to wifi");
+                                ShowMessage.functionShowMessage("Application login failed");
                               }
                             })),
                   ],
@@ -123,13 +124,4 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  showToast(content){
-    Fluttertoast.showToast(
-        msg: content,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIos: 1,
-        fontSize: 24.0,
-        textColor: Colors.black);
-  }
 }

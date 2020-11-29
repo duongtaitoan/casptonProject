@@ -1,4 +1,6 @@
 import 'package:designui/src/Helper/list_Ques_Ans.dart';
+import 'package:designui/src/Helper/show_message.dart';
+import 'package:designui/src/View/history.dart';
 import 'package:designui/src/view/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -23,13 +25,22 @@ class _FeedBackPageState extends State<FeedBackPage> {
   String ques2;
   String ques3;
   String ques4;
+  String ques5;
+  String ask1;
+  String ask2;
+  String ask3;
+  var _tmpInput;
 
   @override
   void initState() {
-    ques1 = "Bạn có hài lòng với sự kiện này không ?";
-    ques2 = "Bạn cảm thấy nội dung chương trình thế nào ?";
-    ques3 = "Bạn cảm thấy sự kiện này có ích không ?";
-    ques4 = "Bạn có thấy sự kiện này có mang lại lợi ích gì không ?";
+    ques1 = "Sự kiện đạt mục tiêu so với mong đợi ?";
+    ques2 = "Tính hữu ích của sự kiện ?";
+    ques3 = "Nội dung của sự kiện ?";
+    ques4 = "Các tài liệu tham khảo ?";
+    ques5 = "Khâu tổ chức sự kiện (thiết bị, phòng ốc..) ?";
+    ask1 = "A. Những điều khiến bạn thích nhất ở sự kiện (ứng dụng cho công việc của bạn, giúp bạn cải thiện kỹ năng…) ?\n";
+    ask2 = "B. Những điều bạn KHÔNG thích nhất ở sự kiện ?\n";
+    ask3 = "C. Đề xuất bất kỳ của bạn cho sự kiện ?\n";
 
     super.initState();
   }
@@ -48,7 +59,7 @@ class _FeedBackPageState extends State<FeedBackPage> {
                 icon: Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () =>
                     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-                        builder: (context) => HomePage(uid: uid,)), (
+                        builder: (context) => HistoryPage(uid: uid,)), (
                         Route<dynamic> route) => false),
               ),
             ),
@@ -61,33 +72,15 @@ class _FeedBackPageState extends State<FeedBackPage> {
                     returnAnsQue(2, ques2),
                     returnAnsQue(3, ques3),
                     returnAnsQue(4, ques4),
+                    returnAnsQue(5, ques5),
                     SizedBox(height: 20,),
-                    Container(
-                      width: double.infinity,
-                      height: 316.0,
-                      child: Card(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.black,
-                              width: 1,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: TextFormField(
-                              maxLines: null,
-                              decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding:
-                                  EdgeInsets.only(left: 25.0, top: 15.0),
-                                  hintText: 'More feedback',
-                                  hintStyle: TextStyle(
-                                      color: Colors.black, fontSize: 20.0)),
-                              style: TextStyle(color: Colors.black),
-                              onFieldSubmitted: (String input) {}),
-                        ),
-                      ),
-                    ),
+                    returnQuestion(ask1),
+                    Text('_tmpInput == > ${_tmpInput}'),
+                    returnQuestion(ask2 ),
+                    Text('_tmpInput == > ${_tmpInput}'),
+                    returnQuestion(ask3),
+                    Text('_tmpInput == > ${_tmpInput}'),
+
                     Container(
                       margin: EdgeInsets.only(top: 40, right: 8, left: 8),
                       child: SizedBox(
@@ -95,15 +88,7 @@ class _FeedBackPageState extends State<FeedBackPage> {
                         height: 52,
                         child: RaisedButton(
                           onPressed: () async {
-                            await Fluttertoast.showToast(
-                                msg: "Your content has been submitted successfully",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIos: 3,
-                                fontSize: 20.0,
-                                textColor: Colors.black
-                              // back to home
-                            );
+                            await ShowMessage.functionShowMessage("Your content has been submitted successfully");
                             Navigator.pushAndRemoveUntil(context,
                                 MaterialPageRoute(builder: (context) =>
                                     HomePage(uid: uid,)), (
@@ -134,19 +119,48 @@ class _FeedBackPageState extends State<FeedBackPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 15),
-          child: Text('Câu ${count}', style: TextStyle(
-              color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),
+          padding: const EdgeInsets.only(top: 15.0),
+             child: ListTile(
+                title: Text('Câu ${count} : ${question}', style: TextStyle(
+                    color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),
+              ),
         ),
-        Center(
-          child: Text('${question}',
-            style: TextStyle(color: Colors.black, fontSize: 18.0,),),
-        ),
-        Center(
+        Padding(
+          padding: const EdgeInsets.only(left: 10.0,right: 5.0),
           child: QADropDown(),
         ),
         SizedBox(height: 5,),
       ],
+    );
+  }
+
+  Widget returnQuestion(String ask){
+    return ListTile(
+      title: Text('${ask}',
+        style: TextStyle(fontSize: 18.0),),
+      subtitle: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black, width: 1,),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: TextFormField(
+          maxLines: 3,
+          decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding:
+              EdgeInsets.only(left: 10),
+              hintText: '',
+              hintStyle: TextStyle(
+                  color: Colors.black, fontSize: 20.0)),
+          style: TextStyle(color: Colors.black),
+          onChanged: (_tmpInput){
+            print('input ${_tmpInput}');
+            setState(() {
+            });
+            return _tmpInput;
+          },
+        ),
+      ),
     );
   }
 }

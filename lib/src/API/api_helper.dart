@@ -50,7 +50,7 @@ class ApiHelper {
   }
 
   // update
-  Future<dynamic> put(String status ,String url) async {
+  Future<dynamic> put(String status ,String url, bool isCheckin) async {
     var responseJson;
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
@@ -60,7 +60,8 @@ class ApiHelper {
         'accept': '*/*',
         'Authorization': 'Bearer '+token,
       },
-        body: jsonEncode(<String, String>{
+        body: jsonEncode({
+          'checkedIn': isCheckin,
           'status': status,
         }),
       );
@@ -95,28 +96,6 @@ class ApiHelper {
     }
     return responseJson;
   }
-
-
-  // Future<dynamic> patch(String url, Map<String, dynamic> nameValues) async {
-  //   var responseJson;
-  //   SharedPreferences sp = await SharedPreferences.getInstance();
-  //   String token = sp.getString("token_data");
-  //   try {
-  //     final response = await http.patch(_baseUrl + url,
-  //         headers: {
-  //           'Content-Type': 'application/x-www-form-urlencoded',
-  //           'accept': '*/*',
-  //           'Authorization': 'Bearer '+token,
-  //         },
-  //         body: jsonEncode(nameValues));
-  //     responseJson = returnResponse(response);
-  //   } on SocketException {
-  //     throw FetchDataException('No Internet connection');
-  //   }
-  //   return responseJson;
-  // }
-
-  // tracking
 
   // tracking get location
   Future<dynamic> postTracking(TrackingDTO dto,String url) async {
@@ -222,8 +201,7 @@ class ApiHelper {
         throw ExpiredException(response.body.toString());
       case 500:
       default:
-            print('value responseJson: '+response.request.method.toString() +'---'+response.statusCode.toString()+''+response.body);
-
+        print('value responseJson: '+response.request.method.toString() +'---'+response.statusCode.toString()+''+response.body);
         throw FetchDataException(
             'Error occured while Communication with Server with StatusCode : ${response
                 .statusCode}');

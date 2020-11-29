@@ -11,9 +11,8 @@ class UserProfileDAO{
       if (json != null) {
         return json;
       }
-      return null;
     }catch(e){
-      throw(e);
+      return "Information update failed";
     }
   }
 
@@ -25,18 +24,21 @@ class UserProfileDAO{
     if (json != null) {
       return json;
     }
-    return null;
+    return idUser;
   }
 
   // get student code
   Future<dynamic> getStudentCode(int idUser) async {
-    ApiHelper _api = new ApiHelper();
-    dynamic response = await _api.get("api/accounts/student/${idUser}");
-    var json = response["data"]["studentCode"];
-    if (json != null) {
-      return json;
+    try {
+      ApiHelper _api = new ApiHelper();
+      dynamic response = await _api.get("api/accounts/student/${idUser}");
+      var json = response["data"]["studentCode"];
+      if (json != null) {
+        return json;
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
-    return null;
   }
-
 }

@@ -39,6 +39,7 @@ class QADropDownState extends State<QADropDown> {
   @override
   Widget build(BuildContext context) {
         return Container(
+          margin: const EdgeInsets.only(left: 16.0,right: 16.0),
           child: Center(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -46,6 +47,7 @@ class QADropDownState extends State<QADropDown> {
               children: <Widget>[
                 Center(
                   child: DropdownButton(
+                    isExpanded: true,
                     value: _selectedAns,
                     items: _dropdownMenuItems,
                     onChanged: onChangeDropdownItem,
@@ -66,10 +68,11 @@ class Ans {
 
   static List<Ans> getAns() {
     return <Ans>[
-      Ans(1, 'Rất tốt'),
-      Ans(2, 'Tốt'),
-      Ans(3, 'Hài lòng'),
-      Ans(4, 'Không hài lòng'),
+      Ans(1, 'Kém'),
+      Ans(2, 'Trung bình'),
+      Ans(3, 'Khá'),
+      Ans(4, 'Tốt'),
+      Ans(5, 'Xuất sắc'),
     ];
   }
 }
