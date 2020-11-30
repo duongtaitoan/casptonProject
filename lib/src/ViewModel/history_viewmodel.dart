@@ -34,7 +34,7 @@ class HistoryVM extends Model{
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
     var decodedToken= JwtDecoder.decode(token);
-    var listEvent = await RegisterEventDAO().listEventHistory(decodedToken["studentCode"]);
+    var listEvent = await RegisterEventDAO().listEventHistory(int.parse(decodedToken["userId"]));
     return listEvent;
   }
 
@@ -48,7 +48,7 @@ class HistoryVM extends Model{
       var decodedToken= JwtDecoder.decode(token);
 
       RegisterEventDAO dao = new RegisterEventDAO();
-      var listEvents = await dao.pageFirstHistory(decodedToken["studentCode"]);
+      var listEvents = await dao.pageFirstHistory(int.parse(decodedToken["userId"]));
       listEvent = new List();
       if(listEvents.toString() != null){
         listEvent.addAll(listEvents);
@@ -73,7 +73,7 @@ class HistoryVM extends Model{
       var decodedToken= JwtDecoder.decode(token);
 
       RegisterEventDAO dao = new RegisterEventDAO();
-      var listEvents = await dao.pageIndexHistory(decodedToken["studentCode"],index);
+      var listEvents = await dao.pageIndexHistory(int.parse(decodedToken["userId"]),index);
       // get next
       if (listEvents.toString() != null) {
         listEvent.addAll(listEvents);

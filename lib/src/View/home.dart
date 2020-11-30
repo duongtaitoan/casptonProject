@@ -146,10 +146,12 @@ class _HomePageState extends State<HomePage> {
           child: Center(
               child: Column(
                 children: <Widget>[
-                  titleEvents("On going events"),
-                  _tmpCheck == true ? eventsHover(): Center(child: CircularProgressIndicator()),
-                  titleEvents("Upcoming events"),
-                  listEventsUpcoming(),
+                  titleEvents("Events in Week"),
+                  _tmpCheck == true
+                      ? eventsHover()
+                      : Center(child: Text('Not found Events',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),)),
+                  titleEvents("Events opening"),
+                  listEventsOpening(),
                 ],
               )
           ),
@@ -225,22 +227,12 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 21,
                   fontWeight: FontWeight.bold),
             ),
-            FlatButton(
-              child: Text(
-                "Show All",
-                style: TextStyle(color: Colors.orange[600], fontSize: 18),
-              ),
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ShowAllEventsPage(uid: uid)));
-              },
-            ),
           ]),
     );
   }
 
-  // list event upcoming
-  Widget listEventsUpcoming() {
+  // list event opening
+  Widget listEventsOpening() {
     return ScopedModel(
       model: model,
       child: Padding(
@@ -271,22 +263,30 @@ class _HomePageState extends State<HomePage> {
                             offset: Offset(0, 3))
                       ]
                   ),
-                    padding: const EdgeInsets.only(top:10),
+                    padding: const EdgeInsets.only(top:0),
                     child: Column(
-                      children: <Widget>[
-                        Center(
-                          child: FlatButton(
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => RegisterEventPage(uid: uid,
-                                      idEvents: element.id,tracking:element.gpsTrackingRequired)));
-                            },
-                            child: ClipRRect(
-                              child:Image.network('${element.thumbnailPicture}',width: double.infinity, height: 160.0, fit: BoxFit.cover,),
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                          ),
-                        ),
+                      children:<Widget>[
+                        Container(
+                        width: double.infinity,
+                            height: 160,
+                            child: Stack(
+                              children: <Widget>[
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child:Image.network('${element.thumbnailPicture}',width: double.infinity, height: 160.0, fit: BoxFit.cover,),
+                                ),
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(10),
+                                    onTap: () {
+                                      setState(() {
+                                        Navigator.of(context).push(MaterialPageRoute(
+                                            builder: (context) => RegisterEventPage(
+                                                uid: uid, idEvents: element.id, tracking:element.gpsTrackingRequired)));
+                                      });
+                                  },
+                                ),
+                          ],
+                        )),
                         ListTile(
                           title: Text(
                             element.title,
@@ -301,11 +301,20 @@ class _HomePageState extends State<HomePage> {
                             style: TextStyle(fontSize: 16.0),
                           ),
                           trailing: Padding(
-                            padding: const EdgeInsets.only(top:35.0,right: 4),
-                            child: Text('Join now',style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.end,),
+                            padding: const EdgeInsets.only(top:35.0),
+                            child: FlatButton(
+                              onPressed: (){
+                                setState(() {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => RegisterEventPage(
+                                          uid: uid, idEvents: element.id, tracking:element.gpsTrackingRequired)));
+                                });
+                              },
+                              child:Text('Join now',style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.end,),
                           ),
                         ),
-                      ],
+                        ),
+                      ]
                     ),
                 ));
               });
@@ -342,10 +351,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // check list events img on going
+  // check list events in week
   handlerHoverImg() async {
+    var now =  new DateTime.now();
+    var _tmpFuture = now.add(Duration(days: 7));
     try {
-      listEventDTO = await EventsVM.getEventsOnGoing();
+      listEventDTO = await EventsVM.eventInWeek(now,_tmpFuture);
       if (listEventDTO.isNotEmpty) {
         _tmpCheck = true;
         imageSliders = listEventDTO.map((item) =>
@@ -406,13 +417,20 @@ class _HomePageState extends State<HomePage> {
               ),
             )).toList();
         setState(() { });
-      } else {
+      } else if(listEventDTO.isEmpty){
         _tmpCheck = false;
-        await Future.delayed(Duration(seconds: 1), () => '1');
-        Center(child: CircularProgressIndicator());
+        Center (
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              CircularProgressIndicator(),
+              Text('Loading...'),
+            ],
+          ),
+        );
       }
     }catch(e){
-      handlerShowMessage("The system is waitting for an update");
+      handlerShowMessage("Events into week not found");
     }
   }
 

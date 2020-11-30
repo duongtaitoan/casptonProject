@@ -10,17 +10,19 @@ import 'package:fluttertoast/fluttertoast.dart';
 class FeedBackPage extends StatefulWidget {
   final FirebaseUser uid;
   final nameEvents;
-  const FeedBackPage({Key key, this.uid,this.nameEvents}) : super(key: key);
+  final screenHome;
+  const FeedBackPage({Key key, this.uid,this.nameEvents,this.screenHome}) : super(key: key);
 
   @override
-  _FeedBackPageState createState() => _FeedBackPageState(uid,nameEvents);
+  _FeedBackPageState createState() => _FeedBackPageState(uid,nameEvents,this.screenHome);
 }
 
 class _FeedBackPageState extends State<FeedBackPage> {
   final FirebaseUser uid;
   var nameEvents;
-  _FeedBackPageState(this.uid,this.nameEvents);
-
+  final screenHome;
+  _FeedBackPageState(this.uid,this.nameEvents,this.screenHome);
+  var _tmpInput;
   String ques1;
   String ques2;
   String ques3;
@@ -29,7 +31,6 @@ class _FeedBackPageState extends State<FeedBackPage> {
   String ask1;
   String ask2;
   String ask3;
-  var _tmpInput;
 
   @override
   void initState() {
@@ -57,10 +58,18 @@ class _FeedBackPageState extends State<FeedBackPage> {
               // automaticallyImplyLeading: false,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () =>
-                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-                        builder: (context) => HistoryPage(uid: uid,)), (
-                        Route<dynamic> route) => false),
+                onPressed: () {
+                if(screenHome == "HomePage"){
+                  Navigator.pushAndRemoveUntil(context,
+                      MaterialPageRoute(builder: (context) =>
+                          HomePage(uid: uid,)), (
+                          Route<dynamic> route) => false);
+                }else{
+                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                  builder: (context) => HistoryPage(uid: uid,)), (
+                  Route<dynamic> route) => false);
+                  }
+                }
               ),
             ),
             body: Padding(
@@ -75,12 +84,8 @@ class _FeedBackPageState extends State<FeedBackPage> {
                     returnAnsQue(5, ques5),
                     SizedBox(height: 20,),
                     returnQuestion(ask1),
-                    Text('_tmpInput == > ${_tmpInput}'),
                     returnQuestion(ask2 ),
-                    Text('_tmpInput == > ${_tmpInput}'),
                     returnQuestion(ask3),
-                    Text('_tmpInput == > ${_tmpInput}'),
-
                     Container(
                       margin: EdgeInsets.only(top: 40, right: 8, left: 8),
                       child: SizedBox(

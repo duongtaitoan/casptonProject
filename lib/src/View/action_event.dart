@@ -93,7 +93,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
       child: Padding(
         padding: const EdgeInsets.only(left: 16,right: 16,bottom: 16),
         child: FutureBuilder(
-            future: Future.delayed(Duration(milliseconds: 1000)),
+            future: Future.delayed(Duration(milliseconds: 500)),
             builder: (c, s) => s.connectionState == ConnectionState.done
                 ?  FutureBuilder<List<UserDTO>>(
                 future: historyVM.getFlowStatus(flowStatus),
@@ -161,12 +161,16 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                   }
                   return Center(child:Text('${_tmpChange}',style: TextStyle(fontSize: 20.0,color: Colors.black),));
                 })
-                : Center(
-                  child: Column(children: <Widget>[
-                    CircularProgressIndicator(),
-                    Text('Loading....')
-                  ],
-                )
+                : Padding (
+                  padding: const EdgeInsets.only(top:200),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      CircularProgressIndicator(),
+                      Text('Loading...'),
+                    ],
+                  ),
             )
         ),
       ),

@@ -84,12 +84,14 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                         }
                         return myBody(snapshot.data);
                   })
-                  : Center(
-                    child: Column(children: <Widget>[
-                      CircularProgressIndicator(),
-                      Text('Loading....')
-                    ],
-                    )
+                  :Center (
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        CircularProgressIndicator(),
+                        Text('Loading...'),
+                      ],
+                    ),
                 )
               )
             ),

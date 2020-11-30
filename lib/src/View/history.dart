@@ -79,35 +79,37 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  // search event flow title
+  // search event flow title event => show for user
   searchEvents(String input) async {
-    _search.clear();
-    if (input.isEmpty) {
-      setState(() {});
-      return;
-    }
-
-    List<UserDTO> tmpList = new List();
-    List<UserDTO> listEvents = await HistoryVM().getListEventHistory();
-
-    listEvents.forEach((ex) {
-      if (ex.eventTitle.toUpperCase().contains(input.toUpperCase())) {
-        tmpList.add(ex);
-
-        for (int i = 0; i < tmpList.length; i++) {
-          if (ex.id.toString().compareTo(tmpList[i].id.toString()) == 0) {
-            _search.add(ex);
-          }
-        }
-        setState(() {
-          _search.clear();
-          _search.addAll(tmpList);
-        });
+    var delayInput = input;
+    Future.delayed(new Duration(seconds: 2),()=>delayInput);
+      _search.clear();
+      if (delayInput.isEmpty) {
+        setState(() {});
         return;
-      } else if (!_search.isNotEmpty) {
-        _search.clear();
       }
-    });
+
+      List<UserDTO> tmpList = new List();
+      List<UserDTO> listEvents = await HistoryVM().getListEventHistory();
+
+      listEvents.forEach((ex) {
+        if (ex.eventTitle.toUpperCase().contains(delayInput.toUpperCase())) {
+          tmpList.add(ex);
+
+          for (int i = 0; i < tmpList.length; i++) {
+            if (ex.id.toString().compareTo(tmpList[i].id.toString()) == 0) {
+              _search.add(ex);
+            }
+          }
+          setState(() {
+            _search.clear();
+            _search.addAll(tmpList);
+          });
+          return;
+        } else if (!_search.isNotEmpty) {
+          _search.clear();
+        }
+      });
   }
 
   // search bar flow events history
@@ -145,6 +147,7 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
+  // event history
   Widget eventsHistory() {
     return ScopedModel(
       model: model,
@@ -266,80 +269,80 @@ class _HistoryPageState extends State<HistoryPage> {
                   if (snapshot.data != null) {
                     return _search.length != 0 || _controller.text.isNotEmpty
                         ? Center(child: _search.length != 0
-                        ? ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: _search.length,
-                        itemBuilder: (context, i) {
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 10.0,right: 10.0),
-                            child: Container(
-                              margin: const EdgeInsets.only(top: 10),
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(color: Colors.white, width: 1),
-                                  borderRadius: BorderRadius.all(Radius.circular(10.0),),
-                                  boxShadow: [BoxShadow(blurRadius: 9,
-                                      color: Colors.grey[300],
-                                      offset: Offset(0, 3))
+                          ? ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: _search.length,
+                          itemBuilder: (context, i) {
+                            return Padding(
+                              padding: const EdgeInsets.only(left: 10.0,right: 10.0),
+                              child: Container(
+                                margin: const EdgeInsets.only(top: 10),
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border.all(color: Colors.white, width: 1),
+                                    borderRadius: BorderRadius.all(Radius.circular(10.0),),
+                                    boxShadow: [BoxShadow(blurRadius: 9,
+                                        color: Colors.grey[300],
+                                        offset: Offset(0, 3))
+                                    ]),
+                                child: FlatButton(
+                                  onPressed: () {Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (context) =>
+                                          RegisterEventPage(uid: uid, idEvents: _search[i].eventId,
+                                              status: status)));
+                                  },
+                                  padding: const EdgeInsets.only(top: 1,left: 10),
+                                  child: Column(children: <Widget>[
+                                    Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisSize: MainAxisSize.max,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Expanded(
+                                            flex: 5,
+                                            child: Center(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(top: 5, bottom: 5),
+                                                  child: ClipRRect(borderRadius:
+                                                  BorderRadius.circular(15.0),
+                                                    child: Image.network('${_search[i].thumbnailPicture}',
+                                                      width: double.infinity, height: 140,
+                                                      fit: BoxFit.cover,),
+                                                  ),
+                                                )
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 4,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              mainAxisSize: MainAxisSize.max,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: <Widget>[
+                                                SizedBox(width: 10,),
+                                                Text(limitTitle(_search[i].eventTitle),
+                                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),),
+                                                Text(dtf.format(DateTime.parse(_search[i].startDate)),
+                                                  style: TextStyle(fontSize: 16.0),),
+                                                _search[i].status.toLowerCase() != "pending" ? Center(
+                                                  child: _search[i].status.toLowerCase() == "accepted" || _search[i].status.toLowerCase() != "canceled"
+                                                      ? Text('${_search[i].status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
+                                                      color: Colors.green[500]),)
+                                                      : Text('${_search[i].status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
+                                                      color: Colors.red[500])),)
+                                                    : Text('${_search[i].status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
+                                                    color: Colors.yellow[600]),),
+                                              ],
+                                            ),
+                                          ),
+                                        ])
                                   ]),
-                              child: FlatButton(
-                                onPressed: () {Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (context) =>
-                                        RegisterEventPage(uid: uid, idEvents: _search[i].eventId,
-                                            status: status)));
-                                },
-                                padding: const EdgeInsets.only(top: 1,left: 10),
-                                child: Column(children: <Widget>[
-                                  Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      mainAxisSize: MainAxisSize.max,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Expanded(
-                                          flex: 5,
-                                          child: Center(
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(top: 5, bottom: 5),
-                                                child: ClipRRect(borderRadius:
-                                                BorderRadius.circular(15.0),
-                                                  child: Image.network('${_search[i].thumbnailPicture}',
-                                                    width: double.infinity, height: 140,
-                                                    fit: BoxFit.cover,),
-                                                ),
-                                              )
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 4,
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                            mainAxisSize: MainAxisSize.max,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              Text(limitTitle(_search[i].eventTitle), style: TextStyle(
-                                                  fontWeight: FontWeight.bold, fontSize: 18.0),),
-                                              Text(dtf.format(DateTime.parse(_search[i].startDate)),
-                                                style: TextStyle(fontSize: 16.0),),
-                                              _search[i].status != "Pending" ? Center(
-                                                child: _search[i].status == "Accepted" || _search[i].status != "Denied"
-                                                    ? Text('${_search[i].status}', style: TextStyle(fontSize: 16.0,
-                                                    color: Colors.green[500]),)
-                                                    : Text('${_search[i].status}', style: TextStyle(fontSize: 16.0,
-                                                    color: Colors.red[500])),)
-                                                  : Text('${_search[i].status}', style: TextStyle(fontSize: 16.0,
-                                                  color: Colors.yellow[600]),),
-                                            ],
-                                          ),
-                                        ),
-                                      ])
-                                ]),
+                                ),
                               ),
-                            ),
-                          );
-                        })
-                        : Center(child: Text('${_tmpSMS}', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),),),
-                    )
+                            );
+                          })
+                          : Center(child: Text('${_tmpSMS}', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),),),)
                         : eventsHistory();
                   };
                 }else if(snapshot.data == null){
@@ -347,12 +350,16 @@ class _HistoryPageState extends State<HistoryPage> {
                 }
                 return Center(child: Text('${_tmpSMS}',style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),),);
               })
-              : Center(
-                child: Column(children: <Widget>[
-                  CircularProgressIndicator(),
-                  Text('Loading....')
-                ],
-              )
+              : Padding (
+                padding: const EdgeInsets.only(top:200),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    CircularProgressIndicator(),
+                    Text('Loading...'),
+                  ],
+                ),
           )
       )
     );

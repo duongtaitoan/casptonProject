@@ -10,11 +10,11 @@ class EventsVM extends Model {
   bool isAdd = false;
   List<EventsDTO> listEvent;
   var showToast;
-  // get 100 events in db
+  // get event opening
   static Future<List<EventsDTO>> getAllListEvents() async {
     try {
       EventsDAO dao = new EventsDAO();
-      var listEvents = await dao.apiGetListEvents();
+      var listEvents = await dao.getAllOpenning("Opening");
       List<EventsDTO> saveEvents = new List<EventsDTO>();
       for (int i = 1; i < listEvents.length; i++) {
         saveEvents.add(listEvents[i]);
@@ -68,13 +68,13 @@ class EventsVM extends Model {
   }
 
   // event to on going
-  static Future<List<EventsDTO>> getEventsOnGoing() async {
+  static Future<List<EventsDTO>> eventInWeek(now,isFuture) async {
     EventsDAO dao = new EventsDAO();
-    var listEvents = await dao.apiGetListEvents();
+    var listEvents = await dao.apiGetListEvents(now,isFuture);
     if(listEvents.isNotEmpty) {
       List<EventsDTO> saveEvents = new List<EventsDTO>();
       for (int i = 0; i < listEvents.length; i++) {
-        if (listEvents[i].status == "On going") {
+        if (listEvents[i].status == "Opening") {
           saveEvents.add(listEvents[i]);
         }
       }

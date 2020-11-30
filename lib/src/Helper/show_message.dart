@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class ShowMessage{
   static functionShowMessage(String sms){
-    Future.delayed(Duration(seconds: 1),()async{
+    Future.delayed(Duration(microseconds: 500),()async{
       Fluttertoast.showToast(
       msg: sms,
       toastLength: Toast.LENGTH_LONG,

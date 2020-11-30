@@ -184,13 +184,13 @@ class _CameraAppPageState extends State<CameraApp> {
         int _tmpTimeDelay = duration*60;
         // time block screen set time to delayed when events not get location
         Future.delayed(new Duration(microseconds: 1),()async{
-            // get location of user if istracking == true
+            // get location of user if is tracking == true
             await show().showLocationDiaLog(duration, idEvents,isTracking);
             // close Block screen user
             Timer(Duration(minutes: _tmpTimeDelay), () async {
               UIBlock.unblock(_scaffoldGlobalKey.currentContext);
               Navigator.of(_scaffoldGlobalKey.currentContext).push(MaterialPageRoute(
-                  builder: (context)=>FeedBackPage(uid: uid,nameEvents:nameEvents)));
+                  builder: (context)=>FeedBackPage(uid: uid,nameEvents:nameEvents,screenHome: "HomePage",)));
             });
         });
       });

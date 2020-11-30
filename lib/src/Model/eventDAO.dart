@@ -2,10 +2,18 @@ import 'package:designui/src/API/api_helper.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 
 class EventsDAO{
-  // get 100 data api to pagesize
-  Future<List<EventsDTO>> apiGetListEvents() async {
+  // get event flow week
+  Future<List<EventsDTO>> apiGetListEvents(now,isFuture) async {
     ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/events?pageSize=100&pageIndex=1");
+    dynamic json = await _api.get("api/events?StartedAt=${now}&EndedAt=${isFuture}");
+    var eventJson = json["data"] as List;
+    return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
+  }
+
+  // get list event opening
+  Future<List<EventsDTO>> getAllOpenning(status) async {
+    ApiHelper _api = new ApiHelper();
+    dynamic json = await _api.get("api/events?Status=${status}");
     var eventJson = json["data"] as List;
     return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
   }
@@ -32,7 +40,7 @@ class EventsDAO{
   // get pageFirst in viewAll events
   Future<List<EventsDTO>> viewAllPageFirst(int index) async {
     ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/events?PageIndex=${index}&PageSize=20");
+    dynamic json = await _api.get("api/events?Status=Opening&PageIndex=${index}&PageSize=20");
     var eventJson = json["data"] as List;
     return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
   }

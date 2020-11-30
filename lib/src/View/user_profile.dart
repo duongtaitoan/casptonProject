@@ -1,3 +1,4 @@
+import 'package:designui/src/Helper/notification.dart';
 import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/user_profileDAO.dart';
 import 'package:designui/src/Model/user_profileDTO.dart';
@@ -22,25 +23,27 @@ class _UserProfilePageState extends State<UserProfilePage> {
   final status;
   UserProfileDAO dao;
   _UserProfilePageState(this.uid,this.status);
-  bool _validate = false;
   Map<String, dynamic> decodedToken;
   var _tmpInfor;
   String dropdownValue;
-
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  bool isCheck = false;
+  var matchesStudent;
+  var _textKey = GlobalKey<FormState>();
   final TextEditingController controlNumber = TextEditingController();
-  final TextEditingController controlMSSV = TextEditingController();
   TextEditingController controlMajor = TextEditingController();
 
   @override
   void initState(){
+    RegExp pattern = new RegExp('([se|sa|sb|SE|SA|SB]{2})([0-9]{5,7})');
+    var _tmpStudentCode = uid.email.split("@")[0];
+    matchesStudent = pattern.stringMatch(_tmpStudentCode);
     dropdownValue="Information System";
+
     dao = new UserProfileDAO();
     super.initState();
     try {
       getstudentCode().then((value) {
         try {
-          controlMSSV.text = value["studentCode"];
           controlMajor.text = value["major"];
           if (value["phoneNumber"] == null) {
             ShowMessage.functionShowMessage(
@@ -63,9 +66,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget build(BuildContext context) {
     var email = uid.email;
     var displayName = uid.displayName;
+
     return SafeArea(
         child:SizedBox.expand(
           child: Scaffold(
+            key: _textKey,
             appBar: status.toString().compareTo("You need to update information")!=0
               ? AppBar(
                   title: Text('Personal information',textAlign: TextAlign.center,),
@@ -84,7 +89,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   automaticallyImplyLeading: false,
             ),
             body: FutureBuilder(
-                future: Future.delayed(Duration(milliseconds: 500),),
+                future: Future.delayed(Duration(milliseconds: 2000),),
                 builder: (c, s) => s.connectionState == ConnectionState.done
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -107,9 +112,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                           SizedBox(height: 30,),
                                           handlerUserInfor("Fullname", displayName),
                                           SizedBox(height: 30,),
-                                          handlerUserUpdate("Phone",controlNumber,TextInputType.number,'Ex: 0836831237','Phone number can\'t be empty'),
+                                          handlerUserInfor("Student code", matchesStudent),
                                           SizedBox(height: 30,),
-                                          handlerUserUpdate("Student code", controlMSSV, TextInputType.text, "Ex: SE63438", 'Student code is can\'t be empty'),
+                                          handlerUserUpdate("Phone",controlNumber,TextInputType.number,'Ex: 0836831237'),
                                           SizedBox(height: 30,),
                                           Row(
                                             children: <Widget>[
@@ -135,21 +140,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                           onPressed: () async {
                                             if(validateMobile(controlNumber.text) != null){
                                               setState(() {
-                                                controlNumber.text.isEmpty ? _validate = true : _validate = false;
                                               });
-                                              ShowMessage.functionShowMessage(validateMobile(controlNumber.text));
-
-                                            }else if(validateCode(controlMSSV.text) != null){
+                                            }else{
                                               setState(() {
-                                                controlMSSV.text.isEmpty ? _validate = true : _validate = false;
                                               });
-                                              ShowMessage.functionShowMessage(validateCode(controlMSSV.text));
-
-                                            } else{
                                               // update userprofile
                                               String _tmpNum = controlNumber.text;
                                               String _tmpMajor = dropdownValue;
-                                              String _tmpMSSV = controlMSSV.text.toUpperCase();
+                                              String _tmpMSSV = matchesStudent;
 
                                               var _tmpUpdate = await dao.updateInforUser(new UserProfileDTO(
                                                   studentCode: _tmpMSSV,phone: _tmpNum,major: _tmpMajor)
@@ -178,13 +176,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           ),
                         ],
                       )
-                    : Center(
-                      child: Column(children: <Widget>[
+                    : Center (
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
                           CircularProgressIndicator(),
-                          Text('Loading....')
+                          Text('Loading...'),
                         ],
-                      )
-                  )
+                      ),
+                )
             ),
           )
         )
@@ -200,22 +200,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
     else if (!regExp.hasMatch(value)) {
       return 'Your phone number invalid \n Ex: 0838625825';
+    }else{
+      isCheck = true;
+      return null;
     }
-    return null;
   }
 
-  // check id student code
-  validateCode(String value) {
-    String pattern = r'(^(([SE]|[SS]|[SA]){2})([0-9]{3,8})$)';
-    RegExp regExp = new RegExp(pattern);
-    if (value.length == 0) {
-      return 'Students code is blank';
-    }
-    else if (!regExp.hasMatch(value.toUpperCase())) {
-      return 'Your students code invalid [SE]|[SS]|[SA] \n Ex: SE62334';
-    }
-    return null;
-  }
 
   Future<dynamic> getstudentCode() async {
     try {
@@ -250,7 +240,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   // text field user can update
-  Widget handlerUserUpdate(String tmpPhone, tmpController,type,String hint,String invalid){
+  Widget handlerUserUpdate(String tmpPhone, tmpController,type,String hint){
+    var _tmpValue;
     return Column(
       children: <Widget>[
         Row(
@@ -265,14 +256,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              TextField(
+              TextFormField(
                 keyboardType: type,
                 controller: tmpController,
                 decoration: InputDecoration(
-                    // errorText: hint,
-                    hintText: hint,
-                    suffixIcon: Icon(Icons.star,color: Colors.red,size: 10,),
-                    errorText: _validate== true && getstudentCode() == null ? invalid : null
+                  hintText: hint,
+                  suffixIcon: Icon(Icons.star,color: Colors.red,size: 10,),
+                  errorText: validateMobile(tmpController.text),
                 ),
               ),
             ],
@@ -281,7 +271,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
       ],
     );
   }
-  // button dropdown semester
+
+  // button dropdown Major
   dropdownMajor() {
     return DropdownButtonFormField<String>(
       disabledHint: Text('${dropdownValue}'),

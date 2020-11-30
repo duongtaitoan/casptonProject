@@ -19,12 +19,7 @@ class ViewAllVM extends Model{
       EventsDAO dao = new EventsDAO();
       var listEvents = await dao.viewAllPageFirst(index);
       listEvent = new List();
-      // for(int i = 0; i< listEvents.length;i++){
-        // print('i ${i++} <====================');
-        // if(listEvents[i].status == "On Going" || listEvents[i].status == "Opening"){
-        //   print('i ====> ${i++}');
-        // }
-      // }
+
       if(listEvents.toString() != null){
         listEvent.addAll(listEvents);
       }

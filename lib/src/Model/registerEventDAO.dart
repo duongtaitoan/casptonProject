@@ -47,8 +47,7 @@ class RegisterEventDAO{
   Future<dynamic> listEventHistory(int userId) async {
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.get(
-          "api/registrations?UserId=${userId}&PageIndex=1&PageSize=100");
+      dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=1&PageSize=100");
       var eventJson = json["data"] as List;
       if (eventJson != null) {
         return eventJson.map((e) => UserDTO.fromJson(e)).toList();
@@ -60,9 +59,9 @@ class RegisterEventDAO{
   }
 
   // list events page index history
-  Future<dynamic> pageIndexHistory(String studentCode,int index) async {
+  Future<dynamic> pageIndexHistory(int userId,int index) async {
     ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/registrations?StudentCode=${studentCode}&PageIndex=${index}&PageSize=10");
+    dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=${index}&PageSize=10");
     var eventJson = json["data"] as List;
     if (eventJson != null) {
       return eventJson.map((e) => UserDTO.fromJson(e)).toList();
@@ -71,9 +70,9 @@ class RegisterEventDAO{
     }
   }
   // list first events page index history
-  Future<dynamic> pageFirstHistory(String studentCode) async {
+  Future<dynamic> pageFirstHistory(int userId) async {
     ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/registrations?StudentCode=${studentCode}&PageIndex=1&PageSize=10");
+    dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=1&PageSize=10");
     var eventJson = json["data"] as List;
     if (eventJson != null) {
       return eventJson.map((e) => UserDTO.fromJson(e)).toList();
