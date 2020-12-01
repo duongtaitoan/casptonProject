@@ -60,7 +60,6 @@ class EventsVM extends Model {
           listEvent.addAll(listEvents);
       }
     } catch (e) {
-      throw (e);
     } finally {
       isLoading = false;
       notifyListeners();

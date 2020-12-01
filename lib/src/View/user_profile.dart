@@ -28,7 +28,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
   String dropdownValue;
   bool isCheck = false;
   var matchesStudent;
-  var _textKey = GlobalKey<FormState>();
   final TextEditingController controlNumber = TextEditingController();
   TextEditingController controlMajor = TextEditingController();
 
@@ -70,7 +69,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return SafeArea(
         child:SizedBox.expand(
           child: Scaffold(
-            key: _textKey,
             appBar: status.toString().compareTo("You need to update information")!=0
               ? AppBar(
                   title: Text('Personal information',textAlign: TextAlign.center,),
@@ -98,8 +96,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         children: <Widget>[
                           Expanded(
                             flex: 10,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                            child: Container(
+                              margin: const EdgeInsets.fromLTRB(5, 0, 0, 0),
                               child: SingleChildScrollView(
                                 child: Column(children: <Widget>[
                                   Container(
@@ -116,6 +114,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                           SizedBox(height: 30,),
                                           handlerUserUpdate("Phone",controlNumber,TextInputType.number,'Ex: 0836831237'),
                                           SizedBox(height: 30,),
+                                          // RaisedButton(
+                                          //   onPressed: (){
+                                          //     ShowNotifications.functionInitState();
+                                          //     ShowNotifications.showNotificationWithDefaultSound("Test Notification", "Show content here");
+                                          //   },
+                                          //   child: Text('text'),
+                                          // ),
                                           Row(
                                             children: <Widget>[
                                               SizedBox(width: 15,),
@@ -132,7 +137,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   Expanded(
                                     flex: 0,
                                     child:  Container(
-                                      margin: EdgeInsets.only(top: 120,right: 16,left: 11),
+                                      margin: EdgeInsets.only(top: 135,right: 16,left: 11),
                                       child: SizedBox(
                                         width: double.infinity,
                                         height: 52,
@@ -152,6 +157,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                               var _tmpUpdate = await dao.updateInforUser(new UserProfileDTO(
                                                   studentCode: _tmpMSSV,phone: _tmpNum,major: _tmpMajor)
                                                   ,int.parse(decodedToken["userId"]));
+
+
                                               await ShowMessage.functionShowMessage(_tmpUpdate);
 
                                               if(status!= null && _tmpUpdate.compareTo("Update successful")==0){
@@ -241,7 +248,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   // text field user can update
   Widget handlerUserUpdate(String tmpPhone, tmpController,type,String hint){
-    var _tmpValue;
     return Column(
       children: <Widget>[
         Row(

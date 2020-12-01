@@ -12,11 +12,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  var imgBackGroud = AssetImage('assets/images/backgroud6.png');
   GlobalKey _scaffoldGlobalKey = GlobalKey();
   bool showLoader = false;
   var _tmpStatus = "You need to update information";
   @override
   void initState() {
+    imgBackGroud;
     super.initState();
   }
 
@@ -68,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
               constraints: BoxConstraints.expand(),
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/backgroud6.png'),
+                  image: imgBackGroud,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -105,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             onPressed: () async {
                               try{
-                                UIBlock.block(_scaffoldGlobalKey.currentContext,);
+                                UIBlock.block(_scaffoldGlobalKey.currentContext);
                                 await Future.delayed(Duration(microseconds: 1), () async => {
                                   await onSignInPressed(),
                                 });
