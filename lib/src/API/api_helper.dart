@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:designui/src/Model/TrackingDTO.dart';
+import 'package:designui/src/Model/feedbackDTO.dart';
 import 'package:designui/src/Model/imageDTO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
 import 'package:designui/src/Model/user_profileDTO.dart';
@@ -13,7 +14,7 @@ import 'package:async/async.dart';
 
 class ApiHelper {
 
-  final String _baseUrl = "https://eventtrackingapi.azurewebsites.net/";
+  final String _baseUrl = "https://apt1212.azurewebsites.net/";
 
   // login api
   Future<dynamic> LoginAPI({@required String fbToken, String url}) async {
@@ -168,6 +169,30 @@ class ApiHelper {
         , headers: {
           'Content-Type': 'application/json',
           'accept': '*/*',
+          'Authorization': 'Bearer '+token,},
+      );
+      responseJson = returnResponse(response);
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
+  }
+
+  // user register events
+  Future<dynamic> postFeedBack(String listQvsA,int idEvent,String url) async {
+    var responseJson;
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String token = sp.getString("token_data");
+    Map map = {
+      'EventId': idEvent,
+      'Comment': listQvsA,
+    };
+    try {
+      final response = await http.post(_baseUrl+url,
+        body:utf8.encode(json.encode(map))
+        , headers: {
+          'Content-Type': 'application/json',
+          "Accept": "*/*",
           'Authorization': 'Bearer '+token,},
       );
       responseJson = returnResponse(response);

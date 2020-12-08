@@ -1,6 +1,5 @@
 import 'package:designui/src/Model/eventDAO.dart';
 import 'package:designui/src/Model/eventDTO.dart';
-import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class EventsVM extends Model {
@@ -21,7 +20,6 @@ class EventsVM extends Model {
       }
       return saveEvents;
     } catch (e) {
-      throw (e);
     }
   }
 

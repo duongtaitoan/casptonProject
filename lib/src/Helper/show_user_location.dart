@@ -56,7 +56,7 @@ Future timeLocation(_locationData,counts,show,idEvents) {
     for (int i = 0; i < counts; i++) {
       sleep(const Duration(milliseconds: 1));
       await Future.delayed(new Duration(minutes: 5),() async {
-        var locationUser = "Your location\n Latitude ${_locationData.latitude.toString()} \t Longtitude ${_locationData.longitude.toString()}";
+        var locationUser = "Your location\nLatitude ${_locationData.latitude.toString()} \t Longtitude ${_locationData.longitude.toString()}";
         if(show == true) {
           await showToast(locationUser);
         }

@@ -1,7 +1,7 @@
-import 'package:designui/src/Helper/notification.dart';
 import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/user_profileDAO.dart';
 import 'package:designui/src/Model/user_profileDTO.dart';
+import 'package:designui/src/View/feedback.dart';
 import 'package:designui/src/View/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -110,17 +110,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                           SizedBox(height: 30,),
                                           handlerUserInfor("Fullname", displayName),
                                           SizedBox(height: 30,),
-                                          handlerUserInfor("Student code", matchesStudent),
+                                          handlerUserInfor("Student code", matchesStudent.toUpperCase()),
                                           SizedBox(height: 30,),
                                           handlerUserUpdate("Phone",controlNumber,TextInputType.number,'Ex: 0836831237'),
                                           SizedBox(height: 30,),
-                                          // RaisedButton(
-                                          //   onPressed: (){
-                                          //     ShowNotifications.functionInitState();
-                                          //     ShowNotifications.showNotificationWithDefaultSound("Test Notification", "Show content here");
-                                          //   },
-                                          //   child: Text('text'),
-                                          // ),
                                           Row(
                                             children: <Widget>[
                                               SizedBox(width: 15,),
@@ -157,7 +150,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                               var _tmpUpdate = await dao.updateInforUser(new UserProfileDTO(
                                                   studentCode: _tmpMSSV,phone: _tmpNum,major: _tmpMajor)
                                                   ,int.parse(decodedToken["userId"]));
-
 
                                               await ShowMessage.functionShowMessage(_tmpUpdate);
 
@@ -213,7 +205,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-
   Future<dynamic> getstudentCode() async {
     try {
       SharedPreferences sp = await SharedPreferences.getInstance();
@@ -222,7 +213,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       _tmpInfor = await UserProfileDAO().getInforUser(int.parse(decodedToken["userId"]));
       return _tmpInfor;
     }catch(e){
-      // return "System is update waiting for minus";
+      ShowMessage.functionShowDialog("Server error", context);
     }
   }
 

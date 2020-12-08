@@ -71,13 +71,17 @@ class RegisterEventDAO{
   }
   // list first events page index history
   Future<dynamic> pageFirstHistory(int userId) async {
-    ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=1&PageSize=10");
-    var eventJson = json["data"] as List;
-    if (eventJson != null) {
-      return eventJson.map((e) => UserDTO.fromJson(e)).toList();
-    } else {
-      return json;
+    try {
+      ApiHelper _api = new ApiHelper();
+      dynamic json = await _api.get(
+          "api/registrations?UserId=${userId}&PageIndex=1&PageSize=10");
+      var eventJson = json["data"] as List;
+      if (eventJson != null) {
+        return eventJson.map((e) => UserDTO.fromJson(e)).toList();
+      } else {
+        return json;
+      }
+    }catch(e){
     }
   }
 

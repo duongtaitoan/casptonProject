@@ -159,7 +159,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                   }else if(snapshot.error || snapshot.hasError){
                     _tmpChange = "Not found events";
                   }
-                  return Center(child:Text('${_tmpChange}',style: TextStyle(fontSize: 20.0,color: Colors.black),));
+                  return Center(child:Text('${_tmpChange}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),));
                 })
                 : Padding (
                   padding: const EdgeInsets.only(top:200),

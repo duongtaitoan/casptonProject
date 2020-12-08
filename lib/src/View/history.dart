@@ -34,7 +34,7 @@ class _HistoryPageState extends State<HistoryPage> {
     super.initState();
     try {
       model = new HistoryVM();
-      model.pageFristHistory();
+      model.pageFristHistory(context);
     } catch (e) {
     }
   }
@@ -81,8 +81,9 @@ class _HistoryPageState extends State<HistoryPage> {
 
   // search event flow title event => show for user
   searchEvents(String input) async {
-    var delayInput = input;
-    Future.delayed(new Duration(seconds: 2),()=>delayInput);
+    try {
+      var delayInput = input;
+      Future.delayed(new Duration(seconds: 2), () => delayInput);
       _search.clear();
       if (delayInput.isEmpty) {
         setState(() {});
@@ -110,6 +111,8 @@ class _HistoryPageState extends State<HistoryPage> {
           _search.clear();
         }
       });
+    }catch(e){
+    }
   }
 
   // search bar flow events history
@@ -342,13 +345,13 @@ class _HistoryPageState extends State<HistoryPage> {
                               ),
                             );
                           })
-                          : Center(child: Text('${_tmpSMS}', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),),),)
+                          : Center(child: Text('${_tmpSMS}', style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),),),)
                         : eventsHistory();
                   };
                 }else if(snapshot.data == null){
                   _tmpSMS;
                 }
-                return Center(child: Text('${_tmpSMS}',style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),),);
+                return Center(child: Text('${_tmpSMS}',style: TextStyle(fontSize: 18.0, color: Colors.orange[600]),),);
               })
               : Padding (
                 padding: const EdgeInsets.only(top:200),

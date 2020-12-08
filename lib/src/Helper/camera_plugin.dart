@@ -172,7 +172,7 @@ class _CameraAppPageState extends State<CameraApp> {
         loadingTextWidget: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text('Please wait for the event to end and do not turn off the app',
-            textAlign: TextAlign.center, style: TextStyle(color: Colors.white,
+            textAlign: TextAlign.center, style: TextStyle(color: Colors.orange[600],
               fontSize: 18.0, fontWeight: FontWeight.w600,
             ),
           ),
@@ -190,7 +190,8 @@ class _CameraAppPageState extends State<CameraApp> {
             Timer(Duration(minutes: _tmpTimeDelay), () async {
               UIBlock.unblock(_scaffoldGlobalKey.currentContext);
               Navigator.of(_scaffoldGlobalKey.currentContext).push(MaterialPageRoute(
-                  builder: (context)=>FeedBackPage(uid: uid,nameEvents:nameEvents,screenHome: "HomePage",)));
+                  builder: (context)=>FeedBackPage(uid: uid,nameEvents:nameEvents,
+                    idEvent: idEvents,screenHome: "HomePage",)));
             });
         });
       });

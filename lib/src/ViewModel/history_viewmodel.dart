@@ -1,5 +1,7 @@
+import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/registerEventDAO.dart';
 import 'package:designui/src/Model/userDTO.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,7 +41,7 @@ class HistoryVM extends Model{
   }
 
   // get first 10 record for history events
-  Future<void> pageFristHistory() async {
+  Future<void> pageFristHistory(BuildContext context) async {
     try {
       isLoading = true;
       notifyListeners();
@@ -53,8 +55,8 @@ class HistoryVM extends Model{
       if(listEvents.toString() != null){
         listEvent.addAll(listEvents);
       }
-    } catch (e) {
-      mgs("The system is update");
+    }catch (_) {
+      ShowMessage.functionShowDialog("Server error", context);
     } finally {
       isLoading = false;
       notifyListeners();

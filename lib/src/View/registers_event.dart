@@ -363,7 +363,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                               },
                             ),
                             new FlatButton(
-                              child: Text("Close",style: TextStyle(color: Colors.red),),
+                              child: Text("Close",style: TextStyle(color: Colors.blue[500]),),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ],
@@ -399,7 +399,8 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                       borderRadius: BorderRadius.all(Radius.circular(5))),
                   onPressed: () {
                     Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => FeedBackPage(uid: uid,nameEvents: dto.title,)));
+                        MaterialPageRoute(builder: (context) => FeedBackPage(uid: uid,nameEvents: dto.title,
+                        idEvent: idEvents,)));
                   },
                   child: Text("FeedBack",style: TextStyle(fontSize: 18.0, color: Colors.white)))
             ),
@@ -552,10 +553,13 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   // check time events is in an on going range
   timeToCheckin(EventsDTO dto) async{
     var now = DateTime.now();
-    if (now.isAfter(DateTime.parse(dto.startedAt)) && now.isBefore(DateTime.parse(timeStop))) {
+    // time + 10 minutes
+    var timeToLate = DateTime.parse(dto.startedAt).add(new Duration(minutes: 10));
+    // if is after time start or is before 10 minutes then not check in
+    if (now.isAfter(DateTime.parse(dto.startedAt)) && now.isBefore(timeToLate)) {
       checkValue = true;
       return checkValue;
-    }else{
+    } else{
       checkValue = false;
       return checkValue;
     }

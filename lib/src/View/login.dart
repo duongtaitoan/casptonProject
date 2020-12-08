@@ -4,6 +4,7 @@ import 'package:designui/src/View/home.dart';
 import 'package:designui/src/View/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:uiblock/uiblock.dart';
 
 class LoginPage extends StatefulWidget {
@@ -27,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
       String status = await GoogleSign.onSignInFinished(user);
       RegExp regExp = RegExp("^[a-z0-9_\.]{8,}@[fpt|fu]{1,4}(\.[edu]{3})(\.[vn]{2})");
 
-      if (status != "Signin successful" && status != "Need Information" || !regExp.hasMatch(user.email.toString())) {
+      if (!regExp.hasMatch(user.email.toString())) {
         try{
           ShowMessage.functionShowMessage(status);
         }catch(e){
@@ -98,10 +99,8 @@ class _LoginPageState extends State<LoginPage> {
                                 SizedBox(
                                   width: 10,
                                 ),
-                                Text(
-                                  'Sign in with Gmail',
-                                  style:
-                                  TextStyle(fontSize: 16.0, color: Colors.black),
+                                Text('Sign in with Gmail',
+                                  style: TextStyle(fontSize: 16.0, color: Colors.black),
                                 )
                               ],
                             ),
@@ -112,9 +111,12 @@ class _LoginPageState extends State<LoginPage> {
                                   await onSignInPressed(),
                                 });
                                 UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-                              }catch(e){
-                                UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-                                ShowMessage.functionShowMessage("Application login failed");
+                              } on PlatformException catch(e) { // May be thrown on Airplane mode
+                                  UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+                                  ShowMessage.functionShowDialog("Your network is fail",context);
+                              } catch(e){
+                                  UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+                                  ShowMessage.functionShowDialog("Server error",context);
                               }
                             })),
                   ],
@@ -125,5 +127,4 @@ class _LoginPageState extends State<LoginPage> {
       )
     );
   }
-
 }

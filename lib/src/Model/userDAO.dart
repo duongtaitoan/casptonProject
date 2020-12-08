@@ -14,11 +14,8 @@ class UserDAO {
       var tokenData = jsonDecode(response.body);
       prefs.setString("token_data", tokenData["data"]["token"]);
 
-      print('${tokenData["message"]} ------------------------------------------');
       return tokenData["message"];
-    } else if (response.statusCode == 400) {
-      return "Check in wifi before connecting the app";
-    } else if (response.statusCode == 401) {
+    } else if (response.statusCode == 400 ) {
       return "Email address is not valid\n Vd: example@fpt.edu.vn";
     }
   }

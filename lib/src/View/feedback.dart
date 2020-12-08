@@ -1,47 +1,57 @@
-import 'package:designui/src/Helper/list_Ques_Ans.dart';
+import 'dart:convert';
 import 'package:designui/src/Helper/show_message.dart';
+import 'package:designui/src/Model/feedbackDAO.dart';
+import 'package:designui/src/Model/feedbackDTO.dart';
 import 'package:designui/src/View/history.dart';
 import 'package:designui/src/view/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class FeedBackPage extends StatefulWidget {
   final FirebaseUser uid;
   final nameEvents;
+  final idEvent;
   final screenHome;
-  const FeedBackPage({Key key, this.uid,this.nameEvents,this.screenHome}) : super(key: key);
+  const FeedBackPage({Key key, this.uid,this.nameEvents,this.screenHome,this.idEvent}) : super(key: key);
 
   @override
-  _FeedBackPageState createState() => _FeedBackPageState(uid,nameEvents,this.screenHome);
+  _FeedBackPageState createState() => _FeedBackPageState(uid,nameEvents,this.screenHome,this.idEvent);
 }
 
 class _FeedBackPageState extends State<FeedBackPage> {
   final FirebaseUser uid;
   var nameEvents;
+  final idEvent;
   final screenHome;
-  _FeedBackPageState(this.uid,this.nameEvents,this.screenHome);
-  var _tmpInput;
-  String ques1;
-  String ques2;
-  String ques3;
-  String ques4;
-  String ques5;
-  String ask1;
-  String ask2;
-  String ask3;
+  _FeedBackPageState(this.uid,this.nameEvents,this.screenHome,this.idEvent);
+  String question1;
+  String question2;
+  String question3;
+  String question4;
+  String question5;
+  String question6;
+  String question7;
+  String question8;
+  var answer1 = "Kém";
+  var answer2 = "Kém";
+  var answer3 = "Kém";
+  var answer4 = "Kém";
+  var answer5 = "Kém";
+  static var answer6 ;
+  static var answer7 ;
+  static var answer8 ;
 
   @override
   void initState() {
-    ques1 = "Sự kiện đạt mục tiêu so với mong đợi ?";
-    ques2 = "Tính hữu ích của sự kiện ?";
-    ques3 = "Nội dung của sự kiện ?";
-    ques4 = "Các tài liệu tham khảo ?";
-    ques5 = "Khâu tổ chức sự kiện (thiết bị, phòng ốc..) ?";
-    ask1 = "A. Những điều khiến bạn thích nhất ở sự kiện (ứng dụng cho công việc của bạn, giúp bạn cải thiện kỹ năng…) ?\n";
-    ask2 = "B. Những điều bạn KHÔNG thích nhất ở sự kiện ?\n";
-    ask3 = "C. Đề xuất bất kỳ của bạn cho sự kiện ?\n";
+    question1 = "Sự kiện đạt mục tiêu so với mong đợi ?";
+    question2 = "Tính hữu ích của sự kiện ?";
+    question3 = "Nội dung của sự kiện ?";
+    question4 = "Các tài liệu tham khảo ?";
+    question5 = "Khâu tổ chức sự kiện (thiết bị, phòng ốc..) ?";
+    question6 = "A. Những điều khiến bạn thích nhất ở sự kiện (ứng dụng cho công việc của bạn, giúp bạn cải thiện kỹ năng…) ?\n";
+    question7 = "B. Những điều bạn KHÔNG thích nhất ở sự kiện ?\n";
+    question8 = "C. Đề xuất bất kỳ của bạn cho sự kiện ?\n";
 
     super.initState();
   }
@@ -55,11 +65,11 @@ class _FeedBackPageState extends State<FeedBackPage> {
               title: Text('Feedback events ${nameEvents}'),
               backgroundColor: Colors.orange[600],
               elevation: 0,
-              // automaticallyImplyLeading: false,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () {
+                onPressed: () async {
                 if(screenHome == "HomePage"){
+                  ShowMessage.functionShowDialog("Maybe feedback later", context);
                   Navigator.pushAndRemoveUntil(context,
                       MaterialPageRoute(builder: (context) =>
                           HomePage(uid: uid,)), (
@@ -77,15 +87,15 @@ class _FeedBackPageState extends State<FeedBackPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
-                    returnAnsQue(1, ques1),
-                    returnAnsQue(2, ques2),
-                    returnAnsQue(3, ques3),
-                    returnAnsQue(4, ques4),
-                    returnAnsQue(5, ques5),
+                    returnAnsQue(1, question1,dropdownRating(answer1,1)),
+                    returnAnsQue(2, question2,dropdownRating(answer2,2)),
+                    returnAnsQue(3, question3,dropdownRating(answer3,3)),
+                    returnAnsQue(4, question4,dropdownRating(answer4,4)),
+                    returnAnsQue(5, question5,dropdownRating(answer5,5)),
                     SizedBox(height: 20,),
-                    returnQuestion(ask1),
-                    returnQuestion(ask2 ),
-                    returnQuestion(ask3),
+                    returnQuestion(question6,1),
+                    returnQuestion(question7,2),
+                    returnQuestion(question8,3),
                     Container(
                       margin: EdgeInsets.only(top: 40, right: 8, left: 8),
                       child: SizedBox(
@@ -93,11 +103,40 @@ class _FeedBackPageState extends State<FeedBackPage> {
                         height: 52,
                         child: RaisedButton(
                           onPressed: () async {
-                            await ShowMessage.functionShowMessage("Your content has been submitted successfully");
-                            Navigator.pushAndRemoveUntil(context,
-                                MaterialPageRoute(builder: (context) =>
-                                    HomePage(uid: uid,)), (
-                                    Route<dynamic> route) => false);
+                            if(answer6 == null || answer7 == null || answer8 == null){
+                              await ShowMessage.functionShowDialog("Please comment your content ",context);
+                            }else {
+                              //conver Question and answer to json
+                              List<FeedbackDTO> dto =[new FeedbackDTO(question: question1, answer:answer1),
+                                new FeedbackDTO(question: question2, answer:answer2),
+                                new FeedbackDTO(question: question3, answer:answer3),
+                                new FeedbackDTO(question: question4, answer:answer4),
+                                new FeedbackDTO(question: question5, answer:answer5),
+                                new FeedbackDTO(question: question6, answer:answer6),
+                                new FeedbackDTO(question: question7, answer:answer7),
+                                new FeedbackDTO(question: question8, answer:answer8)];
+
+                                var toJson = jsonEncode(dto);
+                                var handerFeedback = await FeedBackDAO().postFeedback(toJson, idEvent);;
+                                try {
+                                  if (handerFeedback["message"] == "Success") {
+                                    await ShowMessage.functionShowDialog(
+                                        "Your content has been submitted successfully",
+                                        context);
+                                    Future.delayed(
+                                        new Duration(seconds: 2), () {
+                                      Navigator.pushAndRemoveUntil(context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  HomePage(uid: uid,)), (
+                                              Route<dynamic> route) => false);
+                                    });
+                                  }
+                                }catch(e) {
+                                  await ShowMessage.functionShowDialog(
+                                  "You already give a feedback",context);
+                              }
+                            }
                           },
                           child: Text('Send', style: TextStyle(fontSize: 20.0,
                               color: Colors.white,
@@ -119,7 +158,7 @@ class _FeedBackPageState extends State<FeedBackPage> {
   }
 
   // Question
-  Widget returnAnsQue(count, question) {
+  Widget returnAnsQue(count, question,rating) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -132,14 +171,14 @@ class _FeedBackPageState extends State<FeedBackPage> {
         ),
         Padding(
           padding: const EdgeInsets.only(left: 10.0,right: 5.0),
-          child: QADropDown(),
+          child: rating,
         ),
         SizedBox(height: 5,),
       ],
     );
   }
 
-  Widget returnQuestion(String ask){
+  Widget returnQuestion(String ask,select){
     return ListTile(
       title: Text('${ask}',
         style: TextStyle(fontSize: 18.0),),
@@ -158,14 +197,52 @@ class _FeedBackPageState extends State<FeedBackPage> {
               hintStyle: TextStyle(
                   color: Colors.black, fontSize: 20.0)),
           style: TextStyle(color: Colors.black),
-          onChanged: (_tmpInput){
-            print('input ${_tmpInput}');
+          onChanged: (value){
             setState(() {
+              if(select == 1){
+                answer6 = value;
+              }else if(select == 2){
+                answer7 = value;
+              }else if( select == 3){
+                answer8 = value;
+              }
             });
-            return _tmpInput;
           },
         ),
       ),
+    );
+  }
+
+  dropdownRating(dropdownValue,select) {
+    return DropdownButtonFormField<String>(
+      disabledHint: Text('${dropdownValue}'),
+      isExpanded: true,
+      value: dropdownValue,
+      icon: Icon(Icons.arrow_downward,color: Colors.blue[500],),
+      iconSize: 24,
+      onChanged: (newValue)async{
+        setState(() {
+          if(select == 1){
+            answer1 = newValue;
+          }else if(select == 2){
+            answer2 = newValue;
+          }else if(select == 3){
+            answer3 = newValue;
+          }else if( select == 4){
+            answer4 = newValue;
+          }else if(select == 5){
+            answer5 = newValue;
+          }
+        }
+        );
+      },
+      items: <String>['Kém','Trung bình','Khá','Tốt','Xuất sắc']
+          .map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
     );
   }
 }

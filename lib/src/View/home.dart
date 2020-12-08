@@ -149,7 +149,7 @@ class _HomePageState extends State<HomePage> {
                   titleEvents("Events in Week"),
                   _tmpCheck == true
                       ? eventsHover()
-                      : Center(child: Text('Not found Events',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),)),
+                      : Center(child: Text('Not found events',style: TextStyle(fontSize: 18,color: Colors.orange[600]),)),
                   titleEvents("Events opening"),
                   listEventsOpening(),
                 ],

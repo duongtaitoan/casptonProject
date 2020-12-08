@@ -15,4 +15,25 @@ class ShowMessage{
       textColor: Colors.black);
     });
   }
+
+  static functionShowDialog(String sms,BuildContext context){
+    showDialog(
+        context: context,
+        builder: (_) => new AlertDialog(
+          title: Center(child: Row(children: <Widget>[
+            Icon(Icons.info_outline),
+            SizedBox(width: 7,),
+            Text("Notification"),
+          ],)),
+          content: new Text("${sms}",),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Close',style: TextStyle(color: Colors.blueAccent[500]),),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        ));
+  }
 }

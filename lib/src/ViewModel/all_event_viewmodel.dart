@@ -1,5 +1,7 @@
+import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/eventDAO.dart';
 import 'package:designui/src/Model/eventDTO.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class ViewAllVM extends Model{
@@ -11,7 +13,7 @@ class ViewAllVM extends Model{
   var mgs;
 
   // get first 20 record for history events
-  Future<void> pageFrist() async {
+  Future<void> pageFrist(BuildContext context) async {
     try {
       isLoading = true;
       notifyListeners();
@@ -24,7 +26,7 @@ class ViewAllVM extends Model{
         listEvent.addAll(listEvents);
       }
     } catch (e) {
-      mgs("The system is update");
+      ShowMessage.functionShowDialog("Server error", context);
     } finally {
       isLoading = false;
       notifyListeners();

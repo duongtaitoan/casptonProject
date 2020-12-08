@@ -37,7 +37,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
     vmDao = new EventsVM();
     super.initState();
     model = new ViewAllVM();
-    model.pageFrist();
+    model.pageFrist(context);
   }
 
   @override
@@ -65,8 +65,9 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                       if (textInput.length <= 0) {
                         _controller.clear();
                         searchEvents('');
+                      }else{
+                        searchEvents(textInput);
                       }
-                      searchEvents(textInput);
                     },
                     style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
@@ -121,35 +122,39 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
 
   // search event flow title and content event => show for user
   searchEvents(String input) async {
-    var delayInput = input;
-    Future.delayed(new Duration(seconds: 2), () => delayInput);
-    _search.clear();
-    if (delayInput.isEmpty) {
-      setState(() {});
-      return;
-    }
-
-    List<EventsDTO> tmpList = new List();
-    List<EventsDTO> listEvents = await EventsVM.getAllListEvents();
-
-    listEvents.forEach((ex) {
-      if (ex.title.toUpperCase().contains(delayInput.toUpperCase())) {
-        tmpList.add(ex);
-
-        for (int i = 0; i < tmpList.length; i++) {
-          if (ex.id.toString().compareTo(tmpList[i].id.toString()) == 0) {
-            _search.add(ex);
-          }
-        }
-        setState(() {
-          _search.clear();
-          _search.addAll(tmpList);
-        });
+    try {
+      var delayInput = input;
+      Future.delayed(new Duration(seconds: 2), () => delayInput);
+      _search.clear();
+      if (delayInput.isEmpty) {
+        setState(() {});
         return;
-      } else if (!_search.isNotEmpty) {
-        _search.clear();
       }
-    });
+
+      List<EventsDTO> tmpList = new List();
+      List<EventsDTO> listEvents = await EventsVM.getAllListEvents();
+
+      listEvents.forEach((ex) {
+        if (ex.title.toUpperCase().contains(delayInput.toUpperCase())) {
+          tmpList.add(ex);
+
+          for (int i = 0; i < tmpList.length; i++) {
+            if (ex.id.toString().compareTo(tmpList[i].id.toString()) == 0) {
+              _search.add(ex);
+            }
+          }
+          setState(() {
+            _search.clear();
+            _search.addAll(tmpList);
+          });
+          return;
+        } else if (!_search.isNotEmpty) {
+          _search.clear();
+        }
+      });
+    }catch(e){
+
+    }
   }
 
   Widget listEvents() {
@@ -441,8 +446,8 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                           child: Text(
                                             '${_tmpSMS}',
                                             style: TextStyle(
-                                                fontSize: 20.0,
-                                                fontWeight: FontWeight.bold),
+                                                fontSize: 18.0,
+                                                color: Colors.orange[600]),
                                           ),
                                         ),
                                 )
@@ -456,7 +461,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                         child: Text(
                           '${_tmpSMS}',
                           style: TextStyle(
-                              fontSize: 20.0, fontWeight: FontWeight.bold),
+                              fontSize: 18.0, color: Colors.orange[600]),
                         ),
                       );
                     })
