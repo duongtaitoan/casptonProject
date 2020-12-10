@@ -21,7 +21,7 @@ class ShowMessage{
         context: context,
         builder: (_) => new AlertDialog(
           title: Center(child: Row(children: <Widget>[
-            Icon(Icons.info_outline),
+            Image.asset("assets/images/bell.gif",height: 50,width: 50),
             SizedBox(width: 7,),
             Text("Notification"),
           ],)),

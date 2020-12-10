@@ -161,7 +161,14 @@ class _HistoryPageState extends State<HistoryPage> {
             if (model.isLoading) {
               return Padding(
                 padding: const EdgeInsets.all(10.0),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center (
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
+                    ],
+                  ),
+                ),
               );
             } else if (model.listEvent != null && model.listEvent.isNotEmpty) {
               List<Widget> list = List();
@@ -237,7 +244,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 children: [
                   ...list,
                   model.isAdd
-                      ? Center(child: CircularProgressIndicator(),)
+                      ? Center (child:CircularProgressIndicator())
                       : FlatButton(
                     child: Center(
                       child: model.mgs == null
@@ -260,57 +267,72 @@ class _HistoryPageState extends State<HistoryPage> {
 
   // respond list events of user
   Widget getEvent(BuildContext context, uid, List<UserDTO> _search, _controller) {
-    var _tmpSMS ="Not found events";
+    var _tmpSMS ="";
     return SingleChildScrollView(
       child:  FutureBuilder(
-          future: Future.delayed(Duration(milliseconds: 1000)),
+          future: Future.delayed(Duration(seconds: 2)),
           builder: (c, s) => s.connectionState == ConnectionState.done
               ? FutureBuilder<List<UserDTO>>(
               future: HistoryVM().getListEventHistory(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   if (snapshot.data != null) {
-                    return _search.length != 0 || _controller.text.isNotEmpty
-                        ? Center(child: _search.length != 0
+                    if(snapshot.data.length ==0){
+                      _tmpSMS="Not found events";
+                    }else {
+                      return _search.length != 0 || _controller.text.isNotEmpty
+                          ? Center(child: _search.length != 0
                           ? ListView.builder(
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           itemCount: _search.length,
                           itemBuilder: (context, i) {
                             return Padding(
-                              padding: const EdgeInsets.only(left: 10.0,right: 10.0),
+                              padding: const EdgeInsets.only(
+                                  left: 10.0, right: 10.0),
                               child: Container(
                                 margin: const EdgeInsets.only(top: 10),
                                 decoration: BoxDecoration(
                                     color: Colors.white,
-                                    border: Border.all(color: Colors.white, width: 1),
-                                    borderRadius: BorderRadius.all(Radius.circular(10.0),),
+                                    border: Border.all(
+                                        color: Colors.white, width: 1),
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(10.0),),
                                     boxShadow: [BoxShadow(blurRadius: 9,
                                         color: Colors.grey[300],
                                         offset: Offset(0, 3))
                                     ]),
                                 child: FlatButton(
-                                  onPressed: () {Navigator.of(context).push(
-                                      MaterialPageRoute(builder: (context) =>
-                                          RegisterEventPage(uid: uid, idEvents: _search[i].eventId,
-                                              status: status)));
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (context) =>
+                                            RegisterEventPage(uid: uid,
+                                                idEvents: _search[i].eventId,
+                                                status: status)));
                                   },
-                                  padding: const EdgeInsets.only(top: 1,left: 10),
+                                  padding: const EdgeInsets.only(
+                                      top: 1, left: 10),
                                   child: Column(children: <Widget>[
                                     Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment: MainAxisAlignment
+                                            .spaceBetween,
                                         mainAxisSize: MainAxisSize.max,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .center,
                                         children: <Widget>[
                                           Expanded(
                                             flex: 5,
                                             child: Center(
                                                 child: Padding(
-                                                  padding: const EdgeInsets.only(top: 5, bottom: 5),
+                                                  padding: const EdgeInsets
+                                                      .only(top: 5, bottom: 5),
                                                   child: ClipRRect(borderRadius:
                                                   BorderRadius.circular(15.0),
-                                                    child: Image.network('${_search[i].thumbnailPicture}',
-                                                      width: double.infinity, height: 140,
+                                                    child: Image.network(
+                                                      '${_search[i]
+                                                          .thumbnailPicture}',
+                                                      width: double.infinity,
+                                                      height: 140,
                                                       fit: BoxFit.cover,),
                                                   ),
                                                 )
@@ -319,23 +341,52 @@ class _HistoryPageState extends State<HistoryPage> {
                                           Expanded(
                                             flex: 4,
                                             child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              mainAxisAlignment: MainAxisAlignment
+                                                  .spaceEvenly,
                                               mainAxisSize: MainAxisSize.max,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment
+                                                  .center,
                                               children: <Widget>[
                                                 SizedBox(width: 10,),
-                                                Text(limitTitle(_search[i].eventTitle),
-                                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),),
-                                                Text(dtf.format(DateTime.parse(_search[i].startDate)),
-                                                  style: TextStyle(fontSize: 16.0),),
-                                                _search[i].status.toLowerCase() != "pending" ? Center(
-                                                  child: _search[i].status.toLowerCase() == "accepted" || _search[i].status.toLowerCase() != "canceled"
-                                                      ? Text('${_search[i].status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
-                                                      color: Colors.green[500]),)
-                                                      : Text('${_search[i].status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
-                                                      color: Colors.red[500])),)
-                                                    : Text('${_search[i].status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
-                                                    color: Colors.yellow[600]),),
+                                                Text(limitTitle(
+                                                    _search[i].eventTitle),
+                                                  style: TextStyle(
+                                                      fontWeight: FontWeight
+                                                          .bold,
+                                                      fontSize: 18.0),),
+                                                Text(dtf.format(DateTime.parse(
+                                                    _search[i].startDate)),
+                                                  style: TextStyle(
+                                                      fontSize: 16.0),),
+                                                _search[i].status
+                                                    .toLowerCase() != "pending"
+                                                    ? Center(
+                                                  child: _search[i].status
+                                                      .toLowerCase() ==
+                                                      "accepted" ||
+                                                      _search[i].status
+                                                          .toLowerCase() !=
+                                                          "canceled"
+                                                      ? Text(
+                                                    '${_search[i].status
+                                                        .toLowerCase()}',
+                                                    style: TextStyle(
+                                                        fontSize: 16.0,
+                                                        color: Colors
+                                                            .green[500]),)
+                                                      : Text(
+                                                      '${_search[i].status
+                                                          .toLowerCase()}',
+                                                      style: TextStyle(
+                                                          fontSize: 16.0,
+                                                          color: Colors
+                                                              .red[500])),)
+                                                    : Text('${_search[i].status
+                                                    .toLowerCase()}',
+                                                  style: TextStyle(
+                                                      fontSize: 16.0,
+                                                      color: Colors
+                                                          .yellow[600]),),
                                               ],
                                             ),
                                           ),
@@ -345,22 +396,37 @@ class _HistoryPageState extends State<HistoryPage> {
                               ),
                             );
                           })
-                          : Center(child: Text('${_tmpSMS}', style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),),),)
-                        : eventsHistory();
+                          : Center(child: Text('${_tmpSMS}', style: TextStyle(
+                          fontSize: 18.0, color: Colors.orange[600]),),),)
+                          : eventsHistory();
+                    }
                   };
-                }else if(snapshot.data == null){
-                  _tmpSMS;
                 }
-                return Center(child: Text('${_tmpSMS}',style: TextStyle(fontSize: 18.0, color: Colors.orange[600]),),);
+                return Padding (
+                  padding: const EdgeInsets.only(top:250),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Center(child:Text('${_tmpSMS}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
+                    ],
+                  ),
+                );
               })
               : Padding (
-                padding: const EdgeInsets.only(top:200),
+                padding: const EdgeInsets.only(top:100),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    CircularProgressIndicator(),
-                    Text('Loading...'),
+                    Center (
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
+                        ],
+                      ),
+                    )
                   ],
                 ),
           )

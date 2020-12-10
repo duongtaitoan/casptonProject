@@ -74,7 +74,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
     return Container(
       width: double.infinity,
       height: 600,
-      color: Colors.grey[100],
+      color: Colors.white,
       child: SingleChildScrollView(
         child: Column(
           children: <Widget>[
@@ -88,90 +88,133 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
 
   // list events flow status registered of user
   Widget getListEvents(BuildContext context, uid, List<UserDTO> _search, _controller,flowStatus) {
-    var _tmpChange ;
+    var _tmpChange = "";
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.only(left: 16,right: 16,bottom: 16),
         child: FutureBuilder(
-            future: Future.delayed(Duration(milliseconds: 500)),
+            future: Future.delayed(Duration(seconds: 1)),
             builder: (c, s) => s.connectionState == ConnectionState.done
-                ?  FutureBuilder<List<UserDTO>>(
-                future: historyVM.getFlowStatus(flowStatus),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if (snapshot.data != null) {
-                      return ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (context, snap) {
-                          return Container(
-                            margin: const EdgeInsets.only(top: 20),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(color: Colors.white, width: 1),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(10.0),
-                                ),
-                                boxShadow: [BoxShadow(blurRadius: 9,color: Colors.grey[300],offset: Offset(0,3))]
-                            ),
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                SizedBox(height: 10,),
-                                Center(
-                                    child:  new Padding(
-                                      padding: const EdgeInsets.all(0.0),
-                                      child: FlatButton(
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(builder: (context) =>
-                                                  RegisterEventPage(uid: uid, idEvents: snapshot.data[snap].eventId,)));
-                                        },
-                                        child: ClipRRect(
-                                          borderRadius:
-                                          BorderRadius.circular(15.0),
-                                          child: Image.network('${snapshot.data[snap].thumbnailPicture}',
-                                            width: double.infinity,
-                                            height: 140,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
+              ?  FutureBuilder<List<UserDTO>>(
+                  future: historyVM.getFlowStatus(flowStatus),
+                  builder: (context, snapshot) {
+                    try{
+                      if (snapshot.hasData) {
+                        if (snapshot.data != null) {
+                          if (snapshot.data.length == 0){
+                            if(flowStatus.toString().compareTo("PENDING")==0){
+                              _tmpChange = "You haven't waiting any event";
+                            }else if(flowStatus.toString().compareTo("ACCEPTED")==0){
+                              _tmpChange = "You haven't approved any event";
+                            }else if(flowStatus.toString().compareTo("REJECTED")==0){
+                              _tmpChange = "You haven't rejected any event";
+                            }
+                          }else {
+                            return ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (context, snap) {
+                                return Container(
+                                  margin: const EdgeInsets.only(top: 20),
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(
+                                          color: Colors.white, width: 1),
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(10.0),
                                       ),
-                                    )
-                                ),
-                                ListTile(
-                                  title: Text(snapshot.data[snap].eventTitle,
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),textAlign: TextAlign.start,
+                                      boxShadow: [
+                                        BoxShadow(blurRadius: 9,
+                                            color: Colors.grey[300],
+                                            offset: Offset(0, 3))
+                                      ]
                                   ),
-                                  subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].startDate)),style: TextStyle(fontSize: 16.0),),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    }
-                  }else if(snapshot.data == null){
-                    _tmpChange = "Not found events";
-                  }else if(snapshot.error || snapshot.hasError){
-                    _tmpChange = "Not found events";
-                  }
-                  return Center(child:Text('${_tmpChange}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),));
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment
+                                        .spaceAround,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      SizedBox(height: 10,),
+                                      Center(
+                                          child: new Padding(
+                                            padding: const EdgeInsets.all(0.0),
+                                            child: FlatButton(
+                                              onPressed: () {
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            RegisterEventPage(
+                                                              uid: uid,
+                                                              idEvents: snapshot
+                                                                  .data[snap]
+                                                                  .eventId,)));
+                                              },
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                BorderRadius.circular(15.0),
+                                                child: Image.network(
+                                                  '${snapshot.data[snap]
+                                                      .thumbnailPicture}',
+                                                  width: double.infinity,
+                                                  height: 140,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                      ),
+                                      ListTile(
+                                        title: Text(snapshot.data[snap].eventTitle,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18.0),
+                                          textAlign: TextAlign.start,
+                                        ),
+                                        subtitle: Text(dtf.format(DateTime.parse(
+                                            snapshot.data[snap].startDate)),
+                                          style: TextStyle(fontSize: 16.0),),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          }
+                        }
+                      }else if(snapshot.error || snapshot.hasError){
+                        _tmpChange ="Not found events";
+                      }
+                    }catch(e){}
+                  return Padding (
+                    padding: const EdgeInsets.only(top:250),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Center(child:Text('${_tmpChange}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
+                      ],
+                    ),
+                  );
                 })
-                : Padding (
-                  padding: const EdgeInsets.only(top:200),
+              : Padding (
+                  padding: const EdgeInsets.only(top:100),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      CircularProgressIndicator(),
-                      Text('Loading...'),
+                      Center (
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-            )
+              ),
         ),
       ),
     );

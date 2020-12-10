@@ -146,11 +146,11 @@ class _HomePageState extends State<HomePage> {
           child: Center(
               child: Column(
                 children: <Widget>[
-                  titleEvents("Events in Week"),
+                  titleEvents("This Week"),
                   _tmpCheck == true
                       ? eventsHover()
-                      : Center(child: Text('Not found events',style: TextStyle(fontSize: 18,color: Colors.orange[600]),)),
-                  titleEvents("Events opening"),
+                      : Center(child: Text('No events for this week',style: TextStyle(fontSize: 18,color: Colors.orange[600]),)),
+                  titleEvents("Opening"),
                   listEventsOpening(),
                 ],
               )
@@ -242,7 +242,14 @@ class _HomePageState extends State<HomePage> {
             if (model.isLoading) {
               return Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center (
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
+                    ],
+                  ),
+                ),
               );
             } else if (model.listEvent != null && model.listEvent.isNotEmpty) {
               List<Widget> list = List();
@@ -323,7 +330,14 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   ...list,
                   model.isAdd
-                      ? Center(child: CircularProgressIndicator(),)
+                      ? Center (
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              CircularProgressIndicator(),
+                            ],
+                          ),
+                        )
                       : FlatButton(
                      child: Center(
                         child: model.showToast == null ?Text("Load more"): Text("${model.showToast}"),
@@ -392,10 +406,6 @@ class _HomePageState extends State<HomePage> {
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [
-                                    Color.fromARGB(0, 0, 0, 0),
-                                    Color.fromARGB(0, 0, 0, 0)
-                                  ],
                                   begin: Alignment.bottomCenter,
                                   end: Alignment.topCenter,
                                 ),
@@ -423,8 +433,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              CircularProgressIndicator(),
-              Text('Loading...'),
+              Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
             ],
           ),
         );

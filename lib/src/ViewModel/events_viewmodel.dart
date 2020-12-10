@@ -55,7 +55,7 @@ class EventsVM extends Model {
       var listEvents = await dao.pageFirstOpening(index,"Opening");
       listEvent = new List();
       if(listEvents.toString() != null){
-          listEvent.addAll(listEvents);
+        listEvent.addAll(listEvents);
       }
     } catch (e) {
     } finally {
@@ -86,6 +86,7 @@ class EventsVM extends Model {
     try {
       EventsDAO dao = new EventsDAO();
       EventsDTO eventsDTO = await dao.idEvents(id);
+      eventsDTO.toJson();
       return eventsDTO;
     }catch(e){
     }

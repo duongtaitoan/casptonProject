@@ -120,6 +120,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                               Text("Major",style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold)),
                                             ],
                                           ),
+                                          // RaisedButton(
+                                          //   onPressed: (){
+                                          //     Navigator.of(context).push(MaterialPageRoute(
+                                          //         builder: (context) => FeedBackPage(uid: uid)));
+                                          //
+                                          //   },
+                                          //   child: Text('---'),
+                                          // ),
                                           Padding(
                                             padding: const EdgeInsets.only( left: 16.0,right: 16.0),
                                             child: dropdownMajor(),
@@ -179,8 +187,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          CircularProgressIndicator(),
-                          Text('Loading...'),
+                          Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
                         ],
                       ),
                 )

@@ -33,11 +33,11 @@ class _FeedBackPageState extends State<FeedBackPage> {
   String question6;
   String question7;
   String question8;
-  var answer1 = "Kém";
-  var answer2 = "Kém";
-  var answer3 = "Kém";
-  var answer4 = "Kém";
-  var answer5 = "Kém";
+  var answer1 ;
+  var answer2 ;
+  var answer3 ;
+  var answer4 ;
+  var answer5 ;
   static var answer6 ;
   static var answer7 ;
   static var answer8 ;

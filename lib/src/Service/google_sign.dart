@@ -1,6 +1,7 @@
 import 'package:designui/src/Model/userDAO.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GoogleSign {
   // get length of token and content
@@ -26,7 +27,7 @@ class GoogleSign {
     String fbToken = fbTokenResult.token;
     logLongString(fbToken);
     // user show status token
-    status = await UserDAO.login(fbToken: fbToken);
+    status = await UserDAO.login(fbToken: fbToken, user: user);
     return status;
   }
 

@@ -91,7 +91,7 @@ class _HomeMenuState extends State<HomeMenu> {
                           googleSignIn.signOut();
                           _auth.signOut();
                           SharedPreferences sp = await SharedPreferences.getInstance();
-                          sp.remove("token_data");
+                          sp.clear();
                           // back to login and when user click button back => logout app
                           Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)=>LoginPage()), (Route<dynamic> route) => false);
                           ShowMessage.functionShowMessage("Logout successful");

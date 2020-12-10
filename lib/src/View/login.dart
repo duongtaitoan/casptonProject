@@ -27,7 +27,6 @@ class _LoginPageState extends State<LoginPage> {
       FirebaseUser user = await GoogleSign.handleSignIn();
       String status = await GoogleSign.onSignInFinished(user);
       RegExp regExp = RegExp("^[a-z0-9_\.]{8,}@[fpt|fu]{1,4}(\.[edu]{3})(\.[vn]{2})");
-
       if (!regExp.hasMatch(user.email.toString())) {
         try{
           ShowMessage.functionShowMessage(status);
@@ -39,7 +38,14 @@ class _LoginPageState extends State<LoginPage> {
             // loading when not found
             child: Column(
               children: <Widget>[
-                Center(child: CircularProgressIndicator(),),
+                Center (
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
+                    ],
+                  ),
+                ),
                 await Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (context) => HomePage(uid: user, status: status,),),
                 ),
@@ -51,7 +57,14 @@ class _LoginPageState extends State<LoginPage> {
             // loading when not found
             child: Column(
               children: <Widget>[
-                Center(child: CircularProgressIndicator(),),
+                Center (
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
+                    ],
+                  ),
+                ),
                 await Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (context) => UserProfilePage(uid: user,status:_tmpStatus),),
                 ),
@@ -111,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                                   await onSignInPressed(),
                                 });
                                 UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-                              } on PlatformException catch(e) { // May be thrown on Airplane mode
+                              } on PlatformException catch(_) { // May be thrown on Airplane mode
                                   UIBlock.unblock(_scaffoldGlobalKey.currentContext);
                                   ShowMessage.functionShowDialog("Your network is fail",context);
                               } catch(e){

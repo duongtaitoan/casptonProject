@@ -35,7 +35,8 @@ class RegisterEventDAO{
       ApiHelper _api = new ApiHelper();
       json = await _api.get("api/registrations?EventId=${idEvents}&UserId=${userId}");
       if (json["message"] == "Success") {
-        return json["data"][0]["status"];
+        return json["data"]["items"][0]["status"];
+
       }
       return null;
     }catch(e){
@@ -48,7 +49,7 @@ class RegisterEventDAO{
     try {
       ApiHelper _api = new ApiHelper();
       dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=1&PageSize=100");
-      var eventJson = json["data"] as List;
+      var eventJson = json["data"]["items"] as List;
       if (eventJson != null) {
         return eventJson.map((e) => UserDTO.fromJson(e)).toList();
       } else {
@@ -62,7 +63,7 @@ class RegisterEventDAO{
   Future<dynamic> pageIndexHistory(int userId,int index) async {
     ApiHelper _api = new ApiHelper();
     dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=${index}&PageSize=10");
-    var eventJson = json["data"] as List;
+    var eventJson = json["data"]["items"] as List;
     if (eventJson != null) {
       return eventJson.map((e) => UserDTO.fromJson(e)).toList();
     } else {
@@ -75,7 +76,7 @@ class RegisterEventDAO{
       ApiHelper _api = new ApiHelper();
       dynamic json = await _api.get(
           "api/registrations?UserId=${userId}&PageIndex=1&PageSize=10");
-      var eventJson = json["data"] as List;
+      var eventJson = json["data"]["items"] as List;
       if (eventJson != null) {
         return eventJson.map((e) => UserDTO.fromJson(e)).toList();
       } else {
@@ -86,10 +87,10 @@ class RegisterEventDAO{
   }
 
   // get id when user register
-  Future<dynamic> id(int id) async {
+  Future<dynamic> idOfEvent(int id) async {
     ApiHelper _api = new ApiHelper();
     dynamic json = await _api.get("api/registrations?EventId=${id}");
-    var eventDTO = json["data"][0]["id"];
+    var eventDTO = json["data"]["items"][0]["id"];
     return eventDTO;
   }
 

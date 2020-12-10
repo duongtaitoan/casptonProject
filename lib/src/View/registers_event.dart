@@ -73,7 +73,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
               key: scaffoldGlobalKey,
               appBar: myAppBar(),
               body: FutureBuilder(
-                future: Future.delayed(Duration(milliseconds: 1000)),
+                future: Future.delayed(Duration(seconds: 1)),
                 builder: (c, s) => s.connectionState == ConnectionState.done
                   ? FutureBuilder<EventsDTO>(
                       future: EventsVM().getEventFlowId(idEvents),
@@ -88,8 +88,14 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        CircularProgressIndicator(),
-                        Text('Loading...'),
+                        Center (
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                 )
@@ -131,7 +137,8 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     registerEvent(dto, snapshot.data),
                   ],
                 );
-              }catch(e){}
+              }catch(e){
+              }
             }
             return Center();
           },
@@ -263,7 +270,9 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 SizedBox(width: 7,),
                 Text('Host', style: TextStyle(color: Colors.black, fontSize: 17.0),textAlign: TextAlign.start,),
                 SizedBox(width: 120,),
-                Text(dto.host,style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold),textAlign: TextAlign.start,),
+                dto.host!= null ?
+                Text(dto.host,style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold),textAlign: TextAlign.start,)
+                :Text("Not found host",style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold),textAlign: TextAlign.start,),
               ],
             ),
             SizedBox(height: 25,),
@@ -338,7 +347,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                           title: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children:[
-                                Icon(Icons.info_outline),
+                                Icon(Icons.notifications,),
                                 SizedBox(width: 10,),
                                 Text("Notification"),
                               ]
@@ -349,7 +358,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                               child: Text("Agree",style: TextStyle(color: Colors.blue[500]),),
                               onPressed: () async {
                                 //get this id events
-                                var id = await RegisterEventDAO().id(idEvents);
+                                var id = await RegisterEventDAO().idOfEvent(idEvents);
 
                                 // if user cancel this event then show messages
                                 RegisterVM regVM = new RegisterVM();
@@ -425,7 +434,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment:CrossAxisAlignment.center,
                     children:[
-                      Icon(Icons.info_outline),
+                      Icon(Icons.notifications),
                       SizedBox(width: 10,),
                       Text('Confirm information'),
                     ]
@@ -500,7 +509,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
                     onPressed: () async {
                       // get id register
-                      var idRegister = await RegisterEventDAO().id(idEvents);
+                      var idRegister = await RegisterEventDAO().idOfEvent(idEvents);
                       // get status user register
                       var statusCheckin = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
                       await Future.delayed(Duration.zero, () {
@@ -576,7 +585,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       //add hours finish events
       timeStop = pTimeStart.add(new Duration(hours: hours)).toString();
     }catch(e){
-
     }
   }
 

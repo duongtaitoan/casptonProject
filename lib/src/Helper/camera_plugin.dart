@@ -207,16 +207,20 @@ class _CameraAppPageState extends State<CameraApp> {
               children: <Widget>[
                 new FlatButton(
                   child: Center(child: new Text('Camera',style: TextStyle(color: Colors.black,fontSize: 20.0,fontWeight: FontWeight.bold))),
-                  onPressed: () async => {
-                    // imageFile
-                    imageFile = await ImagePicker.pickImage(source: ImageSource.camera, imageQuality: 90),
-                    Navigator.of(context).pop(),
-                    if (imageFile != null) {
-                      print("Your picture " + imageFile.path),
-                      setState(() {
-                        debugPrint("$imageFile");
-                      }),
-                    },
+                  onPressed: () async {
+                    try{
+                      // imageFile
+                      imageFile = await ImagePicker.pickImage(source: ImageSource.camera, imageQuality: 90);
+                      Navigator.of(context).pop();
+                      if (imageFile != null) {
+                        print("Your picture " + imageFile.path);
+                        setState(() {
+                          debugPrint("$imageFile");
+                        });
+                      }
+                    }catch(e){
+                      ShowMessage.functionShowDialog("Accept permissions take a photo", context);
+                    }
                   },
                 ),
                 new FlatButton(
@@ -255,7 +259,7 @@ class _CameraAppPageState extends State<CameraApp> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
             children:[
-              Icon(Icons.info_outline),
+              Icon(Icons.notifications),
               SizedBox(width: 10,),
               Text("Notification"),
             ]
@@ -266,7 +270,7 @@ class _CameraAppPageState extends State<CameraApp> {
         ),
         actions: [
           new FlatButton(
-            child: const Text("Close",style: TextStyle(color: Colors.red),),
+            child: const Text("Close",style: TextStyle(color: Colors.blue),),
             onPressed: () => Navigator.pop(context),
           ),
         ],
