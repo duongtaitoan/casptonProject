@@ -6,6 +6,7 @@ import 'package:designui/src/view/registers_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 
@@ -25,7 +26,7 @@ class _HistoryPageState extends State<HistoryPage> {
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   var status = "This event you have completed";
   final TextEditingController _controller = TextEditingController();
-
+  String result = "";
   _HistoryPageState(this.uid,);
 
   @override
@@ -83,7 +84,7 @@ class _HistoryPageState extends State<HistoryPage> {
   searchEvents(String input) async {
     try {
       var delayInput = input;
-      Future.delayed(new Duration(seconds: 2), () => delayInput);
+      Future.delayed(new Duration(microseconds: 500), () => delayInput);
       _search.clear();
       if (delayInput.isEmpty) {
         setState(() {});
@@ -108,6 +109,7 @@ class _HistoryPageState extends State<HistoryPage> {
           });
           return;
         } else if (!_search.isNotEmpty) {
+          tmpList.clear();
           _search.clear();
         }
       });
@@ -131,13 +133,16 @@ class _HistoryPageState extends State<HistoryPage> {
               hintText: 'Search events',
               hintStyle: TextStyle(color: Colors.grey)),
           controller: _controller,
-          onChanged: (textInput){
+          onFieldSubmitted: (textInput){
             if (textInput.length <= 0) {
               _controller.clear();
               searchEvents('');
+            }else if(textInput.length > 0){
+              setState(() {
+                searchEvents(textInput);
+              });
             }
-            searchEvents(textInput);
-          } ,
+          },
         ),
         trailing: IconButton(
           onPressed: () {
@@ -226,7 +231,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                       child: element.status.toLowerCase() == "accepted" || element.status.toLowerCase() != "canceled"
                                           ? Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
                                             color: Colors.green[500]),)
-                                          : Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
+                                          : Text('${"rejected"}', style: TextStyle(fontSize: 16.0,
                                               color: Colors.red[500])),)
                                           : Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
                                           color: Colors.yellow[600]),),
@@ -280,125 +285,135 @@ class _HistoryPageState extends State<HistoryPage> {
                     if(snapshot.data.length ==0){
                       _tmpSMS="Not found events";
                     }else {
-                      return _search.length != 0 || _controller.text.isNotEmpty
-                          ? Center(child: _search.length != 0
-                          ? ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _search.length,
-                          itemBuilder: (context, i) {
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 10.0, right: 10.0),
-                              child: Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    border: Border.all(
-                                        color: Colors.white, width: 1),
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(10.0),),
-                                    boxShadow: [BoxShadow(blurRadius: 9,
-                                        color: Colors.grey[300],
-                                        offset: Offset(0, 3))
-                                    ]),
-                                child: FlatButton(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(builder: (context) =>
-                                            RegisterEventPage(uid: uid,
-                                                idEvents: _search[i].eventId,
-                                                status: status)));
-                                  },
-                                  padding: const EdgeInsets.only(
-                                      top: 1, left: 10),
-                                  child: Column(children: <Widget>[
-                                    Row(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .spaceBetween,
-                                        mainAxisSize: MainAxisSize.max,
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .center,
-                                        children: <Widget>[
-                                          Expanded(
-                                            flex: 5,
-                                            child: Center(
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .only(top: 5, bottom: 5),
-                                                  child: ClipRRect(borderRadius:
-                                                  BorderRadius.circular(15.0),
-                                                    child: Image.network(
-                                                      '${_search[i]
-                                                          .thumbnailPicture}',
-                                                      width: double.infinity,
-                                                      height: 140,
-                                                      fit: BoxFit.cover,),
-                                                  ),
-                                                )
+                      try {
+                        return _search.length != 0 || _controller.text.isNotEmpty
+                            ? Center(child: _search.length != 0
+                            ? ListView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: _search.length,
+                            itemBuilder: (context, i) {
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 10.0, right: 10.0),
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 10),
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(
+                                          color: Colors.white, width: 1),
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(10.0),),
+                                      boxShadow: [BoxShadow(blurRadius: 9,
+                                          color: Colors.grey[300],
+                                          offset: Offset(0, 3))
+                                      ]),
+                                  child: FlatButton(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  RegisterEventPage(uid: uid,
+                                                      idEvents: _search[i]
+                                                          .eventId,
+                                                      status: status)));
+                                    },
+                                    padding: const EdgeInsets.only(
+                                        top: 1, left: 10),
+                                    child: Column(children: <Widget>[
+                                      Row(
+                                          mainAxisAlignment: MainAxisAlignment
+                                              .spaceBetween,
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment: CrossAxisAlignment
+                                              .center,
+                                          children: <Widget>[
+                                            Expanded(
+                                              flex: 5,
+                                              child: Center(
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .only(
+                                                        top: 5, bottom: 5),
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                      BorderRadius.circular(
+                                                          15.0),
+                                                      child: Image.network(
+                                                        '${_search[i]
+                                                            .thumbnailPicture}',
+                                                        width: double.infinity,
+                                                        height: 140,
+                                                        fit: BoxFit.cover,),
+                                                    ),
+                                                  )
+                                              ),
                                             ),
-                                          ),
-                                          Expanded(
-                                            flex: 4,
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment
-                                                  .spaceEvenly,
-                                              mainAxisSize: MainAxisSize.max,
-                                              crossAxisAlignment: CrossAxisAlignment
-                                                  .center,
-                                              children: <Widget>[
-                                                SizedBox(width: 10,),
-                                                Text(limitTitle(
-                                                    _search[i].eventTitle),
-                                                  style: TextStyle(
-                                                      fontWeight: FontWeight
-                                                          .bold,
-                                                      fontSize: 18.0),),
-                                                Text(dtf.format(DateTime.parse(
-                                                    _search[i].startDate)),
-                                                  style: TextStyle(
-                                                      fontSize: 16.0),),
-                                                _search[i].status
-                                                    .toLowerCase() != "pending"
-                                                    ? Center(
-                                                  child: _search[i].status
-                                                      .toLowerCase() ==
-                                                      "accepted" ||
-                                                      _search[i].status
-                                                          .toLowerCase() !=
-                                                          "canceled"
-                                                      ? Text(
+                                            Expanded(
+                                              flex: 4,
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment
+                                                    .spaceEvenly,
+                                                mainAxisSize: MainAxisSize.max,
+                                                crossAxisAlignment: CrossAxisAlignment
+                                                    .center,
+                                                children: <Widget>[
+                                                  SizedBox(width: 10,),
+                                                  Text(limitTitle(
+                                                      _search[i].eventTitle),
+                                                    style: TextStyle(
+                                                        fontWeight: FontWeight
+                                                            .bold,
+                                                        fontSize: 18.0),),
+                                                  Text(dtf.format(
+                                                      DateTime.parse(_search[i]
+                                                          .startDate)),
+                                                    style: TextStyle(
+                                                        fontSize: 16.0),),
+                                                  _search[i].status
+                                                      .toLowerCase() !=
+                                                      "pending"
+                                                      ? Center(
+                                                    child: _search[i].status
+                                                        .toLowerCase() ==
+                                                        "accepted" ||
+                                                        _search[i].status
+                                                            .toLowerCase() !=
+                                                            "canceled"
+                                                        ? Text('${_search[i]
+                                                        .status.toLowerCase()}',
+                                                      style: TextStyle(
+                                                          fontSize: 16.0,
+                                                          color: Colors
+                                                              .green[500]),)
+                                                        : Text('${"rejected"}',
+                                                        style: TextStyle(
+                                                            fontSize: 16.0,
+                                                            color: Colors
+                                                                .red[500])),)
+                                                      : Text(
                                                     '${_search[i].status
                                                         .toLowerCase()}',
                                                     style: TextStyle(
                                                         fontSize: 16.0,
                                                         color: Colors
-                                                            .green[500]),)
-                                                      : Text(
-                                                      '${_search[i].status
-                                                          .toLowerCase()}',
-                                                      style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          color: Colors
-                                                              .red[500])),)
-                                                    : Text('${_search[i].status
-                                                    .toLowerCase()}',
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      color: Colors
-                                                          .yellow[600]),),
-                                              ],
+                                                            .yellow[600]),),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ])
-                                  ]),
+                                          ])
+                                    ]),
+                                  ),
                                 ),
-                              ),
-                            );
-                          })
-                          : Center(child: Text('${_tmpSMS}', style: TextStyle(
-                          fontSize: 18.0, color: Colors.orange[600]),),),)
-                          : eventsHistory();
+                              );
+                            })
+                            : Center(child: Text(
+                          '${"Not found events"}', style: TextStyle(
+                            fontSize: 18.0, color: Colors.orange[600]),),),)
+                            : eventsHistory();
+                      }catch(e){
+
+                      }
                     }
                   };
                 }

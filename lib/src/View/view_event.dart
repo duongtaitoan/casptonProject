@@ -64,12 +64,15 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                         hintStyle:
                             TextStyle(color: Colors.white, fontSize: 20.0)),
                     controller: _controller,
-                    onChanged: (textInput) {
+                    onFieldSubmitted: (textInput){
+                      print('text input ${textInput.length}');
                       if (textInput.length <= 0) {
                         _controller.clear();
                         searchEvents('');
-                      }else{
-                        searchEvents(textInput);
+                      }else if(textInput.length > 0){
+                        setState(() {
+                          searchEvents(textInput);
+                        });
                       }
                     },
                     style: TextStyle(color: Colors.white, fontSize: 20),
@@ -87,11 +90,8 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => HomePage(
-                            uid: uid,
-                          )),
+                  context, MaterialPageRoute(
+                      builder: (context) => HomePage(uid: uid,)),
                   (Route<dynamic> route) => false),
             ),
           ),
@@ -418,9 +418,17 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                       ));
                                 })
                                 : Center(
-                              child: Text('${_tmpSMS}', style: TextStyle(
-                                  fontSize: 18.0,
-                                  color: Colors.orange[600]),),),)
+                              child: Padding (
+                                padding: const EdgeInsets.only(top:250),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Center(child:Text('${"Not found events"}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
+                                  ],
+                                ),
+                              )
+                              ,),)
                                 : listEvents();
                           }
                         };
@@ -431,7 +439,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            Center(child:Text('${_tmpSMS}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
+                            Center(child:Text('${"Not found events"}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
                           ],
                         ),
                       );

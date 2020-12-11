@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/TrackingDTO.dart';
+import 'package:designui/src/View/feedback.dart';
 import 'package:designui/src/ViewModel/tracking_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:location/location.dart';
 
 class show {
-  showLocationDiaLog(duration,idEvents,show) async {
+  showLocationDiaLog(duration,idEvents,show,BuildContext context,uid,nameEvents) async {
     Location location = new Location();
     bool _serviceEnabled;
     PermissionStatus _permissionGranted;
@@ -45,39 +47,31 @@ class show {
       }
     }
     // get location
-    timeLocation(_locationData,counts,show,idEvents);
+    timeLocation(_locationData,counts,show,idEvents,context,uid,nameEvents);
   }
 }
 
-Future timeLocation(_locationData,counts,show,idEvents) {
+Future timeLocation(_locationData,counts,show,idEvents,BuildContext context,uid,nameEvents) {
   return new Future.delayed(const Duration(milliseconds: 1), () async {
     Stopwatch s = new Stopwatch();
-
-    for (int i = 0; i < counts; i++) {
+    for (int i = 0; i <= counts; i++) {
       sleep(const Duration(milliseconds: 1));
       await Future.delayed(new Duration(minutes: 5),() async {
-        var locationUser = "Your location\nLatitude ${_locationData.latitude.toString()} \t Longtitude ${_locationData.longitude.toString()}";
+        var locationUser = "Your location\nLatitude ${_locationData.latitude.toString()}\tLongtitude ${_locationData.longitude.toString()}";
+        print('location user ${locationUser}');
         if(show == true) {
-          await showToast(locationUser);
+          ShowMessage.functionShowMessage(locationUser);
         }
-
+        if(i == counts){
+          print('show screen feedback');
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context)=>FeedBackPage(uid: uid,nameEvents:nameEvents,
+                idEvent: idEvents,screenHome: "HomePage",)));
+        }
         print('counts :${i}----- >location :'+ _locationData.longitude.toString()+ " - - - "+ _locationData.latitude.toString());
-        getLocation(new TrackingDTO(eventId: idEvents,longitude: _locationData.longitude,latitude: _locationData.latitude));
+        // getLocation(new TrackingDTO(eventId: idEvents,longitude: _locationData.longitude,latitude: _locationData.latitude));
         s.stop();
       });
     }
   });
-}
-
-// show toast
-showToast(_tmpStatus){
-  sleep(Duration(seconds: 2));
-  return  Fluttertoast.showToast(
-      msg: _tmpStatus,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIos: 1,
-      fontSize: 20.0,
-      textColor: Colors.black
-  );
 }

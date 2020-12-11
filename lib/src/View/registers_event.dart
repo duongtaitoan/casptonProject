@@ -46,6 +46,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   var checkValue = false;
   var checkApp = false;
   var _tmpStatusEvent;
+  var checkInUser = false;
   String dropdownValue;
 
   Map<String, dynamic> decodedToken;
@@ -78,11 +79,27 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                   ? FutureBuilder<EventsDTO>(
                       future: EventsVM().getEventFlowId(idEvents),
                       builder: (context, snapshot) {
-                        try {
-                          convertDateTime(snapshot.data);
-                        }catch(e){
+                        if(snapshot.data != null) {
+                          try {
+                            convertDateTime(snapshot.data);
+                          } catch (e) {}
+                          return myBody(snapshot.data);
                         }
-                        return myBody(snapshot.data);
+                        return Center (
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Center (
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
                   })
                   :Center (
                     child: Column(
@@ -254,7 +271,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 SizedBox(width: 9,),
                 Text('Status',style: TextStyle(color: Colors.black, fontSize: 17.0),textAlign: TextAlign.start,),
                 SizedBox(width: 80,),
-                _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" && _tmpStatusUser != "canceled"? Center(
+                _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" ? Center(
                   child: _tmpStatusUser != "pending" ? Center(
                     child: _tmpStatusUser != "accepted" ?Center(
                       child: Text('Rejected',style: TextStyle(color: Colors.red, fontSize: 16.0),textAlign: TextAlign.start,),
@@ -317,7 +334,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                   width: MediaQuery.of(context).size.width,
                   height: 52,
                   child:buttonRegister(dto)),
-            ) : buttonFeedBack(4.0, 4.0,dto),
+            ) : buttonFeedBack(4.0, 4.0,dto,statusUser),
         ),
       ),
     );
@@ -392,7 +409,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   }
 
   // button feedback events
-  Widget buttonFeedBack(bottom,top,EventsDTO dto){
+  Widget buttonFeedBack(bottom,top,EventsDTO dto,statusUser){
     return Row(
       children: <Widget>[
         Visibility(
@@ -407,9 +424,16 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(5))),
                   onPressed: () {
-                    Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => FeedBackPage(uid: uid,nameEvents: dto.title,
-                        idEvent: idEvents,)));
+                    if(statusUser.toString().toLowerCase().compareTo("canceled") == 0 ||
+                        statusUser.toString().toLowerCase().compareTo("pending") == 0){
+                      ShowMessage.functionShowDialog("This event you must ${statusUser.toString().toLowerCase()} cannot feedback", context);
+                    }else if(statusUser.toString().toLowerCase().compareTo("accepted") == 0){
+                      ShowMessage.functionShowDialog("Test on the screen feedback", context);
+                      Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) =>
+                              FeedBackPage(uid: uid, nameEvents: dto.title,
+                                idEvent: idEvents,)));
+                    }
                   },
                   child: Text("FeedBack",style: TextStyle(fontSize: 18.0, color: Colors.white)))
             ),
@@ -505,32 +529,47 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       // timeToCancel(dto) == true ? Padding(
       //       padding: const EdgeInsets.only(right: 16, left: 16,bottom: 1),
       //       child: timeToCheckin(dto) == true ?
-            RaisedButton(
-                    child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
-                    onPressed: () async {
-                      // get id register
-                      var idRegister = await RegisterEventDAO().idOfEvent(idEvents);
-                      // get status user register
-                      var statusCheckin = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
-                      await Future.delayed(Duration.zero, () {
-                        Navigator.pushAndRemoveUntil(
-                            context, MaterialPageRoute(builder: (BuildContext context) =>
-                            CameraApp(uid: uid,
-                                duration: dto.duration,
-                                nameEvents: dto.title,
-                                tracking:dto.gpsTrackingRequired,
-                                idEvents: dto.id,
-                                idRegister: idRegister,
-                                statusCheckin :statusCheckin,
-                            )), (
-                            Route<dynamic> route) => false);
-                      });
-                    },
-                    color: Colors.orange[600],
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
-                )
+            checkInUser == false
+              ? RaisedButton(
+                      child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
+                      onPressed: () async {
+                        await ShowMessage.functionShowDialog("Test check in", context);
+                        // get id register
+                        var idRegister = await RegisterEventDAO().idOfEvent(idEvents);
+                        // get status user register
+                        var statusCheckin = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
+                        await Future.delayed(Duration.zero, () {
+                          Navigator.pushAndRemoveUntil(
+                              context, MaterialPageRoute(builder: (BuildContext context) =>
+                              CameraApp(uid: uid,
+                                  duration: dto.duration,
+                                  nameEvents: dto.title,
+                                  tracking:dto.gpsTrackingRequired,
+                                  idEvents: dto.id,
+                                  idRegister: idRegister,
+                                  statusCheckin :statusCheckin,
+                              )), (
+                              Route<dynamic> route) => false);
+                        });
+                      },
+                      color: Colors.orange[600],
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+                  )
+              : RaisedButton(
+                onPressed: (){
+                  ShowMessage.functionShowDialog("Your have already checkin this event", context);
+                },
+                color: Colors.orange[600],
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+                child: Text('Check in',style: TextStyle(fontSize: 18.0, color: Colors.white)),
+              ),
         //         : RaisedButton(
-        //             child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
+        // onPressed: (){
+        //   ShowMessage.functionShowDialog("This event has not yet start", context);
+        // },
+        //       color: Colors.orange[600],
+        //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+        //       child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
         // ):detailsButton(3.0,3.0,"Cancel"),
     );
   }
@@ -626,5 +665,16 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
           );
         }).toList(),
     );
+  }
+
+  // check if the user has checked in yet
+  Future<dynamic> userCheckIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    var idOfEvent = prefs.get("idEvent");
+    if (idOfEvent == idEvents) {
+      checkInUser = true;
+      return checkInUser;
+    }
+    return checkInUser;
   }
 }

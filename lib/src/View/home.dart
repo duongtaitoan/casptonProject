@@ -242,14 +242,7 @@ class _HomePageState extends State<HomePage> {
             if (model.isLoading) {
               return Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Center (
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
-                    ],
-                  ),
-                ),
+                child: Center(child: CircularProgressIndicator()),
               );
             } else if (model.listEvent != null && model.listEvent.isNotEmpty) {
               List<Widget> list = List();
@@ -430,12 +423,7 @@ class _HomePageState extends State<HomePage> {
       } else if(listEventDTO.isEmpty){
         _tmpCheck = false;
         Center (
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
-            ],
-          ),
+          child: CircularProgressIndicator(),
         );
       }
     }catch(e){

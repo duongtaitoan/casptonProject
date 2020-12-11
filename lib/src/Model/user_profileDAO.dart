@@ -4,15 +4,16 @@ import 'package:designui/src/Model/user_profileDTO.dart';
 class UserProfileDAO{
   // update user profile
   Future<String> updateInforUser(UserProfileDTO dto,idUser) async{
+    var json;
     try {
       ApiHelper _api = new ApiHelper();
       dynamic response = await _api.putInfor(dto, "api/accounts/student/${idUser}");
-      var json = response["message"];
-      if (json != null) {
+      json = response["message"];
+      if (response["isSuccess"] == true) {
         return json;
       }
     }catch(e){
-      return "Information update failed";
+      return "Server error";
     }
   }
 

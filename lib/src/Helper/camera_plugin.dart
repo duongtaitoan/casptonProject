@@ -4,6 +4,7 @@ import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Helper/show_user_location.dart';
 import 'package:designui/src/Model/imageDTO.dart';
 import 'package:designui/src/View/feedback.dart';
+import 'package:designui/src/View/home.dart';
 import 'package:designui/src/View/registers_event.dart';
 import 'package:designui/src/ViewModel/register_viewmodel.dart';
 import 'package:designui/src/ViewModel/tracking_viewmodel.dart';
@@ -14,6 +15,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uiblock/uiblock.dart';
 
 class CameraApp extends StatefulWidget {
@@ -150,50 +152,24 @@ class _CameraAppPageState extends State<CameraApp> {
     if(_tmpMessage == "Accept successful"){
       // requiment is tracking or not
       if(tracking == true){
-        blockUIChecIn(tracking);
+        getLocationUser(tracking);
       }else{
-        blockUIChecIn(tracking);
+        getLocationUser(tracking);
       }
     }else{
       ShowMessage.functionShowMessage(_tmpMessage);
     }
   }
 
-  // block screen check in
-  blockUIChecIn(isTracking) async {
-    Future.delayed(new Duration(microseconds:1),()async{
-    // back events details
-      Navigator.of(_scaffoldGlobalKey.currentContext).push(
-        MaterialPageRoute(builder: (context) => RegisterEventPage(uid: uid,
-          nameEvents: nameEvents, idEvents: idEvents, scaffoldGlobalKey: _scaffoldGlobalKey)),);
-      // lock screen and do not for user click ...
-      UIBlock.block(
-        _scaffoldGlobalKey.currentContext,
-        loadingTextWidget: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text('Please wait for the event to end and do not turn off the app',
-            textAlign: TextAlign.center, style: TextStyle(color: Colors.orange[600],
-              fontSize: 18.0, fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      );
-    });
-
-    Future.delayed(Duration(seconds: 3), () {
-        int _tmpTimeDelay = duration*60;
-        // time block screen set time to delayed when events not get location
-        Future.delayed(new Duration(microseconds: 1),()async{
-            // get location of user if is tracking == true
-            await show().showLocationDiaLog(duration, idEvents,isTracking);
-            // close Block screen user
-            Timer(Duration(minutes: _tmpTimeDelay), () async {
-              UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-              Navigator.of(_scaffoldGlobalKey.currentContext).push(MaterialPageRoute(
-                  builder: (context)=>FeedBackPage(uid: uid,nameEvents:nameEvents,
-                    idEvent: idEvents,screenHome: "HomePage",)));
-            });
-        });
+  // when user check in success then get location of user
+  getLocationUser(isTracking) async {
+      Future.delayed(new Duration(microseconds: 1),()async{
+          // if is tracking == true show location for user know isTracking else tracking false then not show
+          await show().showLocationDiaLog(duration, idEvents,true,context,uid,nameEvents);
+          // back to home screen
+          final prefs = await SharedPreferences.getInstance();
+          prefs.setInt("idEvent", idEvents);
+          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HomePage(uid: uid)));
       });
   }
 
