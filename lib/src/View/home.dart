@@ -333,7 +333,9 @@ class _HomePageState extends State<HomePage> {
                         )
                       : FlatButton(
                      child: Center(
-                        child: model.showToast == null ?Text("Load more"): Text("${model.showToast}"),
+                        child: model.showToast == null
+                            ? Text("Load more",style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),)
+                            : Text("${model.showToast}",style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),),
                     ),
                     onPressed: () async {
                       await model.changPageIndex();

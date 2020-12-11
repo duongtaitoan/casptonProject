@@ -39,7 +39,7 @@ class EventsVM extends Model {
     } catch (e) {
       isAdd = false;
       notifyListeners();
-      showToast = "No Events";
+      showToast = "No new event founds";
     } finally {
       isAdd = false;
       notifyListeners();

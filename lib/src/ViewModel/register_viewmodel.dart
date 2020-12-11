@@ -9,10 +9,10 @@ class RegisterVM extends Model{
     var value = await _dao.registerEvents(dto,approval);
     if (value == "Register Successfully") {
       return value;
-    }else if(value == "Not Found Student Info"){
-      return "Please update info first";
+    }else{
+      return value;
     }
-    return "Event registration failed";
+    // return "Event registration failed";
   }
   // cancel event
   Future updateStatusEvent(String status,int id,isCheckin) async {

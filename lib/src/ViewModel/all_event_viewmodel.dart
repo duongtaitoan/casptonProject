@@ -19,14 +19,13 @@ class ViewAllVM extends Model{
       notifyListeners();
 
       EventsDAO dao = new EventsDAO();
-      var listEvents = await dao.viewAllPageFirst(index);
+      var listEvents = await dao.viewAllPageFirst(index,context);
       listEvent = new List();
 
       if(listEvents.toString() != null){
         listEvent.addAll(listEvents);
       }
     } catch (e) {
-      ShowMessage.functionShowDialog("Server error", context);
     } finally {
       isLoading = false;
       notifyListeners();
@@ -50,7 +49,7 @@ class ViewAllVM extends Model{
     } catch (e) {
       isAdd = false;
       notifyListeners();
-      mgs = "No Events";
+      mgs = "No new event founds";
     } finally {
       isAdd = false;
       notifyListeners();

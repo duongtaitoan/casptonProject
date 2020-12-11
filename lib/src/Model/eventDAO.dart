@@ -1,5 +1,7 @@
 import 'package:designui/src/API/api_helper.dart';
 import 'package:designui/src/Model/eventDTO.dart';
+import 'package:designui/src/Helper/show_message.dart';
+
 
 class EventsDAO{
   // get event flow week
@@ -38,11 +40,22 @@ class EventsDAO{
   }
 
   // get pageFirst in viewAll events
-  Future<List<EventsDTO>> viewAllPageFirst(int index) async {
-    ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/events?Status=Opening&PageIndex=${index}&PageSize=20");
-    var eventJson = json["data"]["items"] as List;
-    return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
+  Future<List<EventsDTO>> viewAllPageFirst(int index,context) async {
+    try {
+      ApiHelper _api = new ApiHelper();
+      dynamic json = await _api.get(
+          "api/events?Status=Opening&PageIndex=${index}&PageSize=20");
+      var eventJson = json["data"]["items"] as List;
+      return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
+    }catch(e){
+      RegExp pattern = new RegExp('([0-9]{3,4})');
+      var a = pattern.stringMatch(e.toString());
+      if(int.parse(a) == 404){
+        await ShowMessage.functionShowDialog("Not found events", context);
+      }else if(int.parse(a) == 500){
+        await ShowMessage.functionShowDialog("Server error", context);
+      }
+    }
   }
 
   // get events flow id events

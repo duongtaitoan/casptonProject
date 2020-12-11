@@ -482,22 +482,23 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                       CupertinoButton(
                         child: Text('Agree',style: TextStyle(color: Colors.blue[500]),),
                         onPressed: () async {
-                         // check semester and student code
-                          if(dropdownValue == "Any"){
-                            setState(() {
-                              dropdownValue= "0";
-                            });
-                          }
-                            // get student code
-                            var tmpStudentCode = await UserProfileDAO().getStudentCode(int.parse(decodedToken["userId"]));
+                           // check semester and student code
+                            if(dropdownValue == "Any"){
+                              var tmpValue = 0.toString();
+                              setState(() {
+                                  dropdownValue = tmpValue;
+                                });
+                            }
+
                             // register event
-                            var _tmpStatus = await RegisterVM().register(new RegisterEventsDTO
-                              (eventId: idEvents,semester: int.parse(dropdownValue),studentCode: tmpStudentCode),dto.approvalRequired);
+                            var _tmpStatus = await RegisterVM().register(new RegisterEventsDTO(eventId: idEvents,
+                                semester: int.parse(dropdownValue),studentId: int.parse(decodedToken["userId"])),
+                                dto.approvalRequired);
 
                             Navigator.of(context).pop();
                             // show message when registered
                             Future.delayed(Duration(microseconds:1),()async{
-                            ShowMessage.functionShowMessage(_tmpStatus);
+                            await ShowMessage.functionShowDialog(_tmpStatus,context);
                               setState(()  {
                               });
                           });

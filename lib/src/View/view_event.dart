@@ -65,7 +65,6 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                             TextStyle(color: Colors.white, fontSize: 20.0)),
                     controller: _controller,
                     onFieldSubmitted: (textInput){
-                      print('text input ${textInput.length}');
                       if (textInput.length <= 0) {
                         _controller.clear();
                         searchEvents('');
@@ -170,15 +169,8 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
             builder: (context, child, model) {
               if (model.isLoading) {
                 return Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Center (
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
-                      ],
-                    ),
-                  ),
+                  padding: const EdgeInsets.all(20.0),
+                  child: Center(child: CircularProgressIndicator()),
                 );
               } else if (model.listEvent != null &&
                   model.listEvent.isNotEmpty) {
@@ -278,8 +270,8 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                         : FlatButton(
                             child: Center(
                               child: model.mgs == null
-                                  ? Text("Load more")
-                                  : Text("${model.mgs}"),
+                                  ? Text("Load more",style: TextStyle(fontSize: 18.0,color: Colors.orange[600]))
+                                  : Text("${model.mgs}",style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),),
                             ),
                             onPressed: () async {
                               await model.pageIndex();
@@ -305,62 +297,103 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                 ? FutureBuilder<List<EventsDTO>>(
                     future: EventsVM.getAllListEvents(),
                     builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        if (snapshot.data != null) {
-                          if (snapshot.data.length == 0) {
-                            _tmpSMS="Not found events";
-                          }else{
-                            return _search.length != 0 ||
-                                _controller.text.isNotEmpty
-                                ? Center(child: _search.length != 0
-                                ? ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: _search.length,
-                                itemBuilder: (context, i) {
-                                  return Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 10.0, right: 10.0),
-                                      child: Container(
-                                        margin: const EdgeInsets.only(top: 20),
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            border: Border.all(
-                                                color: Colors.white, width: 1),
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(10.0),),
-                                            boxShadow: [BoxShadow(blurRadius: 9,
-                                                color: Colors.grey[300],
-                                                offset: Offset(0, 3))
-                                            ]),
-                                        padding: const EdgeInsets.only(top: 0),
-                                        child: Column(children: <Widget>[
-                                          Container(
-                                              width: double.infinity,
-                                              height: 160,
-                                              child: Stack(
-                                                children: <Widget>[
-                                                  ClipRRect(
-                                                    borderRadius: BorderRadius
-                                                        .circular(10),
-                                                    child: Image.network(
-                                                      '${_search[i]
-                                                          .thumbnailPicture}',
-                                                      width: double.infinity,
-                                                      height: 160.0,
-                                                      fit: BoxFit.cover,
+                      try {
+                        if (snapshot.hasData) {
+                          if (snapshot.data != null) {
+                            if (snapshot.data.length == 0) {
+                              _tmpSMS = "Not found events";
+                            } else {
+                              return _search.length != 0 ||
+                                  _controller.text.isNotEmpty
+                                  ? Center(child: _search.length != 0
+                                  ? ListView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: _search.length,
+                                  itemBuilder: (context, i) {
+                                    return Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 10.0, right: 10.0),
+                                        child: Container(
+                                          margin: const EdgeInsets.only(
+                                              top: 20),
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 1),
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(10.0),),
+                                              boxShadow: [
+                                                BoxShadow(blurRadius: 9,
+                                                    color: Colors.grey[300],
+                                                    offset: Offset(0, 3))
+                                              ]),
+                                          padding: const EdgeInsets.only(
+                                              top: 0),
+                                          child: Column(children: <Widget>[
+                                            Container(
+                                                width: double.infinity,
+                                                height: 160,
+                                                child: Stack(
+                                                  children: <Widget>[
+                                                    ClipRRect(
+                                                      borderRadius: BorderRadius
+                                                          .circular(10),
+                                                      child: Image.network(
+                                                        '${_search[i]
+                                                            .thumbnailPicture}',
+                                                        width: double.infinity,
+                                                        height: 160.0,
+                                                        fit: BoxFit.cover,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  InkWell(
-                                                    borderRadius: BorderRadius
-                                                        .circular(10),
-                                                    onTap: () {
-                                                      var screenHome = "HomePage";
-                                                      setState(() {
-                                                        Navigator.of(context)
-                                                            .push(
-                                                            MaterialPageRoute(
+                                                    InkWell(
+                                                      borderRadius: BorderRadius
+                                                          .circular(10),
+                                                      onTap: () {
+                                                        var screenHome = "HomePage";
+                                                        setState(() {
+                                                          Navigator.of(context)
+                                                              .push(
+                                                              MaterialPageRoute(
+                                                                builder: (
+                                                                    context) =>
+                                                                    RegisterEventPage(
+                                                                        uid: uid,
+                                                                        idEvents: _search[i]
+                                                                            .id,
+                                                                        tracking: _search[i]
+                                                                            .gpsTrackingRequired,
+                                                                        screenHome: screenHome),));
+                                                        });
+                                                      },
+                                                    ),
+                                                  ],
+                                                )
+                                            ),
+                                            ListTile(
+                                              title: Text(_search[i].title,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 18.0),
+                                                textAlign: TextAlign.start,),
+                                              subtitle: Text(dtf.format(
+                                                  DateTime.parse(
+                                                      _search[i].startedAt)),
+                                                style: TextStyle(
+                                                    fontSize: 16.0),),
+                                              trailing: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 35.0),
+                                                child: FlatButton(
+                                                  onPressed: () {
+                                                    var screenHome = "HomePage";
+                                                    setState(() {
+                                                      Navigator.of(context)
+                                                          .push(
+                                                          MaterialPageRoute(
                                                               builder: (
                                                                   context) =>
                                                                   RegisterEventPage(
@@ -369,77 +402,51 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                                           .id,
                                                                       tracking: _search[i]
                                                                           .gpsTrackingRequired,
-                                                                      screenHome: screenHome),));
-                                                      });
-                                                    },
-                                                  ),
-                                                ],
-                                              )
-                                          ),
-                                          ListTile(
-                                            title: Text(_search[i].title,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18.0),
-                                              textAlign: TextAlign.start,),
-                                            subtitle: Text(dtf.format(
-                                                DateTime.parse(
-                                                    _search[i].startedAt)),
-                                              style: TextStyle(
-                                                  fontSize: 16.0),),
-                                            trailing: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 35.0),
-                                              child: FlatButton(
-                                                onPressed: () {
-                                                  var screenHome = "HomePage";
-                                                  setState(() {
-                                                    Navigator.of(context).push(
-                                                        MaterialPageRoute(
-                                                            builder: (
-                                                                context) =>
-                                                                RegisterEventPage(
-                                                                    uid: uid,
-                                                                    idEvents: _search[i]
-                                                                        .id,
-                                                                    tracking: _search[i]
-                                                                        .gpsTrackingRequired,
-                                                                    screenHome: screenHome)));
-                                                  });
-                                                },
-                                                child: Text('Join now',
-                                                  style: TextStyle(
-                                                    fontSize: 16.0,),
-                                                  textAlign: TextAlign.end,),
+                                                                      screenHome: screenHome)));
+                                                    });
+                                                  },
+                                                  child: Text('Join now',
+                                                    style: TextStyle(
+                                                      fontSize: 16.0,),
+                                                    textAlign: TextAlign.end,),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ]),
-                                      ));
-                                })
-                                : Center(
-                              child: Padding (
-                                padding: const EdgeInsets.only(top:250),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: <Widget>[
-                                    Center(child:Text('${"Not found events"}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
-                                  ],
-                                ),
-                              )
-                              ,),)
-                                : listEvents();
+                                          ]),
+                                        ));
+                                  })
+                                  : Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 250),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .center,
+                                    children: <Widget>[
+                                      Center(child: Text(
+                                        '${"Not found events"}',
+                                        style: TextStyle(fontSize: 18.0,
+                                            color: Colors.orange[600]),))
+                                    ],
+                                  ),
+                                )
+                                ,)
+                                ,)
+                                  : listEvents();
+                            }
                           }
-                        };
-                      }
+                        }
+                        else if (snapshot.error || snapshot.hasError) {
+                          _tmpSMS = "Not found events";
+                        }
+                      }catch(e){}
                       return Padding (
                         padding: const EdgeInsets.only(top:250),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            Center(child:Text('${"Not found events"}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
+                            Center(child:Text('${_tmpSMS}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
                           ],
                         ),
                       );

@@ -160,7 +160,7 @@ class ApiHelper {
     Map map = {
       'eventId': dto.eventId,
       'semester': dto.semester,
-      'studentCode': dto.studentCode
+      'studentId': dto.studentId
     };
     try {
       final response = await http.post(_baseUrl+url,

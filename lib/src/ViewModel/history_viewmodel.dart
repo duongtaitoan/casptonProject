@@ -50,13 +50,12 @@ class HistoryVM extends Model{
       var decodedToken= JwtDecoder.decode(token);
 
       RegisterEventDAO dao = new RegisterEventDAO();
-      var listEvents = await dao.pageFirstHistory(int.parse(decodedToken["userId"]));
+      var listEvents = await dao.pageFirstHistory(int.parse(decodedToken["userId"]),context);
       listEvent = new List();
       if(listEvents.toString() != null){
         listEvent.addAll(listEvents);
       }
-    }catch (_) {
-      ShowMessage.functionShowDialog("Server error", context);
+    } catch (e) {
     } finally {
       isLoading = false;
       notifyListeners();
@@ -83,7 +82,7 @@ class HistoryVM extends Model{
     } catch (e) {
       isAdd = false;
       notifyListeners();
-      mgs = "No Events";
+      mgs = "No new event founds";
     } finally {
       isAdd = false;
       notifyListeners();

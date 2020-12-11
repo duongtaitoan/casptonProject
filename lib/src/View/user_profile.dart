@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 class UserProfilePage extends StatefulWidget {
   final FirebaseUser uid;
   final status;
@@ -50,16 +51,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
           controlMajor.text = value["major"];
           if(controlMajor.text.toString().compareTo("SE")==0){
             dropdownValue="Information System";
-
           }else if(controlMajor.text.toString().compareTo("SS")==0){
             dropdownValue="Business Administration";
-
           }else if(controlMajor.text.toString().compareTo("SA")==0){
             dropdownValue="English Language";
-
           }
           controlNumber.text = value["phoneNumber"];
-
         }catch(e){
           if(status != null){
             ShowMessage.functionShowMessage("${status}");
@@ -89,7 +86,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   leading: IconButton(
                     icon: Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () =>
-                        Navigator.of(context).pop(),
+                        Navigator.of(_scaffoldKey.currentContext).pop(),
                   ),)
               : AppBar(
                   title: Text('Personal information',textAlign: TextAlign.center),
@@ -164,19 +161,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                                     String _tmpMSSV = matchesStudent;
 
                                                     var _tmpUpdate = await dao.updateInforUser(new UserProfileDTO(
-                                                        studentCode: _tmpMSSV,phone: _tmpNum,major: _tmpMajor)
-                                                        ,int.parse(decodedToken["userId"]));
-
-                                                    // update infor after
-                                                     // await ShowMessage.functionShowDialog(_tmpUpdate, _scaffoldKey.currentContext);
-
-                                                    // update when login first time with status != null
-                                                    if(status!= null && _tmpUpdate.compareTo("Update successful")==0){
-                                                        Navigator.of(context).push(MaterialPageRoute(
-                                                          builder: (context) => HomePage(uid: uid)));
-                                                    }else{
-                                                      await ShowMessage.functionShowDialog(_tmpUpdate,_scaffoldKey.currentContext);
-                                                    }
+                                                        studentCode: _tmpMSSV,phone: _tmpNum,major: _tmpMajor,
+                                                        fullname: displayName),int.parse(decodedToken["userId"]));
+                                                    // check info
+                                                    checkUpdateInfo(_tmpUpdate);
                                                   }
                                                 },
                                                 child: Text('Update information', style: TextStyle(fontSize: 18.0, color: Colors.white),),
@@ -233,6 +221,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //get studentsCode
   Future<dynamic> getstudentCode() async {
     try {
       SharedPreferences sp = await SharedPreferences.getInstance();
@@ -295,6 +284,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
         ),
       ],
     );
+  }
+
+  // check user update information
+  Future<Widget> checkUpdateInfo(_tmpUpdate) async {
+    // update when login first time with status != null
+    if(_tmpUpdate.compareTo("Update successful")==0){
+      await ShowMessage.functionShowMessage(_tmpUpdate);
+      await Future.delayed(Duration(seconds: 2), () {
+        Navigator.pushAndRemoveUntil(context,MaterialPageRoute(
+            builder: (context) => HomePage(uid: uid)),(
+            Route<dynamic> route) => false);
+      });
+    }else{
+      await ShowMessage.functionShowDialog(_tmpUpdate,_scaffoldKey.currentContext);
+    }
   }
 
   // button dropdown Major

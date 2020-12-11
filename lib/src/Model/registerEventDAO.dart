@@ -1,20 +1,27 @@
 import 'package:designui/src/API/api_helper.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
 import 'package:designui/src/Model/userDTO.dart';
+import 'package:designui/src/Helper/show_message.dart';
 
 class RegisterEventDAO{
   // user register event
   Future registerEvents(RegisterEventsDTO dto, bool approval) async {
     try {
       ApiHelper _api = new ApiHelper();
-      var json = await _api.postRegisEvent(
-          dto, "api/registrations?ApprovalRequired=${approval}");
+      dynamic json = await _api.postRegisEvent(dto, "api/registrations?ApprovalRequired=${approval}");
       if (json["isSuccess"] == true) {
         return "Register Successfully";
+      }else{
+        return json["message"];
       }
-      return "Register failed";
     }catch(e){
-      return "Not Found Student Info";
+      if(e.toString().contains("Student already register duplicate time duration event")){
+        return "Student already register duplicate time duration event";
+      }else if(e.toString().contains("Student already registed this event")){
+        return "Student already registed this event";
+      }else if(e.toString().contains("Student does not exist")){
+        return "Student does not exist";
+      }
     }
   }
 
@@ -71,18 +78,22 @@ class RegisterEventDAO{
     }
   }
   // list first events page index history
-  Future<dynamic> pageFirstHistory(int userId) async {
+  Future<dynamic> pageFirstHistory(int userId,context) async {
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.get(
-          "api/registrations?UserId=${userId}&PageIndex=1&PageSize=10");
+      dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=1&PageSize=10");
       var eventJson = json["data"]["items"] as List;
       if (eventJson != null) {
         return eventJson.map((e) => UserDTO.fromJson(e)).toList();
-      } else {
-        return json;
       }
     }catch(e){
+      RegExp pattern = new RegExp('([0-9]{3,4})');
+      var a = pattern.stringMatch(e.toString());
+      if(int.parse(a) == 404){
+        await ShowMessage.functionShowDialog("Not found events", context);
+      }else if(int.parse(a) == 500){
+        await ShowMessage.functionShowDialog("Server error", context);
+      }
     }
   }
 

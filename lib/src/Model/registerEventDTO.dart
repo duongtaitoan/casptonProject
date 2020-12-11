@@ -1,15 +1,14 @@
 class RegisterEventsDTO{
   int eventId;
   int semester;
-  String studentCode;
+  int studentId;
 
-
-  RegisterEventsDTO({this.eventId, this.semester, this.studentCode});
+  RegisterEventsDTO({this.eventId, this.semester, this.studentId});
 
   factory RegisterEventsDTO.fromJson(Map<String, dynamic> json) => RegisterEventsDTO(
     eventId: json["eventId"],
     semester: json["semester"],
-    studentCode: json["studentCode"],
+    studentId: json["studentId"],
   );
 
 }
