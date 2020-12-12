@@ -82,7 +82,7 @@ class HistoryVM extends Model{
     } catch (e) {
       isAdd = false;
       notifyListeners();
-      mgs = "No new event founds";
+      mgs = "No new event found";
     } finally {
       isAdd = false;
       notifyListeners();

@@ -103,11 +103,11 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                         if (snapshot.data != null) {
                           if (snapshot.data.length == 0){
                             if(flowStatus.toString().compareTo("PENDING")==0){
-                              _tmpChange = "You haven't waiting any event";
+                              _tmpChange = "No waiting events";
                             }else if(flowStatus.toString().compareTo("ACCEPTED")==0){
-                              _tmpChange = "You haven't approved any event";
+                              _tmpChange = "No approved events";
                             }else if(flowStatus.toString().compareTo("REJECTED")==0){
-                              _tmpChange = "You haven't rejected any event";
+                              _tmpChange = "No rejected events";
                             }
                           }else {
                             return ListView.builder(
@@ -184,9 +184,11 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                           }
                         }
                       }else if(snapshot.error || snapshot.hasError){
-                        _tmpChange ="Not found events";
+                        _tmpChange ="No events found";
                       }
-                    }catch(e){}
+                    }catch(ignoredException){
+
+                    }
                   return Padding (
                     padding: const EdgeInsets.only(top:250),
                     child: Column(

@@ -10,7 +10,6 @@ Future getLocation(TrackingDTO dto) async {
       return tracking;
    } catch(e){
      print("Error Tracking: " + e.toString());
-    throw(e);
   }
 }
 

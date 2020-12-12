@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:designui/src/Helper/camera_plugin.dart';
 import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/eventDTO.dart';
@@ -148,7 +149,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    timeEvent(dto),
                     SizedBox(height: 20,),
                     contentEvent(dto, snapshot.data),
                     registerEvent(dto, snapshot.data),
@@ -185,52 +185,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     );
   }
 
-  // title time start and duration of event
-  Widget timeEvent(EventsDTO dto){
-    return Container(
-      height: 75,
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-      color: Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          SizedBox(width: 20,),
-          Flexible(flex: 5, fit: FlexFit.tight,
-              child: Container(height: 20, width: MediaQuery.of(context).size.width,
-                child:  Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    SizedBox(width: 16,),
-                    Image.asset('assets/images/date_time.png', width: 25, height: 25,),
-                    Text('Time start',style: TextStyle(color: Colors.black, fontSize: 17.0,)),
-                    SizedBox(width: 80,),
-                    Text(dtf.format(DateTime.parse(dto.startedAt)),
-                        style: TextStyle(color: Colors.black, fontSize: 17.0,fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              )),
-          SizedBox(height: 20,),
-          Flexible(flex: 5, fit: FlexFit.tight,
-              child: Container(width: MediaQuery.of(context).size.width, height: 20,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    SizedBox(width: 10,),
-                    Icon(Icons.timer, size: 25,),
-                    SizedBox(width: 7,),
-                    Text('Duration',style: TextStyle(color: Colors.black, fontSize: 17.0)),
-                    SizedBox(width: 90,),
-                    Text("${dto.duration * 60} minutes ", style: TextStyle(color: Colors.black, fontSize: 17.0,fontWeight: FontWeight.bold),),
-                  ],
-                ),
-              )),
-          SizedBox(width: 10,),
-        ],
-      ),
-    );
-  }
-
   // content details of event
   Widget contentEvent(EventsDTO dto,statusUser){
     var _tmpStatusUser = statusUser.toString().toLowerCase();
@@ -238,71 +192,189 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
+            Column(
               mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Icon(Icons.weekend),
-                SizedBox(width: 7,),
-                Text("Remaining seats", style: TextStyle(color: Colors.black, fontSize: 18.0)),
-                SizedBox(width: 20,),
-                Text(dto.capacity.toString(), style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18.0),
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 16,),
+                    Image.asset('assets/images/date_time.png', width: 25, height: 25,),
+                    SizedBox(width: 5,),
+                    Text('Start at',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
+                    // SizedBox(width: 80,),
+                  ],
                 ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 50,top: 10),
+                  child: Text(dtf.format(DateTime.parse(dto.startedAt)),
+                      style: TextStyle(color: Colors.black, fontSize: 16.0)),
+                ),
+                SizedBox(height: 30,),
               ],
             ),
-            SizedBox(height: 25,),
-            Row(
+
+            Column(
               mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Icon(Icons.location_on),
-                SizedBox(width: 7,),
-                Text("Tracking", style: TextStyle(color: Colors.black, fontSize: 18.0)),
-                SizedBox(width: 85,),
-                Text(dto.gpsTrackingRequired.toString(), style:
-                TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18.0),
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 15,),
+                    Icon(Icons.location_on),
+                    SizedBox(width: 6,),
+                    Text('Location',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
+                  ],
                 ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 50,top: 10),
+                  child: Text('--Tmp--',
+                      style: TextStyle(color: Colors.black, fontSize: 16.0)),
+                ),
+                SizedBox(height: 30,),
               ],
             ),
-            SizedBox(height: 25,),
-            Row(
+
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Icon(Icons.info_outline,color: Colors.black),
-                SizedBox(width: 9,),
-                Text('Status',style: TextStyle(color: Colors.black, fontSize: 17.0),textAlign: TextAlign.start,),
-                SizedBox(width: 80,),
-                _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" ? Center(
-                  child: _tmpStatusUser != "pending" ? Center(
-                    child: _tmpStatusUser != "accepted" ?Center(
-                      child: Text('Rejected',style: TextStyle(color: Colors.red, fontSize: 16.0),textAlign: TextAlign.start,),
-                    ):Text('Events is accepted',style: TextStyle(color: Colors.green, fontSize: 16.0),textAlign: TextAlign.start,),
-                  ):Text('Events is not unapproved',style: TextStyle(color: Colors.amber, fontSize: 15.0),textAlign: TextAlign.start,),
-                ):Text('Not registered yet',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold, fontSize: 16.0),textAlign: TextAlign.start,),
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 16,),
+                    Icon(Icons.timer, size: 25,),
+                    SizedBox(width: 5,),
+                    Text('Duration',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
+                    // SizedBox(width: 80,),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 50,top: 10),
+                  child: Text("${dto.duration * 60} minutes ", style: TextStyle(color: Colors.black, fontSize: 16.0),),
+                ),
+                SizedBox(height: 30,),
               ],
             ),
-            SizedBox(height: 25,),
-            Row(
+
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Icon(Icons.location_city),
-                SizedBox(width: 7,),
-                Text('Host', style: TextStyle(color: Colors.black, fontSize: 17.0),textAlign: TextAlign.start,),
-                SizedBox(width: 120,),
-                dto.host!= null ?
-                Text(dto.host,style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold),textAlign: TextAlign.start,)
-                :Text("Not found host",style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold),textAlign: TextAlign.start,),
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 16,),
+                    Icon(Icons.location_city),
+                    SizedBox(width: 5,),
+                    Text('Host',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
+                    // SizedBox(width: 80,),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 50,top: 10),
+                  child:  dto.host!= null
+                      ? Text(dto.host,style: TextStyle(color: Colors.black, fontSize: 16.0,),)
+                      : Text("Unknown",style: TextStyle(color: Colors.black, fontSize: 16.0,),),
+                ),
+                SizedBox(height: 30,),
               ],
             ),
-            SizedBox(height: 25,),
-            Row(
+
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Icon(Icons.event_note),
-                SizedBox(width: 7,),
-                Text('Content', style: TextStyle(color: Colors.black, fontSize: 17.0),textAlign: TextAlign.start,),
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 16,),
+                    Icon(Icons.location_on),
+                    SizedBox(width: 5,),
+                    Text('Tracking required',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
+                    // SizedBox(width: 80,),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 50,top: 10),
+                  child:dto.gpsTrackingRequired.toString() == true
+                      ? Text("Yes", style: TextStyle(color: Colors.black, fontSize: 16.0),)
+                      : Text("No", style: TextStyle(color: Colors.black,  fontSize: 16.0),),
+                ),
+                SizedBox(height: 30,),
               ],
             ),
-            SizedBox(height: 30,),
-            Text(dto.content,style: TextStyle(color: Colors.black, fontSize: 16.0),textAlign: TextAlign.start,),
-            SizedBox(height: 30,),
+
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 16,),
+                    Icon(Icons.weekend),
+                    SizedBox(width: 5,),
+                    Text('Remaining seats',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
+                    // SizedBox(width: 80,),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 50,top: 10),
+                  child: Text("${dto.capacity.toString()}", style: TextStyle(color: Colors.black, fontSize: 16.0),)
+                ),
+                SizedBox(height: 30,),
+              ],
+            ),
+
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 16,),
+                    Icon(Icons.info_outline,color: Colors.black),
+                    SizedBox(width: 5,),
+                    Text('My registration status',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
+                    // SizedBox(width: 80,),
+                  ],
+                ),
+                Padding(
+                    padding: const EdgeInsets.only(left: 50,top: 10),
+                    child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" ? Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: _tmpStatusUser != "pending" ? Padding(
+                        padding: const EdgeInsets.all(0),
+                        child: _tmpStatusUser != "accepted" ? Padding(
+                          padding: const EdgeInsets.all(0),
+                          child: Text('Rejected',style: TextStyle(color: Colors.red, fontSize: 16.0),textAlign: TextAlign.start,),
+                        ):Text('Accepted',style: TextStyle(color: Colors.green, fontSize: 16.0),textAlign: TextAlign.start,),
+                      ):Text('Events is not unapproved',style: TextStyle(color: Colors.amber, fontSize: 15.0),textAlign: TextAlign.start,),
+                    ):Text('Not registered yet',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold, fontSize: 16.0),textAlign: TextAlign.start,),
+                ),
+                SizedBox(height: 30,),
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 16,),
+                    Icon(Icons.event_note),
+                    SizedBox(width: 5,),
+                    Text('Content',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
+                    // SizedBox(width: 80,),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 50,top: 10),
+                  child: Text(dto.content,style: TextStyle(color: Colors.black, fontSize: 16.0),),
+                ),
+                SizedBox(height: 30,),
+              ],
+            ),
           ],
         ),
       ),
@@ -372,7 +444,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                         content:  Text("Cancel registered the event",style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.center,),
                           actions: [
                             new FlatButton(
-                              child: Text("Agree",style: TextStyle(color: Colors.blue[500]),),
+                              child: Text("Yes",style: TextStyle(color: Colors.blue[500]),),
                               onPressed: () async {
                                 //get this id events
                                 var id = await RegisterEventDAO().idOfEvent(idEvents);
@@ -389,7 +461,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                               },
                             ),
                             new FlatButton(
-                              child: Text("Close",style: TextStyle(color: Colors.blue[500]),),
+                              child: Text("No",style: TextStyle(color: Colors.blue[500]),),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ],
@@ -480,7 +552,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
                       CupertinoButton(
-                        child: Text('Agree',style: TextStyle(color: Colors.blue[500]),),
+                        child: Text('Yes',style: TextStyle(color: Colors.blue[500]),),
                         onPressed: () async {
                            // check semester and student code
                             if(dropdownValue == "Any"){
@@ -505,7 +577,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                         },
                       ),
                       CupertinoButton(
-                        child: Text('Close',style: TextStyle(color: Colors.red),),
+                        child: Text('No',style: TextStyle(color: Colors.blue[500]),),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
@@ -526,15 +598,17 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   Widget buttonCheckin(EventsDTO dto){
     return Padding(
       padding: const EdgeInsets.all(0),
-      child:
-      // timeToCancel(dto) == true ? Padding(
-      //       padding: const EdgeInsets.only(right: 16, left: 16,bottom: 1),
-      //       child: timeToCheckin(dto) == true ?
+      child: timeToCancel(dto) == true
+          ? Padding(
+            padding: const EdgeInsets.only(right: 16, left: 16,bottom: 1),
+            child: timeToCheckin(dto) == true ?
             checkInUser == false
               ? RaisedButton(
                       child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
                       onPressed: () async {
+
                         await ShowMessage.functionShowDialog("Test check in", context);
+                        sleep(Duration(seconds: 2));
                         // get id register
                         var idRegister = await RegisterEventDAO().idOfEvent(idEvents);
                         // get status user register
@@ -563,15 +637,15 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 color: Colors.orange[600],
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
                 child: Text('Check in',style: TextStyle(fontSize: 18.0, color: Colors.white)),
-              ),
-        //         : RaisedButton(
-        // onPressed: (){
-        //   ShowMessage.functionShowDialog("This event has not yet start", context);
-        // },
-        //       color: Colors.orange[600],
-        //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
-        //       child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
-        // ):detailsButton(3.0,3.0,"Cancel"),
+              )
+          : RaisedButton(
+            // onPressed: (){
+              // ShowMessage.functionShowDialog("This event has not yet start", context);
+            // },
+            //   color: Colors.orange[600],
+            //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+              child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
+        ):buttonDetails(3.0,3.0,"Cancel"),
     );
   }
 
