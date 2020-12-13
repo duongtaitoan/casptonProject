@@ -25,6 +25,9 @@ class _FeedBackPageState extends State<FeedBackPage> {
   final idEvent;
   final screenHome;
   _FeedBackPageState(this.uid,this.nameEvents,this.screenHome,this.idEvent);
+  GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+
   String question1;
   String question2;
   String question3;
@@ -61,6 +64,7 @@ class _FeedBackPageState extends State<FeedBackPage> {
     return SafeArea(
         child: SizedBox.expand(
           child: Scaffold(
+            key: _scaffoldKey,
             appBar: AppBar(
               title: Text('Feedback events ${nameEvents}'),
               backgroundColor: Colors.orange[600],
@@ -117,24 +121,19 @@ class _FeedBackPageState extends State<FeedBackPage> {
                                 new FeedbackDTO(question: question8, answer:answer8)];
 
                                 var toJson = jsonEncode(dto);
-                                var handerFeedback = await FeedBackDAO().postFeedback(toJson, idEvent);;
+                                var handerFeedback = await FeedBackDAO().postFeedback(toJson, idEvent);
                                 try {
                                   if (handerFeedback["message"] == "Success") {
-                                    await ShowMessage.functionShowDialog(
-                                        "Your content has been submitted successfully",
-                                        context);
-                                    Future.delayed(
-                                        new Duration(seconds: 2), () {
+                                    await ShowMessage.functionShowDialog("Your content has been submitted successfully", context);
                                       Navigator.pushAndRemoveUntil(context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  HomePage(uid: uid,)), (
+                                          MaterialPageRoute(builder: (context) => HomePage(uid: uid,)), (
                                               Route<dynamic> route) => false);
-                                    });
                                   }
                                 }catch(e) {
-                                  await ShowMessage.functionShowDialog(
-                                  "You already give a feedback",context);
+                                  await ShowMessage.functionShowDialog("You already give a feedback",context);
+                                    Navigator.pushAndRemoveUntil(context,
+                                        MaterialPageRoute(builder: (context) => HomePage(uid: uid,)), (
+                                            Route<dynamic> route) => false);
                               }
                             }
                           },

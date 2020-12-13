@@ -49,6 +49,7 @@ class _HomePageState extends State<HomePage> {
       model = new EventsVM();
       model.getFirstIndex();
     }catch(e){
+      throw e;
       handlerShowMessage("No Internet connection");
     }
   }
@@ -408,7 +409,7 @@ class _HomePageState extends State<HomePage> {
                               padding: EdgeInsets.symmetric(
                                   vertical: 10.0, horizontal: 20.0),
                               child: Text(
-                                '${limitName(item.title)}',
+                                '${ShowMessage.functionLimitCharacter(item.title)}',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20.0,
@@ -433,14 +434,4 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // limit name title of event
-  limitName(String text){
-    String firstHalf;
-    if (text.length >= 20 && text != null) {
-      firstHalf = text.substring(0, 20)+' ... ';
-      return firstHalf;
-    }else{
-      return text;
-    }
-  }
 }

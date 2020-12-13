@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class ShowMessage{
+  // show by toast
   static functionShowMessage(String sms){
     Future.delayed(Duration(microseconds: 500),()async{
       Fluttertoast.showToast(
@@ -16,14 +17,24 @@ class ShowMessage{
     });
   }
 
-  static functionShowDialog(String sms,BuildContext context){
-    showDialog(
+  // limit name title of event
+  static functionLimitCharacter(String text){
+    String firstHalf;
+    if (text.length >= 20 && text != null) {
+      firstHalf = text.substring(0, 20)+' ... ';
+      return firstHalf;
+    }else{
+      return text;
+    }
+  }
+
+  // show by dialog
+  static functionShowDialog(String sms,BuildContext context) async {
+    await showDialog(
         context: context,
         builder: (_) => new AlertDialog(
           title: Center(child: Row(children: <Widget>[
-            Image.asset("assets/images/bell.gif",height: 50,width: 50),
-            SizedBox(width: 7,),
-            Text("Notification"),
+            Text("Message"),
           ],)),
           content: new Text("${sms}",),
           actions: <Widget>[

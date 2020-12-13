@@ -7,6 +7,7 @@ class EventsDTO{
   bool gpsTrackingRequired;
   bool approvalRequired;
   String startedAt;
+  // int remainingSeats;
   String cancelUnavailableAt;
   int capacity;
   String note;
@@ -24,6 +25,7 @@ class EventsDTO{
       this.gpsTrackingRequired,
       this.approvalRequired,
       this.startedAt,
+      // this.remainingSeats,
       this.cancelUnavailableAt,
       this.capacity, this.note,
       this.status,this.thumbnailPicture,this.picture,this.host}); // DateTime timeStop;
@@ -37,6 +39,7 @@ class EventsDTO{
     gpsTrackingRequired: json["gpsTrackingRequired"],
     approvalRequired: json["approvalRequired"],
     startedAt: json["startedAt"],
+    // remainingSeats:json["remainingSeats"],
     cancelUnavailableAt:json["cancelUnavailableAt"],
     capacity: json["capacity"],
     note: json["note"],

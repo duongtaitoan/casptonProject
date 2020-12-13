@@ -5,7 +5,6 @@ import 'package:designui/src/Model/TrackingDTO.dart';
 import 'package:designui/src/View/feedback.dart';
 import 'package:designui/src/ViewModel/tracking_viewmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:location/location.dart';
 
 class show {
@@ -49,27 +48,59 @@ class show {
     // get location
     timeLocation(_locationData,counts,show,idEvents,context,uid,nameEvents);
   }
+
+  // if status == false then get first location
+  static functionGetLocation() async {
+    Location location = new Location();
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+    LocationData _locationData;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+    //set permission location
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+    // set time,accuracy and update minimum displacement of location
+    location.changeSettings(
+        accuracy: LocationAccuracy.high, interval: 1000, distanceFilter: 0);
+    _locationData = await location.getLocation();
+    List tmpLocation = new List();
+    tmpLocation.add(_locationData.latitude);
+    tmpLocation.add(_locationData.longitude);
+    return tmpLocation;
+  }
 }
 
 Future timeLocation(_locationData,counts,show,idEvents,BuildContext context,uid,nameEvents) {
   return new Future.delayed(const Duration(milliseconds: 1), () async {
     Stopwatch s = new Stopwatch();
-    for (int i = 0; i <= counts; i++) {
+    for (int i = 0; i <= 8; i++) {
       sleep(const Duration(milliseconds: 1));
-      await Future.delayed(new Duration(minutes: 5),() async {
-        var locationUser = "Your location\nLatitude ${_locationData.latitude.toString()}\tLongtitude ${_locationData.longitude.toString()}";
-        print('location user ${locationUser}');
+      await Future.delayed(new Duration(seconds: 3),() async {
         if(show == true) {
-          ShowMessage.functionShowMessage(locationUser);
+          ShowMessage.functionShowMessage("Your location has been sent to APT server.");
+          getLocation(new TrackingDTO(eventId: idEvents,longitude: _locationData.longitude,latitude: _locationData.latitude));
         }
-        if(i == counts){
+        // if tracking requited == false => no get your location
+        if(i == 8){
           print('show screen feedback');
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context)=>FeedBackPage(uid: uid,nameEvents:nameEvents,
                 idEvent: idEvents,screenHome: "HomePage",)));
         }
+        // show test => done then delete
         print('counts :${i}----- >location :'+ _locationData.longitude.toString()+ " - - - "+ _locationData.latitude.toString());
-        // getLocation(new TrackingDTO(eventId: idEvents,longitude: _locationData.longitude,latitude: _locationData.latitude));
         s.stop();
       });
     }

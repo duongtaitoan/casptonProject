@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/userDTO.dart';
 import 'package:designui/src/ViewModel/history_viewmodel.dart';
 import 'package:designui/src/view/home.dart';
@@ -222,7 +223,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: <Widget>[
                                     SizedBox(width: 10,),
-                                    Text(limitTitle(element.eventTitle),
+                                    Text(ShowMessage.functionLimitCharacter(element.eventTitle),
                                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),),
                                     Text(dtf.format(DateTime.parse(element.startDate)),
                                       style: TextStyle(fontSize: 16.0),),
@@ -271,7 +272,6 @@ class _HistoryPageState extends State<HistoryPage> {
 
   // respond list events of user
   Widget getEvent(BuildContext context, uid, List<UserDTO> _search, _controller) {
-    var _tmpSMS ="";
     return SingleChildScrollView(
       child:  FutureBuilder(
           future: Future.delayed(Duration(seconds: 2)),
@@ -282,7 +282,8 @@ class _HistoryPageState extends State<HistoryPage> {
                 if (snapshot.hasData) {
                   if (snapshot.data != null) {
                     if(snapshot.data.length ==0){
-                      _tmpSMS="Not found events";
+                      return Center(child: Text('${"Not found events"}',
+                        style: TextStyle(fontSize: 18.0, color: Colors.orange[600]),),);
                     }else {
                       try {
                         return _search.length != 0 || _controller.text.isNotEmpty
@@ -358,7 +359,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                                       .center,
                                                   children: <Widget>[
                                                     SizedBox(width: 10,),
-                                                    Text(limitTitle(
+                                                    Text(ShowMessage.functionLimitCharacter(
                                                         _search[i].eventTitle),
                                                       style: TextStyle(
                                                           fontWeight: FontWeight
@@ -414,16 +415,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     }
                   };
                 }
-                return Padding (
-                  padding: const EdgeInsets.only(top:250),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Center(child:Text('${"Not found events"}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
-                    ],
-                  ),
-                );
+                return Center();
               })
               : Padding (
                 padding: const EdgeInsets.only(top:100),
@@ -446,15 +438,5 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  // limit name title of event
-  limitTitle(String text) {
-    String firstHalf;
-    if (text.length >= 20 && text != null) {
-      firstHalf = text.substring(0, 20) + ' ... ';
-      return firstHalf;
-    } else {
-      return text;
-    }
-  }
 }
 

@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:designui/src/Helper/camera_plugin.dart';
 import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/eventDTO.dart';
+import 'package:designui/src/Model/feedbackDAO.dart';
 import 'package:designui/src/Model/registerEventDAO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
-import 'package:designui/src/Model/user_profileDAO.dart';
 import 'package:designui/src/View/feedback.dart';
 import 'package:designui/src/View/home.dart';
 import 'package:designui/src/ViewModel/events_viewmodel.dart';
@@ -24,12 +23,11 @@ class RegisterEventPage extends StatefulWidget {
   final tracking;
   final nameEvents;
   final screenHome;
-  static GlobalKey scaffoldGlobalKey;
 
   const RegisterEventPage({Key key, this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,scaffoldGlobalKey,this.screenHome}) : super(key: key);
 
   @override
-  _RegisterEventPageState createState() => _RegisterEventPageState(uid,idEvents,status,tracking,nameEvents,scaffoldGlobalKey,screenHome);
+  _RegisterEventPageState createState() => _RegisterEventPageState(uid,idEvents,status,tracking,nameEvents,screenHome);
 }
 
 class _RegisterEventPageState extends State<RegisterEventPage> {
@@ -49,13 +47,19 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   var _tmpStatusEvent;
   var checkInUser = false;
   String dropdownValue;
+  var eventLocation;
+  var handlerButtonClick =false;
 
   Map<String, dynamic> decodedToken;
-  _RegisterEventPageState(this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,this.scaffoldGlobalKey,this.screenHome);
+  _RegisterEventPageState(this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,this.screenHome);
 
   @override
   void initState(){
+    userCheckIn();
+    locationOfEvent();
+
     print('idEvent ${idEvents} ----------- ');
+
     dropdownValue = "Any";
     dropdownSemester();
     super.initState();
@@ -102,21 +106,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                           ),
                         );
                   })
-                  :Center (
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Center (
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                )
+                  :Center ()
               )
             ),
     ));
@@ -195,6 +185,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            //start at
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,7 +207,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 SizedBox(height: 30,),
               ],
             ),
-
+            // location
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,14 +221,46 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 50,top: 10),
-                  child: Text('--Tmp--',
-                      style: TextStyle(color: Colors.black, fontSize: 16.0)),
+                  padding: const EdgeInsets.only(left: 35,top: 10),
+                  child: FlatButton(
+                    onPressed: () async {
+                      eventLocation !=null
+                          ? await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              // return object of type Dialog
+                              return AlertDialog(
+                                title: new Text("Event Loaction"),
+                                content: new Text("Title :${eventLocation.title}\nRoom :${eventLocation.roomNumber}\nFloor :${eventLocation.floor}"
+                                    "\nAddress :${eventLocation.address}"),
+                                actions: <Widget>[
+                                  // usually buttons at the bottom of the dialog
+                                  new FlatButton(
+                                    child: new Text("Close"),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          ):null;
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                         eventLocation != null
+                              ?Tooltip(message: "Event location detail", child: Text("${ShowMessage.functionLimitCharacter(eventLocation.title)}",textAlign: TextAlign.start))
+                              :Tooltip(message: "Unknown location detail", child: Text("Unknown", textAlign: TextAlign.start)),
+                         Icon(Icons.arrow_forward_ios,size: 15,),
+                      ],
+                    ),
+                  ),
                 ),
                 SizedBox(height: 30,),
               ],
             ),
-
+            // duration
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,7 +281,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 SizedBox(height: 30,),
               ],
             ),
-
+            // Host
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,7 +304,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 SizedBox(height: 30,),
               ],
             ),
-
+            // tracking requirted
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,7 +312,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 Row(
                   children: <Widget>[
                     SizedBox(width: 16,),
-                    Icon(Icons.location_on),
+                    Icon(Icons.gps_fixed),
                     SizedBox(width: 5,),
                     Text('Tracking required',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
                     // SizedBox(width: 80,),
@@ -304,7 +327,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 SizedBox(height: 30,),
               ],
             ),
-
+            // remaining seat
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,7 +348,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 SizedBox(height: 30,),
               ],
             ),
-
+            // my registration status
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -355,6 +378,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 SizedBox(height: 30,),
               ],
             ),
+            // content
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,7 +430,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                   width: MediaQuery.of(context).size.width,
                   height: 52,
                   child:buttonRegister(dto)),
-            ) : buttonFeedBack(4.0, 4.0,dto,statusUser),
+            ) : buttonFeedBack(4.0, 4.0,dto),
         ),
       ),
     );
@@ -438,7 +462,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                               children:[
                                 Icon(Icons.notifications,),
                                 SizedBox(width: 10,),
-                                Text("Notification"),
+                                Text("Message"),
                               ]
                           ),
                         content:  Text("Cancel registered the event",style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.center,),
@@ -453,11 +477,9 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                                 RegisterVM regVM = new RegisterVM();
                                 var _tmpMessage = await regVM.updateStatusEvent("CANCELED", id, false);
                                 Navigator.pop(context);
-
-                                Future.delayed(Duration(seconds: 2),() async {
-                                  ShowMessage.functionShowMessage("Canceled "+_tmpMessage);
+                                Future.delayed(Duration(microseconds: 500),() async {
                                 });
-                                setState(() { });
+                                await ShowMessage.functionShowDialog("Canceled "+_tmpMessage,context);
                               },
                             ),
                             new FlatButton(
@@ -481,7 +503,8 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   }
 
   // button feedback events
-  Widget buttonFeedBack(bottom,top,EventsDTO dto,statusUser){
+  Widget buttonFeedBack(bottom,top,EventsDTO dto){
+    var tmp = true;
     return Row(
       children: <Widget>[
         Visibility(
@@ -493,18 +516,18 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
               padding: EdgeInsets.only(left: 16,bottom: bottom,top: top),
               child: RaisedButton(
                   color: Colors.orange[600],
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(5))),
-                  onPressed: () {
-                    if(statusUser.toString().toLowerCase().compareTo("canceled") == 0 ||
-                        statusUser.toString().toLowerCase().compareTo("pending") == 0){
-                      ShowMessage.functionShowDialog("This event you must ${statusUser.toString().toLowerCase()} cannot feedback", context);
-                    }else if(statusUser.toString().toLowerCase().compareTo("accepted") == 0){
-                      ShowMessage.functionShowDialog("Test on the screen feedback", context);
-                      Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) =>
-                              FeedBackPage(uid: uid, nameEvents: dto.title,
-                                idEvent: idEvents,)));
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
+                  onPressed: () async {
+                    bool statusCheckIn = await RegisterEventDAO().statusCheckIn(int.parse(decodedToken["userId"]), idEvents);
+                    bool feedBack = await FeedBackDAO().checkFeedBack(int.parse(decodedToken["userId"]), idEvents);
+                    bool statusEvent = await RegisterEventDAO().eventCompleted(idEvents, "Completed");
+
+                    if(statusCheckIn == false && feedBack == true && statusEvent == false){
+                      ShowMessage.functionShowDialog("This event is not completed for feedback", context);
+                      // status == true and feedback not found and status event == completed then show feedback for user
+                    }else if(statusCheckIn == true && feedBack == false && statusEvent == true){
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
+                        FeedBackPage(uid: uid, nameEvents: dto.title, idEvent: idEvents,)));
                     }
                   },
                   child: Text("FeedBack",style: TextStyle(fontSize: 18.0, color: Colors.white)))
@@ -523,70 +546,78 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       child: new RaisedButton(
           child: Text('Register', style: TextStyle(fontSize: 16.0, color: Colors.white),),
           onPressed: () async {
-           await showDialog(
-              context: this.context,
-              child: AlertDialog(
-                title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment:CrossAxisAlignment.center,
-                    children:[
-                      Icon(Icons.notifications),
-                      SizedBox(width: 10,),
-                      Text('Confirm information'),
-                    ]
-                ),
-                content: Container(
-                  height: MediaQuery.of(context).copyWith().size.height/9.2,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text('Semester',style: TextStyle(fontSize: 16),),
-                      SizedBox(height: 10,),
-                      dropdownSemester(),
-                    ],
+              await showDialog(
+                context: this.context,
+                child: AlertDialog(
+                  title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(Icons.notifications),
+                        SizedBox(width: 10,),
+                        Text('Confirm information'),
+                      ]
                   ),
-                ),
-                actions: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      CupertinoButton(
-                        child: Text('Yes',style: TextStyle(color: Colors.blue[500]),),
-                        onPressed: () async {
-                           // check semester and student code
-                            if(dropdownValue == "Any"){
+                  content: Container(
+                    height: MediaQuery
+                        .of(context)
+                        .copyWith()
+                        .size
+                        .height / 9.2,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text('Semester', style: TextStyle(fontSize: 16),),
+                        SizedBox(height: 10,),
+                        dropdownSemester() == null ?Text(''):dropdownSemester(),
+                      ],
+                    ),
+                  ),
+                  actions: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        CupertinoButton(
+                          child: Text('Yes', style: TextStyle(color: Colors
+                              .blue[500]),),
+                          onPressed: () async {
+                            // check semester and student code
+                            if (dropdownValue == "Any") {
                               var tmpValue = 0.toString();
                               setState(() {
-                                  dropdownValue = tmpValue;
-                                });
+                                dropdownValue = tmpValue;
+                              });
                             }
 
                             // register event
-                            var _tmpStatus = await RegisterVM().register(new RegisterEventsDTO(eventId: idEvents,
-                                semester: int.parse(dropdownValue),studentId: int.parse(decodedToken["userId"])),
+                            var _tmpStatus = await RegisterVM().register(
+                                new RegisterEventsDTO(eventId: idEvents,
+                                    semester: int.parse(dropdownValue),
+                                    studentId: int.parse(
+                                        decodedToken["userId"])),
                                 dto.approvalRequired);
 
                             Navigator.of(context).pop();
+                            Future.delayed(new Duration(milliseconds: 1),()async{
+                            });
                             // show message when registered
-                            Future.delayed(Duration(microseconds:1),()async{
-                            await ShowMessage.functionShowDialog(_tmpStatus,context);
-                              setState(()  {
-                              });
-                          });
-                        },
-                      ),
-                      CupertinoButton(
-                        child: Text('No',style: TextStyle(color: Colors.blue[500]),),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
+                            await ShowMessage.functionShowDialog(
+                                _tmpStatus, context);
+                          },
+                        ),
+                        CupertinoButton(
+                          child: Text('No', style: TextStyle(color: Colors
+                              .blue[500]),),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
           },
           color: Colors.orange[600],
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
@@ -598,21 +629,19 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   Widget buttonCheckin(EventsDTO dto){
     return Padding(
       padding: const EdgeInsets.all(0),
-      child: timeToCancel(dto) == true
-          ? Padding(
-            padding: const EdgeInsets.only(right: 16, left: 16,bottom: 1),
-            child: timeToCheckin(dto) == true ?
-            checkInUser == false
+      child:
+      // timeToCancel(dto) == true
+      //     ? Padding(
+      //       padding: const EdgeInsets.only(right: 16, left: 16,bottom: 1),
+      //       child: timeToCheckin(dto) == true ?
+          checkInUser == false
               ? RaisedButton(
                       child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
                       onPressed: () async {
-
-                        await ShowMessage.functionShowDialog("Test check in", context);
-                        sleep(Duration(seconds: 2));
                         // get id register
                         var idRegister = await RegisterEventDAO().idOfEvent(idEvents);
                         // get status user register
-                        var statusCheckin = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
+                        var statusCheckIn = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
                         await Future.delayed(Duration.zero, () {
                           Navigator.pushAndRemoveUntil(
                               context, MaterialPageRoute(builder: (BuildContext context) =>
@@ -622,7 +651,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                                   tracking:dto.gpsTrackingRequired,
                                   idEvents: dto.id,
                                   idRegister: idRegister,
-                                  statusCheckin :statusCheckin,
+                                  statusCheckin :statusCheckIn,
                               )), (
                               Route<dynamic> route) => false);
                         });
@@ -638,14 +667,14 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
                 child: Text('Check in',style: TextStyle(fontSize: 18.0, color: Colors.white)),
               )
-          : RaisedButton(
+          // : RaisedButton(
             // onPressed: (){
               // ShowMessage.functionShowDialog("This event has not yet start", context);
             // },
             //   color: Colors.orange[600],
             //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
-              child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
-        ):buttonDetails(3.0,3.0,"Cancel"),
+        //       child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
+        // ):buttonDetails(3.0,3.0,"Cancel"),
     );
   }
 
@@ -720,36 +749,60 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
 
   // button dropdown semester
   dropdownSemester() {
-    return DropdownButtonFormField<String>(
+    try {
+      return DropdownButtonFormField<String>(
         disabledHint: Text('${dropdownValue}'),
         isExpanded: true,
         value: dropdownValue,
-        icon: Icon(Icons.arrow_downward,color: Colors.blue[500],),
+        icon: Icon(Icons.arrow_downward, color: Colors.blue[500],),
         iconSize: 24,
-        onChanged: (newValue)async{
-            setState(() {
-                dropdownValue = newValue;
-            }
+        onChanged: (newValue) async {
+          setState(() {
+            dropdownValue = newValue;
+          }
           );
         },
-        items: <String>['Any', '1', '2', '3','4','5','6', '7', '8','9',]
+        items: <String>['Any', '1', '2', '3', '4', '5', '6', '7', '8', '9',]
             .map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
             child: Text(value),
           );
         }).toList(),
-    );
+      );
+    }catch(e){
+
+    }
   }
 
   // check if the user has checked in yet
   Future<dynamic> userCheckIn() async {
     final prefs = await SharedPreferences.getInstance();
-    var idOfEvent = prefs.get("idEvent");
-    if (idOfEvent == idEvents) {
-      checkInUser = true;
+    var idOfEvent = prefs.get("idEventCamera");
+    setState(() {
+      if (idOfEvent == idEvents) {
+        checkInUser = true;
+        return checkInUser;
+      }
       return checkInUser;
-    }
-    return checkInUser;
+    });
   }
+
+  // get id location
+  locationOfEvent() async {
+    try {
+      List tmpLocation = await RegisterVM().getLoactionEvent(idEvents);
+      tmpLocation.forEach((element) {
+        setState(() {
+          eventLocation = element;
+          return eventLocation;
+        });
+      });
+      return tmpLocation;
+    } catch(e){
+      eventLocation = null;
+      return eventLocation;
+    }
+  }
+
 }

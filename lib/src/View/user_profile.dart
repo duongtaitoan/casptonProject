@@ -290,12 +290,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<Widget> checkUpdateInfo(_tmpUpdate) async {
     // update when login first time with status != null
     if(_tmpUpdate.compareTo("Update successful")==0){
-      await ShowMessage.functionShowMessage(_tmpUpdate);
-      await Future.delayed(Duration(seconds: 2), () {
-        Navigator.pushAndRemoveUntil(context,MaterialPageRoute(
-            builder: (context) => HomePage(uid: uid)),(
-            Route<dynamic> route) => false);
-      });
+      await ShowMessage.functionShowDialog(_tmpUpdate,_scaffoldKey.currentContext);
+      Navigator.pushAndRemoveUntil(context,MaterialPageRoute(
+          builder: (context) => HomePage(uid: uid)),(
+          Route<dynamic> route) => false);
     }else{
       await ShowMessage.functionShowDialog(_tmpUpdate,_scaffoldKey.currentContext);
     }

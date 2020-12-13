@@ -17,6 +17,8 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uiblock/uiblock.dart';
+import 'package:location/location.dart';
+
 
 class CameraApp extends StatefulWidget {
   final FirebaseUser uid;
@@ -47,12 +49,15 @@ class _CameraAppPageState extends State<CameraApp> {
   var _tmpString= "assets/images/backgroudFPT.png";
   var screenHome = "HomePage";
   String _scanBarcode = 'Unknown';
+  var _tmpCheckin = false;
+
 
   _CameraAppPageState(this.uid,this.duration,this.nameEvents,this.idEvents,this.tracking,this.idRegister,this.statusCheckin);
   GlobalKey _scaffoldGlobalKey = GlobalKey();
 
   @override
   void initState() {
+
     super.initState();
   }
 
@@ -98,7 +103,7 @@ class _CameraAppPageState extends State<CameraApp> {
                         child: Center(
                           child: Row(
                             children: <Widget>[
-                              SizedBox(width: 40,),
+                              SizedBox(width: 30,),
                               Expanded(
                                 flex: 1,
                                 child: RaisedButton(
@@ -108,7 +113,7 @@ class _CameraAppPageState extends State<CameraApp> {
                                     onPressed: () {
                                       _buttonhandler(context);
                                     },
-                                    child: Text("Type Check in",style: TextStyle(color: Colors.white))),
+                                    child: Text("Check in method",style: TextStyle(color: Colors.white))),
                               ),
                               SizedBox(width: 20,),
                               Expanded(
@@ -119,20 +124,40 @@ class _CameraAppPageState extends State<CameraApp> {
                                     onPressed: () async {
                                       // if user choice picture defaul => show messages
                                       if(imageFile == null){
-                                            showdialogOfEvent("This picture is not valid");
+                                            ShowMessage.functionShowDialog("This picture is not valid",context);
                                       }else {
-                                        var value = await checkinEvents(new ImageDTO(eventId: idEvents,latitude: 0.0,longitude: 0.0,file: imageFile));
-                                        if(value == "Check in successful"){
-                                          await showdialogOfEvent("Your ${value}");
-                                          sendToServer(statusCheckin,idRegister);
-                                        }else{
-                                          ShowMessage.functionShowMessage(value);
-                                        }
+                                        //get location
+                                        var tmpLocation = await show.functionGetLocation();
+                                        // block user when send img
+                                        UIBlock.block(_scaffoldGlobalKey.currentContext,
+                                          customLoaderChild: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Center(
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: <Widget>[
+                                                  Center (
+                                                    child: Column(
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: <Widget>[
+                                                        Image(image: AssetImage("assets/images/tenor.gif"),width: double.infinity,height: 300,),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+
+                                        // loading status
+                                        await handlerLoading(tmpLocation);
                                       }
                                     },
-                                    child: Text("Send",style: TextStyle(color: Colors.white))),
+                                    child: Text("Send",style: TextStyle(color: Colors.white))
+                                ),
                               ),
-                              SizedBox(width: 40,),
+                              SizedBox(width: 30,),
                             ],
                           ),
                         ),
@@ -145,32 +170,46 @@ class _CameraAppPageState extends State<CameraApp> {
     );
   }
 
-  // check in image => server
-  sendToServer(statuCheckin,idRegister) async {
-    var _tmpMessage = await RegisterVM().updateStatusEvent(statuCheckin, idRegister,true);
+  handlerLoading(tmpLocation) async{
+    var value = await checkinEvents(new ImageDTO(eventId: idEvents,
+        latitude: tmpLocation[0],longitude: tmpLocation[1],file: imageFile));
+      if(value != null){
+        _tmpCheckin = true;
+        if(value == "Check in successful"){
+            await ShowMessage.functionShowDialog("Your ${value}",context);
+            await sendToServer(statusCheckin,idRegister,false);
+          }else{
+            await ShowMessage.functionShowDialog("${value}",context);
+          }
+      }
+  }
+
+  // change status checkin == false => true server
+  sendToServer(statusCheckin,idRegister,tmpStatus) async {
+    var _tmpMessage = await RegisterVM().updateStatusEvent(statusCheckin, idRegister,true);
     // check in events success or fail
     if(_tmpMessage == "Accept successful"){
       // requiment is tracking or not
-      if(tracking == true){
-        getLocationUser(tracking);
-      }else{
-        getLocationUser(tracking);
+      if(tmpStatus == false) {
+        UIBlock.unblock(_scaffoldGlobalKey.currentContext);
       }
+      getLocationUser(tracking);
     }else{
-      ShowMessage.functionShowMessage(_tmpMessage);
+      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+      await ShowMessage.functionShowMessage(_tmpMessage);
     }
   }
 
   // when user check in success then get location of user
   getLocationUser(isTracking) async {
-      Future.delayed(new Duration(microseconds: 1),()async{
-          // if is tracking == true show location for user know isTracking else tracking false then not show
-          await show().showLocationDiaLog(duration, idEvents,true,context,uid,nameEvents);
-          // back to home screen
-          final prefs = await SharedPreferences.getInstance();
-          prefs.setInt("idEvent", idEvents);
-          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HomePage(uid: uid)));
-      });
+    Future.delayed(new Duration(microseconds: 1),()async{
+      // if is tracking == true show location for user know isTracking else tracking false then not show
+      await show().showLocationDiaLog(duration, idEvents,isTracking,context,uid,nameEvents);
+      // back to home screen
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setInt("idEventCamera", idEvents);
+      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HomePage(uid: uid)));
+    });
   }
 
   // button take picture and scanQR
@@ -210,14 +249,13 @@ class _CameraAppPageState extends State<CameraApp> {
                       _scanBarcode = 'Failed to get platform version.';
                     }
                     if (!mounted) return;
-                    setState(() {
                       if(_scanBarcode.compareTo(idEvents.toString()) == 0){
-                        ShowMessage.functionShowMessage("Check in Success");
-                        Navigator.of(context).pop();
-                        sendToServer(statusCheckin,idRegister);
+                        await ShowMessage.functionShowDialog("Check in Success",context);
+                        await sendToServer(statusCheckin,idRegister,true);
                       }else{
-                        ShowMessage.functionShowMessage("Check in failed");
+                        await ShowMessage.functionShowDialog("Invalid QR code",context);
                       }
+                    setState(() {
                     });
                   },
                 ),
@@ -227,30 +265,4 @@ class _CameraAppPageState extends State<CameraApp> {
         });
   }
 
-  // showdialog for user
-  showdialogOfEvent(responded) async {
-    await showDialog(
-      context: this.context,
-      child: AlertDialog(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-            children:[
-              Icon(Icons.notifications),
-              SizedBox(width: 10,),
-              Text("Notification"),
-            ]
-        ),
-        content: Padding(
-          padding: const EdgeInsets.only(left: 50),
-          child: Text("${responded}",style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.start,),
-        ),
-        actions: [
-          new FlatButton(
-            child: const Text("Close",style: TextStyle(color: Colors.blue),),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-  }
 }

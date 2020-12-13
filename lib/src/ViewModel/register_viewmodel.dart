@@ -14,6 +14,7 @@ class RegisterVM extends Model{
     }
     // return "Event registration failed";
   }
+
   // cancel event
   Future updateStatusEvent(String status,int id,isCheckin) async {
     RegisterEventDAO _dao = new RegisterEventDAO();
@@ -32,6 +33,16 @@ class RegisterVM extends Model{
       return value;
     }
     return "this event you have not registered yet";
+  }
+
+  //get locaction of event
+  Future<List<dynamic>> getLoactionEvent(int idOfEvent)async{
+    RegisterEventDAO _dao = new RegisterEventDAO();
+    var value = await _dao.locationEvent(idOfEvent);
+    if (value != null) {
+      return value;
+    }
+    return null;
   }
 
 }

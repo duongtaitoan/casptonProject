@@ -1,4 +1,5 @@
 import 'package:designui/src/API/api_helper.dart';
+import 'package:designui/src/Model/locationDTO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
 import 'package:designui/src/Model/userDTO.dart';
 import 'package:designui/src/Helper/show_message.dart';
@@ -43,9 +44,7 @@ class RegisterEventDAO{
       json = await _api.get("api/registrations?EventId=${idEvents}&UserId=${userId}");
       if (json["message"] == "Success") {
         return json["data"]["items"][0]["status"];
-
       }
-      return null;
     }catch(e){
       return null;
     }
@@ -77,6 +76,7 @@ class RegisterEventDAO{
       return json;
     }
   }
+
   // list first events page index history
   Future<dynamic> pageFirstHistory(int userId,context) async {
     try {
@@ -105,4 +105,40 @@ class RegisterEventDAO{
     return eventDTO;
   }
 
+  // get location of user by id
+  Future locationEvent(int id) async {
+    ApiHelper _api = new ApiHelper();
+    dynamic json = await _api.get("api/events?EventId=${id}");
+    var location = json["data"]["items"][0]["locations"] as List;
+    return location.map((e) => LocationDTO.fromJson(e)).toList();
+  }
+
+  // get status checkIn of user
+  Future<bool> statusCheckIn(int userId, int idEvents) async {
+    try {
+      dynamic json;
+      ApiHelper _api = new ApiHelper();
+      json = await _api.get("api/registrations?EventId=${idEvents}&UserId=${userId}");
+      if (json["message"] == "Success") {
+        return json["data"]["items"][0]["checkedIn"];
+      }
+    }catch(e){
+      return null;
+    }
+  }
+  // get status event completed
+  Future<bool> eventCompleted(int idEvent, String status) async {
+    try {
+      dynamic json;
+      ApiHelper _api = new ApiHelper();
+      json = await _api.get("api/registrations?EventId=${idEvent}&Status=${status}");
+      if (json["data"]["items"][0]["status"].toString().compareTo("Completed") == 0) {
+        return true;
+      }else{
+        return false;
+      }
+    }catch(e){
+      return false;
+    }
+  }
 }

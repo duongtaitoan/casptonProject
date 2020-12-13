@@ -9,17 +9,18 @@ Future getLocation(TrackingDTO dto) async {
       int tracking = await dao.locationTracking(dto);
       return tracking;
    } catch(e){
-     print("Error Tracking: " + e.toString());
   }
 }
 
 Future<String> checkinEvents(ImageDTO dto) async {
   try{
     ImageDAO dao = new ImageDAO();
-    await dao.imageTracking(dto);
-    return "Check in successful";
+    var value = await dao.imageTracking(dto);
+    if(value == 1) {
+      return "Check in successful";
+    }
+    return "Check in event failed";
   } catch(e){
-      return "Check in event failed!!";
   }
 }
 
