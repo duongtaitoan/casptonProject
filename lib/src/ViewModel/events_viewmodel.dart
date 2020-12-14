@@ -64,17 +64,13 @@ class EventsVM extends Model {
     }
   }
 
-  // event to on going
+  // event openning in week
   static Future<List<EventsDTO>> eventInWeek(now,isFuture) async {
     EventsDAO dao = new EventsDAO();
     var listEvents = await dao.apiGetListEvents(now,isFuture);
     if(listEvents.isNotEmpty) {
       List<EventsDTO> saveEvents = new List<EventsDTO>();
-      for (int i = 0; i < listEvents.length; i++) {
-        if (listEvents[i].status == "Opening") {
-          saveEvents.add(listEvents[i]);
-        }
-      }
+      saveEvents.addAll(listEvents);
       return saveEvents;
     }else{
       return null;

@@ -154,9 +154,15 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                                               child: ClipRRect(
                                                 borderRadius:
                                                 BorderRadius.circular(15.0),
+                                                // child: Image.network(
+                                                //   '${snapshot.data[snap]
+                                                //       .thumbnailPicture}',
+                                                //   width: double.infinity,
+                                                //   height: 140,
+                                                //   fit: BoxFit.cover,
+                                                // ),
                                                 child: Image.network(
-                                                  '${snapshot.data[snap]
-                                                      .thumbnailPicture}',
+                                                  'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
                                                   width: double.infinity,
                                                   height: 140,
                                                   fit: BoxFit.cover,

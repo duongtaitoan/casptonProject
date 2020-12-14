@@ -200,10 +200,16 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                             children: <Widget>[
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
+                                // child: Image.network(
+                                //   '${element.thumbnailPicture}',
+                                //   width: double.infinity,
+                                //   height: 160.0,
+                                //   fit: BoxFit.cover,
+                                // ),
                                 child: Image.network(
-                                  '${element.thumbnailPicture}',
+                                  'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
                                   width: double.infinity,
-                                  height: 160.0,
+                                  height: 160,
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -341,11 +347,17 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                     ClipRRect(
                                                       borderRadius: BorderRadius
                                                           .circular(10),
+                                                      // child: Image.network(
+                                                      //   '${_search[i]
+                                                      //       .thumbnailPicture}',
+                                                      //   width: double.infinity,
+                                                      //   height: 160.0,
+                                                      //   fit: BoxFit.cover,
+                                                      // ),
                                                       child: Image.network(
-                                                        '${_search[i]
-                                                            .thumbnailPicture}',
+                                                        'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
                                                         width: double.infinity,
-                                                        height: 160.0,
+                                                        height: 160,
                                                         fit: BoxFit.cover,
                                                       ),
                                                     ),

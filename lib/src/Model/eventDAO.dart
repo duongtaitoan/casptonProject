@@ -7,7 +7,7 @@ class EventsDAO{
   // get event flow week
   Future<List<EventsDTO>> apiGetListEvents(now,isFuture) async {
     ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/events?StartedAt=${now}&EndedAt=${isFuture}");
+    dynamic json = await _api.get("api/events?StartedAt=${now}&EndedAt=${isFuture}&Status=Opening");
     var eventJson = json["data"]["items"] as List;
     return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
   }

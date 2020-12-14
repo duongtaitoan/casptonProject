@@ -126,10 +126,16 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
               try {
                 return Column(
                   children: <Widget>[
-                    Image.network("${dto.picture}",
-                      width: MediaQuery.of(context).size.width,
+                    // Image.network("${dto.picture}",
+                    //   width: MediaQuery.of(context).size.width,
+                    //   height: 180,
+                    //   fit: BoxFit.fill,
+                    // ),
+                    Image.network(
+                      'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
+                      width: double.infinity,
                       height: 180,
-                      fit: BoxFit.fill,
+                      fit: BoxFit.cover,
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 5, bottom: 5),

@@ -49,7 +49,6 @@ class _HomePageState extends State<HomePage> {
       model = new EventsVM();
       model.getFirstIndex();
     }catch(e){
-      throw e;
       handlerShowMessage("No Internet connection");
     }
   }
@@ -274,7 +273,8 @@ class _HomePageState extends State<HomePage> {
                               children: <Widget>[
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
-                                  child:Image.network('${element.thumbnailPicture}',width: double.infinity, height: 160.0, fit: BoxFit.cover,),
+                                  // child:Image.network('${element.thumbnailPicture}',width: double.infinity, height: 160.0, fit: BoxFit.cover,),
+                                  child:Image.network('https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',width: double.infinity, height: 160.0, fit: BoxFit.cover,),
                                 ),
                                 InkWell(
                                   borderRadius: BorderRadius.circular(10),
@@ -363,8 +363,8 @@ class _HomePageState extends State<HomePage> {
 
   // check list events in week
   handlerHoverImg() async {
-    var now =  new DateTime.now();
-    var _tmpFuture = now.add(Duration(days: 7));
+    var now =  new DateTime.now().add(Duration(days: -100));
+    var _tmpFuture = now.add(Duration(days: 100));
     try {
       listEventDTO = await EventsVM.eventInWeek(now,_tmpFuture);
       if (listEventDTO.isNotEmpty) {
@@ -394,7 +394,11 @@ class _HomePageState extends State<HomePage> {
                                       uid: uid, idEvents: item.id, tracking:item.gpsTrackingRequired)));
                                });
                               },
-                              child : Image.network('${item.thumbnailPicture}', fit: BoxFit.cover, width: 1000.0),),
+                              // child : Image.network('${item.thumbnailPicture}', fit: BoxFit.cover, width: 1000.0),),
+                              child:Image.network(
+                                'https://www.hyperpixelsmedia.com/images/still_preview/fall_leaves_upcoming_events_still_1280x720.jpg ',
+                                  fit: BoxFit.cover, width: 1000.0
+                              ),),
                           Positioned(
                             bottom: 0.0,
                             left: 0.0,
@@ -402,6 +406,10 @@ class _HomePageState extends State<HomePage> {
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
+                                  colors: [
+                                    Color.fromARGB(0, 0, 0, 0),
+                                    Color.fromARGB(0, 0, 0, 0)
+                                  ],
                                   begin: Alignment.bottomCenter,
                                   end: Alignment.topCenter,
                                 ),
