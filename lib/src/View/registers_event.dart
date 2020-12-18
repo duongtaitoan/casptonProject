@@ -42,7 +42,8 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   var status;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   DateFormat sqlDF = DateFormat('yyyy-MM-ddTHH:mm:ss');
-  var checkValue = false;
+  var checkTimeCancel = false;
+  var checkTimeCheckin = false;
   var checkApp = false;
   var _tmpStatusEvent;
   var checkInUser = false;
@@ -601,35 +602,36 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     return Padding(
       padding: const EdgeInsets.all(0),
       child:
-      // timeToCancel(dto) == true
-      //     ? Padding(
-      //       padding: const EdgeInsets.only(right: 16, left: 16,bottom: 1),
-      //       child: timeToCheckin(dto) == true ?
-          checkInUser == false
-              ? RaisedButton(
-                      child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
-                      onPressed: () async {
-                        await loadingMess(dto, "Checkin");
-                      },
-                      color: Colors.orange[600],
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+      timeToCancel(dto) == false
+          ? Padding(
+            padding: const EdgeInsets.only(right: 16, left: 16,bottom: 1),
+            child: timeToCheckin(dto) != false
+                ? checkInUser == false
+                  ? RaisedButton(
+                          child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
+                          onPressed: () async {
+                            await loadingMess(dto, "Checkin");
+                          },
+                          color: Colors.orange[600],
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+                      )
+                  : RaisedButton(
+                    onPressed: (){
+                      ShowMessage.functionShowDialog("Your have already checkin this event", context);
+                    },
+                    color: Colors.orange[600],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+                    child: Text('Check in',style: TextStyle(fontSize: 18.0, color: Colors.white)),
                   )
-              : RaisedButton(
-                onPressed: (){
-                  ShowMessage.functionShowDialog("Your have already checkin this event", context);
-                },
-                color: Colors.orange[600],
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
-                child: Text('Check in',style: TextStyle(fontSize: 18.0, color: Colors.white)),
-              )
-          // : RaisedButton(
-            // onPressed: (){
-              // ShowMessage.functionShowDialog("This event has not yet start", context);
-            // },
-            //   color: Colors.orange[600],
-            //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
-        //       child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
-        // ):buttonDetails(3.0,3.0,"Cancel"),
+          : RaisedButton(
+            onPressed: (){
+              ShowMessage.functionShowDialog("This event has not yet start", context);
+            },
+              color: Colors.grey[400],
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+              child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
+        )
+        : buttonDetails(3.0,0.0,"Cancel",dto),
     );
   }
 
@@ -640,35 +642,35 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     var now = DateTime.now();
     if(dto.cancelUnavailableAt == null){
       if (now.isAfter(tmpDT)) {
-        checkValue = true;
-        return checkValue;
+        checkTimeCancel = true;
+        return checkTimeCancel;
       }else {
-        checkValue = false;
-        return checkValue;
+        checkTimeCancel = false;
+        return checkTimeCancel;
       }
     }else {
       if(now.isBefore(DateTime.parse(dto.cancelUnavailableAt))) {
-        checkValue = true;
-        return checkValue;
+        checkTimeCancel = true;
+        return checkTimeCancel;
       }else {
-        checkValue = false;
-        return checkValue;
+        checkTimeCancel = false;
+        return checkTimeCancel;
       }
     }
   }
 
   // check time events is in an on going range
-  timeToCheckin(EventsDTO dto) async{
+  timeToCheckin(EventsDTO dto){
     var now = DateTime.now();
     // time + 10 minutes
     var timeToLate = DateTime.parse(dto.startedAt).add(new Duration(minutes: 10));
-    // if is after time start or is before 10 minutes then not check in
+    // time user click button checkin into 10 minutes when time startAt
     if (now.isAfter(DateTime.parse(dto.startedAt)) && now.isBefore(timeToLate)) {
-      checkValue = true;
-      return checkValue;
-    } else{
-      checkValue = false;
-      return checkValue;
+      checkTimeCheckin = true;
+      return checkTimeCheckin;
+    } else {
+      checkTimeCheckin = false;
+      return checkTimeCheckin;
     }
   }
 

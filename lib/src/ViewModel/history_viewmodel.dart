@@ -54,12 +54,6 @@ class HistoryVM extends Model{
       listEvents = await RegisterEventDAO().pageFirstHistory(int.parse(decodedToken["userId"]),context);
       listEvent = new List();
 
-      // List<EventsDTO> idEventCompleted = await EventsDAO().pageFirstOpening(1,"Completed");
-      // print('-----------------------------------------');
-      // idEventCompleted.forEach((element) async {
-      // });
-      // print('----------------------------------------');
-
       if(listEvents.toString().compareTo("No events found")==0 || listEvents.toString().compareTo("Server error")==0){
         SharedPreferences spf = await SharedPreferences.getInstance();
         spf.setString("sms", listEvents);
