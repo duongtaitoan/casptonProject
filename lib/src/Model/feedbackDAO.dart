@@ -10,7 +10,7 @@ class FeedBackDAO{
     }
   }
 
-  // get status checkIn of user
+  // get status feedback of user
   Future<bool> checkFeedBack(int userId, int idEvents) async {
     try {
       ApiHelper _api = new ApiHelper();

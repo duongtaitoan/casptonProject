@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Helper/show_user_location.dart';
 import 'package:designui/src/Model/imageDTO.dart';
-import 'package:designui/src/View/feedback.dart';
 import 'package:designui/src/View/home.dart';
 import 'package:designui/src/View/registers_event.dart';
 import 'package:designui/src/ViewModel/register_viewmodel.dart';
@@ -17,7 +16,7 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uiblock/uiblock.dart';
-import 'package:location/location.dart';
+
 
 
 class CameraApp extends StatefulWidget {

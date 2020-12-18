@@ -51,7 +51,7 @@ class EventsDAO{
       RegExp pattern = new RegExp('([0-9]{3,4})');
       var a = pattern.stringMatch(e.toString());
       if(int.parse(a) == 404){
-        await ShowMessage.functionShowDialog("Not found events", context);
+        await ShowMessage.functionShowDialog("No events found", context);
       }else if(int.parse(a) == 500){
         await ShowMessage.functionShowDialog("Server error", context);
       }

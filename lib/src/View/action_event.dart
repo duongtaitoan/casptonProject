@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 class ActionEventsPage extends StatefulWidget {
   final FirebaseUser uid;
   final status;
-
   const ActionEventsPage({Key key, this.uid, this.status}) : super(key: key);
 
   @override
@@ -89,6 +88,17 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
   // list events flow status registered of user
   Widget getListEvents(BuildContext context, uid, List<UserDTO> _search, _controller,flowStatus) {
     var _tmpChange = "";
+    historyVM.getFlowStatus(flowStatus).then((value) {
+      if(value == null){
+        if(flowStatus.toString().compareTo("PENDING")==0){
+          _tmpChange = "No waiting events";
+        }else if(flowStatus.toString().compareTo("ACCEPTED")==0){
+          _tmpChange = "No approved events";
+        }else if(flowStatus.toString().compareTo("REJECTED")==0){
+          _tmpChange = "No rejected events";
+        };
+      }
+    });
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.only(left: 16,right: 16,bottom: 16),
@@ -154,18 +164,18 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                                               child: ClipRRect(
                                                 borderRadius:
                                                 BorderRadius.circular(15.0),
-                                                // child: Image.network(
-                                                //   '${snapshot.data[snap]
-                                                //       .thumbnailPicture}',
-                                                //   width: double.infinity,
-                                                //   height: 140,
-                                                //   fit: BoxFit.cover,
-                                                // ),
-                                                child: Image.network(
-                                                  'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
-                                                  width: double.infinity,
-                                                  height: 140,
-                                                  fit: BoxFit.cover,
+                                                child: snapshot.data[snap].thumbnailPicture == null
+                                                    ? Container(
+                                                      width: double.infinity, height: 140,
+                                                      child: Center(child: new Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          new CircularProgressIndicator(),
+                                                          new Text("Loading"),
+                                                        ],),),
+                                                    )
+                                                    : Image.network('${snapshot.data[snap].thumbnailPicture}',
+                                                      width: double.infinity, height: 140, fit: BoxFit.cover,
                                                 ),
                                               ),
                                             ),
@@ -189,11 +199,8 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                             );
                           }
                         }
-                      }else if(snapshot.error || snapshot.hasError){
-                        _tmpChange ="No events found";
                       }
                     }catch(ignoredException){
-
                     }
                   return Padding (
                     padding: const EdgeInsets.only(top:250),
@@ -201,7 +208,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Center(child:Text('${_tmpChange}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
+                        Center(child: Text('${_tmpChange}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
                       ],
                     ),
                   );

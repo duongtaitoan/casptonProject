@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uiblock/uiblock.dart';
 
 class RegisterEventPage extends StatefulWidget {
   final FirebaseUser uid;
@@ -35,7 +36,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   final tracking;
   final nameEvents;
   final screenHome;
-  GlobalKey scaffoldGlobalKey;
   var idEvents;
   var _timeStart;
   var timeStop ;
@@ -50,6 +50,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   var eventLocation;
   var handlerButtonClick =false;
 
+  GlobalKey _scaffoldGlobalKey = GlobalKey();
   Map<String, dynamic> decodedToken;
   _RegisterEventPageState(this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,this.screenHome);
 
@@ -57,7 +58,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   void initState(){
     userCheckIn();
     locationOfEvent();
-
     print('idEvent ${idEvents} ----------- ');
 
     dropdownValue = "Any";
@@ -76,7 +76,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     return SafeArea(
         child: SizedBox.expand(
             child: Scaffold(
-              key: scaffoldGlobalKey,
+              key: _scaffoldGlobalKey,
               appBar: myAppBar(),
               body: FutureBuilder(
                 future: Future.delayed(Duration(seconds: 1)),
@@ -126,16 +126,21 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
               try {
                 return Column(
                   children: <Widget>[
-                    // Image.network("${dto.picture}",
-                    //   width: MediaQuery.of(context).size.width,
-                    //   height: 180,
-                    //   fit: BoxFit.fill,
-                    // ),
-                    Image.network(
-                      'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
-                      width: double.infinity,
+                    dto.picture == null
+                        ? Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height*0.3,
+                          child: Center(child: new Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              new CircularProgressIndicator(),
+                              new Text("Loading"),
+                            ],),),
+                        )
+                    :Image.network("${dto.picture}",
+                      width: MediaQuery.of(context).size.width,
                       height: 180,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.fill,
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 5, bottom: 5),
@@ -341,7 +346,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 Row(
                   children: <Widget>[
                     SizedBox(width: 16,),
-                    Icon(Icons.weekend),
+                    Icon(Icons.warning),
                     SizedBox(width: 5,),
                     Text('Remaining seats',style: TextStyle(color: Colors.black, fontSize: 18.0,fontWeight: FontWeight.bold)),
                     // SizedBox(width: 80,),
@@ -349,7 +354,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50,top: 10),
-                  child: Text("${dto.capacity.toString()}", style: TextStyle(color: Colors.black, fontSize: 16.0),)
+                  child: Text("${dto.remainingSeats.toString()}", style: TextStyle(color: Colors.black, fontSize: 16.0),)
                 ),
                 SizedBox(height: 30,),
               ],
@@ -370,15 +375,15 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                     padding: const EdgeInsets.only(left: 50,top: 10),
-                    child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" ? Padding(
+                    child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" &&_tmpStatusUser != "canceled" ? Padding(
                       padding: const EdgeInsets.all(0),
                       child: _tmpStatusUser != "pending" ? Padding(
                         padding: const EdgeInsets.all(0),
                         child: _tmpStatusUser != "accepted" ? Padding(
                           padding: const EdgeInsets.all(0),
-                          child: Text('Rejected',style: TextStyle(color: Colors.red, fontSize: 16.0),textAlign: TextAlign.start,),
-                        ):Text('Accepted',style: TextStyle(color: Colors.green, fontSize: 16.0),textAlign: TextAlign.start,),
-                      ):Text('Events is not unapproved',style: TextStyle(color: Colors.amber, fontSize: 15.0),textAlign: TextAlign.start,),
+                          child: Text('Registration rejected',style: TextStyle(color: Colors.red, fontSize: 16.0),textAlign: TextAlign.start,),
+                        ):Text('Registration approved',style: TextStyle(color: Colors.green, fontSize: 16.0),textAlign: TextAlign.start,),
+                      ):Text('Waiting for approval',style: TextStyle(color: Colors.amber, fontSize: 15.0),textAlign: TextAlign.start,),
                     ):Text('Not registered yet',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold, fontSize: 16.0),textAlign: TextAlign.start,),
                 ),
                 SizedBox(height: 30,),
@@ -426,12 +431,12 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
               child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" && _tmpStatusUser != "canceled"? Center(
                 child: _tmpStatusUser != "pending" ? Center(
                     child: _tmpStatusUser == "rejected" && _tmpStatusUser !="accepted"? Center(
-                        child:buttonDetails(3.0, 3.0,"Rejected")
+                        child:buttonDetails(3.0, 3.0,"Rejected",dto)
                     ): Container(
                         width: MediaQuery.of(context).size.width,
                         height: 52,
                           child: buttonCheckin(dto)),
-                ): buttonDetails(3.0,3.0,"Cancel"),
+                ): buttonDetails(3.0,3.0,"Cancel",dto),
               ):Container(
                   width: MediaQuery.of(context).size.width,
                   height: 52,
@@ -444,7 +449,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   }
 
   // button cancel events and reject events
-  Widget buttonDetails(bottom,top,title){
+  Widget buttonDetails(bottom,top,title,dto){
     return Row(
       children: <Widget>[
         Visibility(
@@ -466,26 +471,16 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                           title: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children:[
-                                Icon(Icons.notifications,),
                                 SizedBox(width: 10,),
                                 Text("Message"),
                               ]
                           ),
-                        content:  Text("Cancel registered the event",style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.center,),
+                        content: Text("Cancel registration?",style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.center,),
                           actions: [
                             new FlatButton(
                               child: Text("Yes",style: TextStyle(color: Colors.blue[500]),),
                               onPressed: () async {
-                                //get this id events
-                                var id = await RegisterEventDAO().idOfEvent(idEvents);
-
-                                // if user cancel this event then show messages
-                                RegisterVM regVM = new RegisterVM();
-                                var _tmpMessage = await regVM.updateStatusEvent("CANCELED", id, false);
-                                Navigator.pop(context);
-                                Future.delayed(Duration(microseconds: 500),() async {
-                                });
-                                await ShowMessage.functionShowDialog("Canceled "+_tmpMessage,context);
+                                await loadingMess(dto, "canceledRegister");
                               },
                             ),
                             new FlatButton(
@@ -496,7 +491,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                         ),
                       );
                     }, child: Text("Cancel",style: TextStyle(fontSize: 18.0, color: Colors.white)))
-                    :RaisedButton(
+                    : RaisedButton(
                     color: Colors.orange[600],
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
                     child: Text("Rejected",style: TextStyle(color: Colors.white))),
@@ -510,7 +505,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
 
   // button feedback events
   Widget buttonFeedBack(bottom,top,EventsDTO dto){
-    var tmp = true;
+    var _tmpStatusUser = dto.status.toString().toLowerCase();
     return Row(
       children: <Widget>[
         Visibility(
@@ -520,23 +515,14 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
             height: MediaQuery.of(context).size.height*12/100,
             child: Padding(
               padding: EdgeInsets.only(left: 16,bottom: bottom,top: top),
-              child: RaisedButton(
+              child: _tmpStatusUser != 'rejected' ? RaisedButton(
                   color: Colors.orange[600],
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
                   onPressed: () async {
-                    bool statusCheckIn = await RegisterEventDAO().statusCheckIn(int.parse(decodedToken["userId"]), idEvents);
-                    bool feedBack = await FeedBackDAO().checkFeedBack(int.parse(decodedToken["userId"]), idEvents);
-                    bool statusEvent = await RegisterEventDAO().eventCompleted(idEvents, "Completed");
-
-                    if(statusCheckIn == false && feedBack == true && statusEvent == false){
-                      ShowMessage.functionShowDialog("This event is not completed for feedback", context);
-                      // status == true and feedback not found and status event == completed then show feedback for user
-                    }else if(statusCheckIn == true && feedBack == false && statusEvent == true){
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
-                        FeedBackPage(uid: uid, nameEvents: dto.title, idEvent: idEvents,)));
-                    }
+                    await loadingMess(dto,"feedback");
                   },
-                  child: Text("FeedBack",style: TextStyle(fontSize: 18.0, color: Colors.white)))
+                  child: Text("FeedBack",style: TextStyle(fontSize: 18.0, color: Colors.white))
+              ) : Text("FeedBack",style: TextStyle(fontSize: 18.0, color: Colors.white))
             ),
           ),
         ),
@@ -588,29 +574,8 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                           child: Text('Yes', style: TextStyle(color: Colors
                               .blue[500]),),
                           onPressed: () async {
-                            // check semester and student code
-                            if (dropdownValue == "Any") {
-                              var tmpValue = 0.toString();
-                              setState(() {
-                                dropdownValue = tmpValue;
-                              });
-                            }
-
-                            // register event
-                            var _tmpStatus = await RegisterVM().register(
-                                new RegisterEventsDTO(eventId: idEvents,
-                                    semester: int.parse(dropdownValue),
-                                    studentId: int.parse(
-                                        decodedToken["userId"])),
-                                dto.approvalRequired);
-
-                            Navigator.of(context).pop();
-                            Future.delayed(new Duration(milliseconds: 1),()async{
-                            });
-                            // show message when registered
-                            await ShowMessage.functionShowDialog(
-                                _tmpStatus, context);
-                          },
+                            await loadingMess(dto, "register");
+                          }
                         ),
                         CupertinoButton(
                           child: Text('No', style: TextStyle(color: Colors
@@ -644,23 +609,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
               ? RaisedButton(
                       child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
                       onPressed: () async {
-                        // get id register
-                        var idRegister = await RegisterEventDAO().idOfEvent(idEvents);
-                        // get status user register
-                        var statusCheckIn = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
-                        await Future.delayed(Duration.zero, () {
-                          Navigator.pushAndRemoveUntil(
-                              context, MaterialPageRoute(builder: (BuildContext context) =>
-                              CameraApp(uid: uid,
-                                  duration: dto.duration,
-                                  nameEvents: dto.title,
-                                  tracking:dto.gpsTrackingRequired,
-                                  idEvents: dto.id,
-                                  idRegister: idRegister,
-                                  statusCheckin :statusCheckIn,
-                              )), (
-                              Route<dynamic> route) => false);
-                        });
+                        await loadingMess(dto, "Checkin");
                       },
                       color: Colors.orange[600],
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
@@ -777,7 +726,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
         }).toList(),
       );
     }catch(e){
-
     }
   }
 
@@ -811,4 +759,127 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     }
   }
 
+  // loading message feedback
+  loadingMess(dto,nameButton) async {
+    UIBlock.block(_scaffoldGlobalKey.currentContext,
+      customLoaderChild: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Center (
+                child: Column(
+                  children: <Widget>[
+                    CircularProgressIndicator(),
+                    SizedBox(height: 10,),
+                    Text("Loading . . .",style: TextStyle(fontSize: 18.0,color: Colors.white),),
+                  ],
+                )
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if(nameButton == "feedback"){
+      await handlerFeedback(dto);
+    }else if (nameButton == "register"){
+      await handlerRegister(dto);
+    }else if (nameButton == "canceledRegister"){
+      await handlerCancel();
+    }else if(nameButton == "Checkin"){
+      await handlerCheckIn(dto);
+    }
+  }
+
+  // check condition of feedback
+  handlerFeedback(dto) async {
+    bool statusCheckIn = await RegisterEventDAO().statusCheckIn(int.parse(decodedToken["userId"]), idEvents);
+    bool feedBack = await FeedBackDAO().checkFeedBack(int.parse(decodedToken["userId"]), idEvents);
+    bool statusEvent = await RegisterEventDAO().eventCompleted(idEvents, "Completed");
+
+    if(statusCheckIn == true && feedBack == false && statusEvent == false){
+      // event not completed
+      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+      ShowMessage.functionShowDialog("This event is not completed for feedback", context);
+    }else if(statusCheckIn == true && feedBack == false && statusEvent == true){
+      // status == true and feedback not found and status event == completed then show feedback for user
+      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
+          FeedBackPage(uid: uid, nameEvents: dto.title, idEvent: idEvents,)));
+    }else if(statusCheckIn == true && feedBack == true && statusEvent == false){
+      // this event user have already feedback
+      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+      ShowMessage.functionShowDialog("This event you have already feedback", context);
+    }else if(statusCheckIn == false && feedBack == true && statusEvent == false
+            || statusCheckIn == false && feedBack == true && statusEvent == true){
+      // user not check in event
+      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+      ShowMessage.functionShowDialog("This event you have not check in", context);
+    }
+  }
+
+  // check register of user
+  handlerRegister(dto) async{
+    // check semester and student code
+    if (dropdownValue == "Any") {
+      var tmpValue = 0.toString();
+      setState(() {
+        dropdownValue = tmpValue;
+      });
+    }
+
+    // register event
+    var _tmpStatus = await RegisterVM().register(
+        new RegisterEventsDTO(eventId: idEvents, semester: int.parse(dropdownValue),
+            studentId: int.parse(decodedToken["userId"])), dto.approvalRequired);
+
+    Navigator.of(context).pop();
+    // show message when registered
+    await ShowMessage.functionShowDialog(_tmpStatus, context);
+    var selectBar = 1;
+    Future.delayed(Duration(microseconds: 1),() async {
+      Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
+        => HomePage(uid: uid,barselect:selectBar)), (Route<dynamic> route) => false);
+    });
+    UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+  }
+
+  // if user cancel this event then show messages
+  handlerCancel() async{
+    //get this id events
+    var id = await RegisterEventDAO().idOfEvent(idEvents);
+    RegisterVM regVM = new RegisterVM();
+    var _tmpMessage = await regVM.updateStatusEvent("CANCELED", id, false);
+    Navigator.of(context).pop();
+    await ShowMessage.functionShowDialog("Canceled "+_tmpMessage,context);
+    Future.delayed(Duration(microseconds: 1),() async {
+      Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
+      => HomePage(uid: uid)), (Route<dynamic> route) => false);
+    });
+    UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+  }
+
+  // user click button check in
+  handlerCheckIn(dto)async{
+    // get id register
+    var idRegister = await RegisterEventDAO().idOfEvent(idEvents);
+    // get status user register
+    var statusCheckIn = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
+    await Future.delayed(Duration.zero, () {
+      Navigator.pushAndRemoveUntil(
+          context, MaterialPageRoute(builder: (BuildContext context) =>
+          CameraApp(uid: uid,
+            duration: dto.duration,
+            nameEvents: dto.title,
+            tracking:dto.gpsTrackingRequired,
+            idEvents: dto.id,
+            idRegister: idRegister,
+            statusCheckin :statusCheckIn,
+          )), (
+          Route<dynamic> route) => false);
+    });
+  }
 }

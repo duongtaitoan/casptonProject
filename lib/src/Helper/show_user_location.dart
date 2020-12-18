@@ -85,15 +85,15 @@ class show {
 Future timeLocation(_locationData,counts,show,idEvents,BuildContext context,uid,nameEvents) {
   return new Future.delayed(const Duration(milliseconds: 1), () async {
     Stopwatch s = new Stopwatch();
-    for (int i = 0; i <= 8; i++) {
+    for (int i = 0; i <= counts; i++) {
       sleep(const Duration(milliseconds: 1));
-      await Future.delayed(new Duration(seconds: 3),() async {
+      await Future.delayed(new Duration(minutes: 5),() async {
         if(show == true) {
           ShowMessage.functionShowMessage("Your location has been sent to APT server.");
           getLocation(new TrackingDTO(eventId: idEvents,longitude: _locationData.longitude,latitude: _locationData.latitude));
         }
         // if tracking requited == false => no get your location
-        if(i == 8){
+        if(i == counts){
           print('show screen feedback');
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context)=>FeedBackPage(uid: uid,nameEvents:nameEvents,

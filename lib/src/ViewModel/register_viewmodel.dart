@@ -12,7 +12,6 @@ class RegisterVM extends Model{
     }else{
       return value;
     }
-    // return "Event registration failed";
   }
 
   // cancel event

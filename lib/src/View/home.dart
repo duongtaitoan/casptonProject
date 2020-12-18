@@ -17,14 +17,15 @@ import 'package:scoped_model/scoped_model.dart';
 class HomePage extends StatefulWidget {
   final FirebaseUser uid;
   final status;
-
-  const HomePage({Key key, this.uid, this.status,}) : super(key: key);
+  final barselect;
+  const HomePage({Key key, this.uid, this.status,this.barselect}) : super(key: key);
   @override
-  _HomePageState createState() => _HomePageState(uid, status);
+  _HomePageState createState() => _HomePageState(uid, status,barselect);
 }
 
 class _HomePageState extends State<HomePage> {
   final FirebaseUser uid;
+  final barselect;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   var status;
   int selectedIndex = 0;
@@ -36,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   static List<EventsDTO> listEventDTO;
   static List<Widget> imageSliders;
 
-  _HomePageState(this.uid, this.status);
+  _HomePageState(this.uid, this.status,this.barselect);
 
   @override
   void initState() {
@@ -44,6 +45,9 @@ class _HomePageState extends State<HomePage> {
     handlerShowMessage(this.status);
     _actionEvents = ActionEventsPage(uid: uid,);
     _scaffoldKey = new GlobalKey<ScaffoldState>();
+    if(barselect != null){
+      selectedIndex = barselect;
+    }
     super.initState();
     try {
       model = new EventsVM();
@@ -273,8 +277,14 @@ class _HomePageState extends State<HomePage> {
                               children: <Widget>[
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
-                                  // child:Image.network('${element.thumbnailPicture}',width: double.infinity, height: 160.0, fit: BoxFit.cover,),
-                                  child:Image.network('https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',width: double.infinity, height: 160.0, fit: BoxFit.cover,),
+                                  child: element.thumbnailPicture == null
+                                    ? Center(child: new Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        new CircularProgressIndicator(),
+                                        new Text("Loading"),
+                                      ],),)
+                                    :Image.network('${element.thumbnailPicture}',width: double.infinity, height: 160.0, fit: BoxFit.cover,),
                                 ),
                                 InkWell(
                                   borderRadius: BorderRadius.circular(10),
@@ -324,14 +334,10 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   ...list,
                   model.isAdd
-                      ? Center (
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              CircularProgressIndicator(),
-                            ],
-                          ),
-                        )
+                      ? Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Center (child: CircularProgressIndicator(),),
+                      )
                       : FlatButton(
                      child: Center(
                         child: model.showToast == null
@@ -363,8 +369,9 @@ class _HomePageState extends State<HomePage> {
 
   // check list events in week
   handlerHoverImg() async {
-    var now =  new DateTime.now().add(Duration(days: -100));
-    var _tmpFuture = now.add(Duration(days: 100));
+    var now =  new DateTime.now();
+    var _tmpFuture = now.add(Duration(days: 7));
+
     try {
       listEventDTO = await EventsVM.eventInWeek(now,_tmpFuture);
       if (listEventDTO.isNotEmpty) {
@@ -394,11 +401,14 @@ class _HomePageState extends State<HomePage> {
                                       uid: uid, idEvents: item.id, tracking:item.gpsTrackingRequired)));
                                });
                               },
-                              // child : Image.network('${item.thumbnailPicture}', fit: BoxFit.cover, width: 1000.0),),
-                              child:Image.network(
-                                'https://www.hyperpixelsmedia.com/images/still_preview/fall_leaves_upcoming_events_still_1280x720.jpg ',
-                                  fit: BoxFit.cover, width: 1000.0
-                              ),),
+                              child :item.thumbnailPicture == null
+                                  ? Center(child: new Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      new CircularProgressIndicator(),
+                                      new Text("Loading"),
+                                    ],),)
+                                  : Image.network('${item.thumbnailPicture}', fit: BoxFit.cover, width: 1000.0),),
                           Positioned(
                             bottom: 0.0,
                             left: 0.0,
@@ -438,7 +448,6 @@ class _HomePageState extends State<HomePage> {
         );
       }
     }catch(e){
-      handlerShowMessage("Events into week not found");
     }
   }
 

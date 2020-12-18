@@ -200,18 +200,19 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                             children: <Widget>[
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                // child: Image.network(
-                                //   '${element.thumbnailPicture}',
-                                //   width: double.infinity,
-                                //   height: 160.0,
-                                //   fit: BoxFit.cover,
-                                // ),
-                                child: Image.network(
-                                  'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
-                                  width: double.infinity,
-                                  height: 160,
-                                  fit: BoxFit.cover,
-                                ),
+                                child: element.thumbnailPicture == null
+                                    ? Center(child: new Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          new CircularProgressIndicator(),
+                                          new Text("Loading"),
+                                        ],),)
+                                    : Image.network(
+                                        '${element.thumbnailPicture}',
+                                        width: double.infinity,
+                                        height: 160.0,
+                                        fit: BoxFit.cover,
+                                        ),
                               ),
                               InkWell(
                                 borderRadius: BorderRadius.circular(10),
@@ -272,7 +273,10 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                   children: [
                     ...list,
                     model.isAdd
-                        ? Center (child: CircularProgressIndicator(),)
+                        ? Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Center (child: CircularProgressIndicator(),),
+                        )
                         : FlatButton(
                             child: Center(
                               child: model.mgs == null
@@ -347,19 +351,20 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                     ClipRRect(
                                                       borderRadius: BorderRadius
                                                           .circular(10),
-                                                      // child: Image.network(
-                                                      //   '${_search[i]
-                                                      //       .thumbnailPicture}',
-                                                      //   width: double.infinity,
-                                                      //   height: 160.0,
-                                                      //   fit: BoxFit.cover,
-                                                      // ),
-                                                      child: Image.network(
-                                                        'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
-                                                        width: double.infinity,
-                                                        height: 160,
-                                                        fit: BoxFit.cover,
-                                                      ),
+                                                      child: _search[i].thumbnailPicture == null
+                                                          ? Center(child: new Column(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              new CircularProgressIndicator(),
+                                                              new Text("Loading"),
+                                                            ],),)
+                                                          : Image.network(
+                                                            '${_search[i]
+                                                                .thumbnailPicture}',
+                                                            width: double.infinity,
+                                                            height: 160.0,
+                                                            fit: BoxFit.cover,
+                                                          ),
                                                     ),
                                                     InkWell(
                                                       borderRadius: BorderRadius

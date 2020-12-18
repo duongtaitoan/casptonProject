@@ -1,4 +1,5 @@
-import 'package:designui/src/Helper/show_message.dart';
+import 'package:designui/src/Model/eventDAO.dart';
+import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/Model/registerEventDAO.dart';
 import 'package:designui/src/Model/userDTO.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,6 +13,7 @@ class HistoryVM extends Model{
   bool isAdd = false;
   List<UserDTO> listEvent;
   var mgs;
+  var message;
 
   // get list events flow status
   Future<List<UserDTO>> getFlowStatus(String status) async {
@@ -48,14 +50,25 @@ class HistoryVM extends Model{
       SharedPreferences sp = await SharedPreferences.getInstance();
       String token = sp.getString("token_data");
       var decodedToken= JwtDecoder.decode(token);
-
-      RegisterEventDAO dao = new RegisterEventDAO();
-      var listEvents = await dao.pageFirstHistory(int.parse(decodedToken["userId"]),context);
+      var listEvents;
+      listEvents = await RegisterEventDAO().pageFirstHistory(int.parse(decodedToken["userId"]),context);
       listEvent = new List();
-      if(listEvents.toString() != null){
+
+      // List<EventsDTO> idEventCompleted = await EventsDAO().pageFirstOpening(1,"Completed");
+      // print('-----------------------------------------');
+      // idEventCompleted.forEach((element) async {
+      // });
+      // print('----------------------------------------');
+
+      if(listEvents.toString().compareTo("No events found")==0 || listEvents.toString().compareTo("Server error")==0){
+        SharedPreferences spf = await SharedPreferences.getInstance();
+        spf.setString("sms", listEvents);
+        notifyListeners();
+      }
+      else{
         listEvent.addAll(listEvents);
       }
-    } catch (e) {
+    }catch (e) {
     } finally {
       isLoading = false;
       notifyListeners();

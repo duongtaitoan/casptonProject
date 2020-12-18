@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryPage extends StatefulWidget {
   final FirebaseUser uid;
@@ -26,7 +27,7 @@ class _HistoryPageState extends State<HistoryPage> {
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   var status = "This event you have completed";
   final TextEditingController _controller = TextEditingController();
-  String result = "";
+  var tmpSms;
   _HistoryPageState(this.uid,);
 
   @override
@@ -35,8 +36,20 @@ class _HistoryPageState extends State<HistoryPage> {
     super.initState();
     try {
       model = new HistoryVM();
-      model.pageFristHistory(context);
+      smsPay();
     } catch (e) {
+    }
+  }
+
+  // message history of user
+  smsPay() async {
+    try {
+      await model.pageFristHistory(context);
+      SharedPreferences spf = await SharedPreferences.getInstance();
+      tmpSms = spf.getString("sms");
+      setState(() {});
+    }catch(e){
+
     }
   }
 
@@ -71,7 +84,9 @@ class _HistoryPageState extends State<HistoryPage> {
                   SizedBox(
                     height: 10,
                   ),
-                  getEvent(context, uid, _search, _controller),
+                  tmpSms == null
+                      ? getEvent(context, uid, _search, _controller)
+                      : Center(child: Text('${tmpSms}',style: TextStyle(fontSize: 18.0, color: Colors.orange[600]),),),
                 ],
               ),
             ),
@@ -188,11 +203,14 @@ class _HistoryPageState extends State<HistoryPage> {
                           color: Colors.grey[300], offset: Offset(0, 3))
                       ]),
                   child: FlatButton(
-                    onPressed: () {Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => RegisterEventPage(uid: uid,
-                            idEvents: element.eventId, status: status)));
+                    onPressed: () {
+                      Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) =>
+                              RegisterEventPage(uid: uid,
+                                  idEvents: element.eventId,
+                                  status: status)));
                     },
-                    padding: const EdgeInsets.only(top: 1,left: 10),
+                    padding: const EdgeInsets.only(top: 1, left: 10),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -206,17 +224,27 @@ class _HistoryPageState extends State<HistoryPage> {
                                 flex: 5,
                                 child: Center(
                                   child: Padding(
-                                    padding: const EdgeInsets.only(top: 5, bottom: 5),
+                                    padding: const EdgeInsets.only(
+                                        top: 5, bottom: 5),
                                     child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(15.0),
-                                      child: Image.network(
-                                        'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
+                                      borderRadius: BorderRadius.circular(
+                                          15.0),
+                                      child: element.thumbnailPicture == null
+                                          ? Container(
+                                            width: double.infinity,
+                                            height: 140,
+                                            child: Center(child: new Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                new CircularProgressIndicator(),
+                                                new Text("Loading"),
+                                              ],),),
+                                          )
+                                          : Image.network(
+                                        '${element.thumbnailPicture}',
                                         width: double.infinity,
                                         height: 140,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      // child: Image.network('${element.thumbnailPicture}',
-                                      //   width: double.infinity, height: 140, fit: BoxFit.cover,),
+                                        fit: BoxFit.cover,),
                                     ),
                                   ),
                                 ),
@@ -224,23 +252,27 @@ class _HistoryPageState extends State<HistoryPage> {
                               Expanded(
                                 flex: 4,
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment: MainAxisAlignment
+                                      .spaceEvenly,
                                   mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment
+                                      .center,
                                   children: <Widget>[
                                     SizedBox(width: 10,),
-                                    Text(ShowMessage.functionLimitCharacter(element.eventTitle),
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),),
-                                    Text(dtf.format(DateTime.parse(element.startDate)),
-                                      style: TextStyle(fontSize: 16.0),),
-                                    element.status.toLowerCase() != "pending" ? Center(
-                                      child: element.status.toLowerCase() == "accepted" || element.status.toLowerCase() != "canceled"
-                                          ? Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
-                                            color: Colors.green[500]),)
-                                          : Text('${"rejected"}', style: TextStyle(fontSize: 16.0,
-                                              color: Colors.red[500])),)
-                                          : Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0,
-                                          color: Colors.yellow[600]),),
+                                    Text(ShowMessage.functionLimitCharacter(
+                                        element.eventTitle),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18.0),),
+                                    Text(dtf.format(DateTime.parse(element.startDate)), style: TextStyle(fontSize: 16.0),),
+
+                                    element.status.toLowerCase() != "pending"
+                                        ? Center(child: element.status.toLowerCase() == "canceled"
+                                          ? Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0, color: Colors.grey[500]),)
+                                            : Center(child: element.status.toLowerCase() == "accepted" || element.status.toLowerCase() !="denied"
+                                            ? Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0, color: Colors.green[500]),)
+                                          : Text('${"rejected"}', style: TextStyle(fontSize: 16.0, color: Colors.red[500])),))
+                                        : Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0, color: Colors.yellow[600]),),
                                   ],
                                 ),
                               ),
@@ -255,16 +287,19 @@ class _HistoryPageState extends State<HistoryPage> {
                 children: [
                   ...list,
                   model.isAdd
-                      ? Center (child:CircularProgressIndicator())
+                      ? Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Center (child:CircularProgressIndicator()),
+                      )
                       : FlatButton(
-                    child: Center(
-                      child: model.mgs == null
-                          ? Text("Load more",style: TextStyle(fontSize: 18.0,color: Colors.orange[600]))
-                          : Text("${model.mgs}",style: TextStyle(fontSize: 18.0,color: Colors.orange[600])),
-                    ),
-                    onPressed: () async {
-                      await model.pageHistoryIndex();
-                    },
+                        child: Center(
+                          child: model.mgs == null
+                              ? Text("Load more",style: TextStyle(fontSize: 18.0,color: Colors.orange[600]))
+                              : Text("${model.mgs}",style: TextStyle(fontSize: 18.0,color: Colors.orange[600])),
+                        ),
+                        onPressed: () async {
+                          await model.pageHistoryIndex();
+                        },
                   )
                 ],
               );
@@ -345,18 +380,21 @@ class _HistoryPageState extends State<HistoryPage> {
                                                         borderRadius:
                                                         BorderRadius.circular(
                                                             15.0),
-                                                        // child: Image.network(
-                                                        //   '${_search[i]
-                                                        //       .thumbnailPicture}',
-                                                        //   width: double.infinity,
-                                                        //   height: 140,
-                                                        //   fit: BoxFit.cover,),
-                                                        child: Image.network(
-                                                          'https://skitguys.com/imager/stillimages/135292/Orion_Upcoming_Events_Still_HPM-HD_aadcc2b1f9fa535f36249a03e9ea56d2.jpg',
-                                                          width: double.infinity,
-                                                          height: 140,
-                                                          fit: BoxFit.cover,
-                                                        ),
+                                                        child: _search[i].thumbnailPicture == null
+                                                            ? Container(
+                                                              width: double.infinity,
+                                                              height: 140,
+                                                              child: Center(child: new Column(
+                                                                mainAxisSize: MainAxisSize.min,
+                                                                children: [
+                                                                  new CircularProgressIndicator(),
+                                                                  new Text("Loading"),
+                                                                ],),),
+                                                            )
+                                                            : Image.network('${_search[i].thumbnailPicture}',
+                                                              width: double.infinity,
+                                                              height: 140,
+                                                              fit: BoxFit.cover,),
                                                       ),
                                                     )
                                                 ),
@@ -391,7 +429,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                                           "accepted" ||
                                                           _search[i].status
                                                               .toLowerCase() !=
-                                                              "canceled"
+                                                              "denied"
                                                           ? Text('${_search[i]
                                                           .status.toLowerCase()}',
                                                         style: TextStyle(

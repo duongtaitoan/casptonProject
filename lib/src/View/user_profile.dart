@@ -29,7 +29,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   var _tmpInfor;
   var matchesStudent;
-  var saveSynMajor;
+  var saveSynMajor ="SE" ;
 
   _UserProfilePageState(this.uid,this.status);
   final TextEditingController controlNumber = TextEditingController();
