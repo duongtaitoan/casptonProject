@@ -4,17 +4,17 @@ class UserDTO{
   String eventTitle;
   String startDate;
   String status;
-  String statusEvent;
+  String EventStatus;
   String thumbnailPicture;
 
-  UserDTO({this.id, this.eventId, this.eventTitle,this.startDate,this.status,this.thumbnailPicture,this.statusEvent});
+  UserDTO({this.id, this.eventId, this.eventTitle,this.startDate,this.status,this.thumbnailPicture,this.EventStatus});
 
   factory UserDTO.fromJson(Map<String, dynamic> json) => UserDTO(
     id: json["id"],
     eventId: json["eventId"],
     eventTitle: json["eventTitle"],
     startDate: json["startDate"],
-    statusEvent: json["statusEvent"],
+    EventStatus: json["EventStatus"],
     status: json["status"],
     thumbnailPicture: json["thumbnailPicture"],
   );

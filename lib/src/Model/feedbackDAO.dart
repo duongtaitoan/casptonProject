@@ -14,7 +14,7 @@ class FeedBackDAO{
   Future<bool> checkFeedBack(int userId, int idEvents) async {
     try {
       ApiHelper _api = new ApiHelper();
-      var json = await _api.get("api/registrations?EventId=${idEvents}&UserId=${userId}");
+      var json = await _api.get("api/feedbacks?EventId=${idEvents}&StudentId=${userId}");
       if (json["message"].toString().compareTo("Not found") != 0) {
         return true;
       }else{

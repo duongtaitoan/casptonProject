@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:designui/src/API/api_helper.dart';
-import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/Model/locationDTO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
 import 'package:designui/src/Model/userDTO.dart';
@@ -68,9 +65,9 @@ class RegisterEventDAO{
   }
 
   // list events page index history
-  Future<dynamic> pageIndexHistory(int userId,int index) async {
+  Future<dynamic> pageIndexHistory(String registrationStatus,int userId,int index) async {
     ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=${index}&PageSize=10");
+    dynamic json = await _api.get("api/registrations?EventStatus=${registrationStatus}&UserId=${userId}&PageIndex=${index}&PageSize=10");
     var eventJson = json["data"]["items"] as List;
     if (eventJson != null) {
       return eventJson.map((e) => UserDTO.fromJson(e)).toList();
@@ -80,10 +77,10 @@ class RegisterEventDAO{
   }
 
   // list first events page index history
-  Future<dynamic> pageFirstHistory(int userId,context) async {
+  Future<dynamic> pageFirstHistory(String registrationStatus,int userId,context) async {
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=1&PageSize=10");
+      dynamic json = await _api.get("api/registrations?EventStatus=${registrationStatus}&UserId=${userId}&PageIndex=1&PageSize=10");
       var eventJson = json["data"]["items"] as List;
       if (eventJson != null) {
         return eventJson.map((e) => UserDTO.fromJson(e)).toList();
@@ -118,32 +115,17 @@ class RegisterEventDAO{
   }
 
   // get status checkIn  of user
-  Future<bool> statusCheckIn(int userId, int idEvents) async {
+  Future<bool> statusCheckIn(int userId, int idEvents,String statusRegisEvent) async {
     try {
       dynamic json;
       ApiHelper _api = new ApiHelper();
-      json = await _api.get("api/registrations?EventId=${idEvents}&UserId=${userId}");
+      json = await _api.get("api/registrations?EventId=${idEvents}&UserId=${userId}&EventStatus=${statusRegisEvent}");
       if (json["message"] == "Success") {
         return json["data"]["items"][0]["checkedIn"];
-      }
-    }catch(e){
-      return null;
-    }
-  }
-
-  // get status event completed
-  Future<bool> eventCompleted(int idEvent, String status) async {
-    try {
-      ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.get("api/events?EventId=${idEvent}&Status=${status}");
-
-      if (json["data"]["items"][0]["status"].toString().compareTo("Completed") == 0) {
-        return true;
-      }else{
-        return false;
       }
     }catch(e){
       return false;
     }
   }
+
 }

@@ -798,25 +798,19 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
 
   // check condition of feedback
   handlerFeedback(dto) async {
-    bool statusCheckIn = await RegisterEventDAO().statusCheckIn(int.parse(decodedToken["userId"]), idEvents);
+    bool statusCheckIn = await RegisterEventDAO().statusCheckIn(int.parse(decodedToken["userId"]), idEvents,"Completed");
     bool feedBack = await FeedBackDAO().checkFeedBack(int.parse(decodedToken["userId"]), idEvents);
-    bool statusEvent = await RegisterEventDAO().eventCompleted(idEvents, "Completed");
 
-    if(statusCheckIn == true && feedBack == false && statusEvent == false){
-      // event not completed
+    if(statusCheckIn == true && feedBack == true){
+      // this event is already feedback
       UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-      ShowMessage.functionShowDialog("This event is not completed for feedback", context);
-    }else if(statusCheckIn == true && feedBack == false && statusEvent == true){
-      // status == true and feedback not found and status event == completed then show feedback for user
+      ShowMessage.functionShowDialog("This event you have already feedback", context);
+    }else if(statusCheckIn == true && feedBack == false ){
+      // status == true and feedback not found then show feedback for user
       UIBlock.unblock(_scaffoldGlobalKey.currentContext);
       Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
           FeedBackPage(uid: uid, nameEvents: dto.title, idEvent: idEvents,)));
-    }else if(statusCheckIn == true && feedBack == true && statusEvent == false){
-      // this event user have already feedback
-      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-      ShowMessage.functionShowDialog("This event you have already feedback", context);
-    }else if(statusCheckIn == false && feedBack == true && statusEvent == false
-            || statusCheckIn == false && feedBack == true && statusEvent == true){
+    }else if(statusCheckIn == false && feedBack == true){
       // user not check in event
       UIBlock.unblock(_scaffoldGlobalKey.currentContext);
       ShowMessage.functionShowDialog("This event you have not check in", context);

@@ -51,7 +51,7 @@ class HistoryVM extends Model{
       String token = sp.getString("token_data");
       var decodedToken= JwtDecoder.decode(token);
       var listEvents;
-      listEvents = await RegisterEventDAO().pageFirstHistory(int.parse(decodedToken["userId"]),context);
+      listEvents = await RegisterEventDAO().pageFirstHistory("Completed",int.parse(decodedToken["userId"]),context);
       listEvent = new List();
 
       if(listEvents.toString().compareTo("No events found")==0 || listEvents.toString().compareTo("Server error")==0){
@@ -81,7 +81,7 @@ class HistoryVM extends Model{
       var decodedToken= JwtDecoder.decode(token);
 
       RegisterEventDAO dao = new RegisterEventDAO();
-      var listEvents = await dao.pageIndexHistory(int.parse(decodedToken["userId"]),index);
+      var listEvents = await dao.pageIndexHistory("Completed",int.parse(decodedToken["userId"]),index);
       // get next
       if (listEvents.toString() != null) {
         listEvent.addAll(listEvents);
