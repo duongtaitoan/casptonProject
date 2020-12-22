@@ -15,8 +15,8 @@ class EventsVM extends Model {
       EventsDAO dao = new EventsDAO();
       var listEvents = await dao.getAllOpenning("Opening");
       List<EventsDTO> saveEvents = new List<EventsDTO>();
-      for (int i = 1; i < listEvents.length; i++) {
-        saveEvents.add(listEvents[i]);
+      if(listEvents!= null){
+        saveEvents.addAll(listEvents);
       }
       return saveEvents;
     } catch (e) {

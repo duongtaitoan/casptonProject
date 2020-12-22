@@ -187,7 +187,7 @@ class _CameraAppPageState extends State<CameraApp> {
   sendToServer(statusCheckin,idRegister,tmpStatus) async {
     var _tmpMessage = await RegisterVM().updateStatusEvent(statusCheckin, idRegister,true);
     // check in events success or fail
-    if(_tmpMessage == "Accept successful"){
+    if(_tmpMessage == "success"){
       // requiment is tracking or not
       if(tmpStatus == false) {
         UIBlock.unblock(_scaffoldGlobalKey.currentContext);

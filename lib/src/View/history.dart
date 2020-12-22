@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/userDTO.dart';
 import 'package:designui/src/ViewModel/history_viewmodel.dart';
@@ -74,9 +75,7 @@ class _HistoryPageState extends State<HistoryPage> {
             body: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
-                  SizedBox(
-                    height: 10,
-                  ),
+                  SizedBox(height: 10,),
                   Padding(
                     padding: const EdgeInsets.only(left: 10, right: 10),
                     child: searchBar(searchEvents, _controller),
@@ -138,7 +137,16 @@ class _HistoryPageState extends State<HistoryPage> {
       elevation: 1.0,
       borderRadius: BorderRadius.circular(20.0),
       child: ListTile(
-        leading: Icon(Icons.search, color: Colors.black),
+        leading: IconButton(
+            icon: Icon(Icons.search), color: Colors.black,
+            onPressed: ()async{
+              Future.delayed(Duration(milliseconds: 500),(){
+                setState(() {
+                    searchEvents(_controller.text);
+                });
+              });
+            },
+        ),
         title: TextFormField(
           autofocus: true,
           textInputAction: TextInputAction.search,
@@ -264,8 +272,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18.0),),
-                                    Text(dtf.format(DateTime.parse(element.startDate)), style: TextStyle(fontSize: 16.0),),
-
+                                    Text(dtf.format(DateTime.parse(element.startDate).add(Duration(hours: 7))), style: TextStyle(fontSize: 16.0),),
                                     element.status.toLowerCase() != "pending"
                                         ? Center(child: element.status.toLowerCase() == "canceled"
                                           ? Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0, color: Colors.grey[500]),)
@@ -336,9 +343,9 @@ class _HistoryPageState extends State<HistoryPage> {
                               itemBuilder: (context, i) {
                                 return Padding(
                                   padding: const EdgeInsets.only(
-                                      left: 10.0, right: 10.0),
+                                      left: 10.0, right: 10.0,bottom: 15,top: 5),
                                   child: Container(
-                                    margin: const EdgeInsets.only(top: 10),
+                                    margin: const EdgeInsets.only(top: 0),
                                     decoration: BoxDecoration(
                                         color: Colors.white,
                                         border: Border.all(
@@ -417,7 +424,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                                           fontSize: 18.0),),
                                                     Text(dtf.format(
                                                         DateTime.parse(_search[i]
-                                                            .startDate)),
+                                                            .startDate).add(Duration(hours: 7))),
                                                       style: TextStyle(
                                                           fontSize: 16.0),),
                                                     _search[i].status

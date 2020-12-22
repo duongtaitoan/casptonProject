@@ -49,11 +49,26 @@ class RegisterEventDAO{
     }
   }
 
-  // list events user register
-  Future<dynamic> listEventHistory(int userId) async {
+  // list events flow status
+  Future<dynamic> statusEvents(int userId) async {
     try {
       ApiHelper _api = new ApiHelper();
       dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=1&PageSize=100");
+      var eventJson = json["data"]["items"] as List;
+      if (eventJson != null) {
+        return eventJson.map((e) => UserDTO.fromJson(e)).toList();
+      } else {
+        return json;
+      }
+    }catch(e){
+    }
+  }
+
+  // list events history is completed user
+  Future<dynamic> eventIsCompleted(String registrationStatus,int userId) async {
+    try {
+      ApiHelper _api = new ApiHelper();
+      dynamic json = await _api.get("api/registrations?EventStatus=${registrationStatus}&UserId=${userId}&PageIndex=1&PageSize=100");
       var eventJson = json["data"]["items"] as List;
       if (eventJson != null) {
         return eventJson.map((e) => UserDTO.fromJson(e)).toList();

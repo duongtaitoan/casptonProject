@@ -9,6 +9,7 @@ class EventsDTO{
   String startedAt;
   int remainingSeats;
   String cancelUnavailableAt;
+  int checkInDuration;
   int capacity;
   String note;
   String status;
@@ -28,7 +29,7 @@ class EventsDTO{
       this.remainingSeats,
       this.cancelUnavailableAt,
       this.capacity, this.note,
-      this.status,this.thumbnailPicture,this.picture,this.host}); // DateTime timeStop;
+      this.status,this.thumbnailPicture,this.picture,this.host,this.checkInDuration}); // DateTime timeStop;
 
   factory EventsDTO.fromJson(Map<String, dynamic> json) => EventsDTO(
     id: json["id"],
@@ -38,6 +39,7 @@ class EventsDTO{
     location: json["location"],
     gpsTrackingRequired: json["gpsTrackingRequired"],
     approvalRequired: json["approvalRequired"],
+    checkInDuration: json["checkInDuration"],
     startedAt: json["startedAt"],
     remainingSeats:json["remainSit"],
     cancelUnavailableAt:json["cancelUnavailableAt"],
@@ -60,6 +62,7 @@ class EventsDTO{
     data['remainSit'] = this.remainingSeats;
     data['cancelUnavailableAt'] = this.cancelUnavailableAt;
     data['gpsTrackingRequired'] = this.gpsTrackingRequired;
+    data['checkInDuration'] = this.checkInDuration;
     data['approvalRequired'] = this.approvalRequired;
     data['capacity'] = this.capacity;
     data['note'] = this.note;

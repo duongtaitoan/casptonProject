@@ -1,5 +1,3 @@
-import 'package:designui/src/Model/eventDAO.dart';
-import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/Model/registerEventDAO.dart';
 import 'package:designui/src/Model/userDTO.dart';
 import 'package:flutter/cupertino.dart';
@@ -21,11 +19,11 @@ class HistoryVM extends Model{
       SharedPreferences sp = await SharedPreferences.getInstance();
       String token = sp.getString("token_data");
       var decodedToken= JwtDecoder.decode(token);
-      var listEvents = await RegisterEventDAO().listEventHistory(int.parse(decodedToken["userId"]));
+      var listEvents = await RegisterEventDAO().statusEvents(int.parse(decodedToken["userId"]));
       List<UserDTO> saveEvents = new List<UserDTO>();
       for (int i = 0; i < listEvents.length; i++) {
         if (listEvents[i].status == status) {
-            saveEvents.add(listEvents[i]);
+          saveEvents.add(listEvents[i]);
           }
         }
         return saveEvents;
@@ -38,7 +36,7 @@ class HistoryVM extends Model{
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
     var decodedToken= JwtDecoder.decode(token);
-    var listEvent = await RegisterEventDAO().listEventHistory(int.parse(decodedToken["userId"]));
+    var listEvent = await RegisterEventDAO().eventIsCompleted("Completed",int.parse(decodedToken["userId"]));
     return listEvent;
   }
 

@@ -225,7 +225,7 @@ class ApiHelper {
         throw ExpiredException(response.body.toString());
       case 500:
       default:
-        print('value responseJson: '+response.request.method.toString() +'---'+response.statusCode.toString()+''+response.body);
+        // print('value responseJson: '+response.request.method.toString() +'---'+response.statusCode.toString()+''+response.body);
         throw FetchDataException(
             'Error occured while Communication with Server with StatusCode : ${response
                 .statusCode}');

@@ -37,8 +37,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   final nameEvents;
   final screenHome;
   var idEvents;
-  var _timeStart;
-  var timeStop ;
   var status;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   DateFormat sqlDF = DateFormat('yyyy-MM-ddTHH:mm:ss');
@@ -50,6 +48,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   String dropdownValue;
   var eventLocation;
   var handlerButtonClick =false;
+  var barSelect = 1;
 
   GlobalKey _scaffoldGlobalKey = GlobalKey();
   Map<String, dynamic> decodedToken;
@@ -59,8 +58,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   void initState(){
     userCheckIn();
     locationOfEvent();
-    print('idEvent ${idEvents} ----------- ');
-
     dropdownValue = "Any";
     dropdownSemester();
     super.initState();
@@ -86,9 +83,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                       future: EventsVM().getEventFlowId(idEvents),
                       builder: (context, snapshot) {
                         if(snapshot.data != null) {
-                          try {
-                            convertDateTime(snapshot.data);
-                          } catch (e) {}
                           return myBody(snapshot.data);
                         }
                         return Center (
@@ -213,7 +207,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50,top: 10),
-                  child: Text(dtf.format(DateTime.parse(dto.startedAt)),
+                  child: Text(dtf.format(DateTime.parse(dto.startedAt).add(Duration(hours: 7))),
                       style: TextStyle(color: Colors.black, fontSize: 16.0)),
                 ),
                 SizedBox(height: 30,),
@@ -288,7 +282,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50,top: 10),
-                  child: Text("${dto.duration * 60} minutes ", style: TextStyle(color: Colors.black, fontSize: 16.0),),
+                  child: Text("${dto.duration} minutes ", style: TextStyle(color: Colors.black, fontSize: 16.0),),
                 ),
                 SizedBox(height: 30,),
               ],
@@ -608,24 +602,33 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
             child: timeToCheckin(dto) != false
                 ? checkInUser == false
                   ? RaisedButton(
-                          child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
-                          onPressed: () async {
-                            await loadingMess(dto, "Checkin");
-                          },
-                          color: Colors.orange[600],
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+                      child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
+                      onPressed: () async {
+                        await loadingMess(dto, "Checkin");
+                      },
+                      color: Colors.orange[600],
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
                       )
                   : RaisedButton(
                     onPressed: (){
-                      ShowMessage.functionShowDialog("Your have already checkin this event", context);
+                        ShowMessage.functionShowDialog("Your have already check in this event", context);
                     },
                     color: Colors.orange[600],
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
                     child: Text('Check in',style: TextStyle(fontSize: 18.0, color: Colors.white)),
                   )
           : RaisedButton(
-            onPressed: (){
-              ShowMessage.functionShowDialog("This event has not yet start", context);
+            onPressed: ()async{
+              var now = DateTime.now();
+              // time + checkinDuration minutes
+              var timeToDelay = dto.checkInDuration;
+              var timeToLate = DateTime.parse(dto.startedAt).add(new Duration(minutes: timeToDelay));
+              // time user click button checkin into 5 minutes when time startAt
+              if (now.isBefore(timeToLate)) {
+                await ShowMessage.functionShowDialog("Time out to check in", context);
+              }else if(now.isBefore(DateTime.parse(dto.startedAt))){
+              }
+                await ShowMessage.functionShowDialog("This event has not yet start", context);
             },
               color: Colors.grey[400],
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
@@ -635,7 +638,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     );
   }
 
-  // check time user can to cancele
+  // check time user can to canceled
   timeToCancel(EventsDTO dto){
     DateTime tmpDT = DateTime.parse(dto.startedAt);
     tmpDT = tmpDT.add(new Duration(hours:-12));
@@ -662,29 +665,18 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   // check time events is in an on going range
   timeToCheckin(EventsDTO dto){
     var now = DateTime.now();
-    // time + 10 minutes
-    var timeToLate = DateTime.parse(dto.startedAt).add(new Duration(minutes: 10));
-    // time user click button checkin into 10 minutes when time startAt
+    // time + checkinDuration minutes
+    var timeToDelay = dto.checkInDuration;
+    var timeToLate = DateTime.parse(dto.startedAt).add(new Duration(minutes: timeToDelay));
+    // time user click button checkin into 5 minutes when time startAt
     if (now.isAfter(DateTime.parse(dto.startedAt)) && now.isBefore(timeToLate)) {
-      checkTimeCheckin = true;
-      return checkTimeCheckin;
-    } else {
-      checkTimeCheckin = false;
-      return checkTimeCheckin;
-    }
-  }
-
-  // convert Date time db => data time ('HH:mm dd/MM/yyyy')
-  convertDateTime(EventsDTO dto) async{
-    try {
-      int hours = int.parse(dto.duration.toString());
-      // get Time in json
-      _timeStart = dto.startedAt;
-      // format time to sqlDF
-      DateTime pTimeStart = sqlDF.parse(_timeStart);
-      //add hours finish events
-      timeStop = pTimeStart.add(new Duration(hours: hours)).toString();
-    }catch(e){
+      if (dto.status == "ONGOING") {
+        checkTimeCheckin = true;
+        return checkTimeCheckin;
+      } else {
+        checkTimeCheckin = false;
+        return checkTimeCheckin;
+      }
     }
   }
 
@@ -819,6 +811,15 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
 
   // check register of user
   handlerRegister(dto) async{
+    // if approvalRequired == true then Registered show approved else awaiting
+    var _tmpPageIndex = dto.approvalRequired;
+    var pageIndex;
+    if(_tmpPageIndex == false){
+      pageIndex = 0;
+    }else{
+      pageIndex = 1;
+    }
+
     // check semester and student code
     if (dropdownValue == "Any") {
       var tmpValue = 0.toString();
@@ -835,10 +836,9 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     Navigator.of(context).pop();
     // show message when registered
     await ShowMessage.functionShowDialog(_tmpStatus, context);
-    var selectBar = 1;
     Future.delayed(Duration(microseconds: 1),() async {
       Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
-        => HomePage(uid: uid,barselect:selectBar)), (Route<dynamic> route) => false);
+        => HomePage(uid: uid,barSelect:barSelect,pageIndex:pageIndex)), (Route<dynamic> route) => false);
     });
     UIBlock.unblock(_scaffoldGlobalKey.currentContext);
   }

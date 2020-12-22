@@ -19,7 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   var _tmpStatus = "You need to update information";
   @override
   void initState() {
-    imgBackGroud;
     super.initState();
   }
 
@@ -31,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
         try{
           ShowMessage.functionShowMessage(status);
         }catch(e){
-        }
+      }
       } else if(status == "Signin successful") {
         Padding(
             padding: const EdgeInsets.all(10.0),
@@ -126,12 +125,17 @@ class _LoginPageState extends State<LoginPage> {
                                   await onSignInPressed(),
                                 });
                                 UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-                              } on PlatformException catch(_) { // May be thrown on Airplane mode
+                              } on PlatformException catch(_) {
                                   UIBlock.unblock(_scaffoldGlobalKey.currentContext);
                                   ShowMessage.functionShowDialog("Your network is fail",context);
                               } catch(e){
-                                  UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-                                  ShowMessage.functionShowDialog("Server error",context);
+                                  if(e.toString().contains("null")){
+                                    UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+                                    ShowMessage.functionShowDialog("Not fount your account", context);
+                                  }else {
+                                    UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+                                    ShowMessage.functionShowDialog("Server error", context);
+                                  }
                               }
                             })),
                   ],

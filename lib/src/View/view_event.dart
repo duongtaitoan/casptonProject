@@ -94,28 +94,13 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                   (Route<dynamic> route) => false),
             ),
           ),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Flexible(
-                flex: 10,
-                fit: FlexFit.tight,
-                child: Container(
-                  width: double.infinity,
-                  color: Colors.white,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(height: 10),
-                        getEvent(context, uid, _search, _controller),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          body: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                SizedBox(height: 10),
+                getEvent(context, uid, _search, _controller),
+              ],
+            ),
           ),
         ),
       ),
@@ -239,7 +224,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                           textAlign: TextAlign.start,
                         ),
                         subtitle: Text(
-                          dtf.format(DateTime.parse(element.startedAt)),
+                          dtf.format(DateTime.parse(element.startedAt).add(Duration(hours: 7))),
                           style: TextStyle(fontSize: 16.0),
                         ),
                         trailing: Padding(
@@ -313,8 +298,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                             if (snapshot.data.length == 0) {
                               _tmpSMS = "Not found events";
                             } else {
-                              return _search.length != 0 ||
-                                  _controller.text.isNotEmpty
+                              return _search.length != 0 || _controller.text.isNotEmpty
                                   ? Center(child: _search.length != 0
                                   ? ListView.builder(
                                   physics: const NeverScrollableScrollPhysics(),
@@ -323,10 +307,9 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                   itemBuilder: (context, i) {
                                     return Padding(
                                         padding: const EdgeInsets.only(
-                                            left: 10.0, right: 10.0),
+                                            left: 10.0, right: 10.0,bottom: 15,top: 5),
                                         child: Container(
-                                          margin: const EdgeInsets.only(
-                                              top: 20),
+                                          margin: const EdgeInsets.only(top: 0),
                                           width: double.infinity,
                                           decoration: BoxDecoration(
                                               color: Colors.white,
@@ -398,7 +381,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                 textAlign: TextAlign.start,),
                                               subtitle: Text(dtf.format(
                                                   DateTime.parse(
-                                                      _search[i].startedAt)),
+                                                      _search[i].startedAt).add(Duration(hours: 7))),
                                                 style: TextStyle(
                                                     fontSize: 16.0),),
                                               trailing: Padding(
@@ -433,21 +416,21 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                         ));
                                   })
                                   : Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 250),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment
-                                        .center,
-                                    children: <Widget>[
-                                      Center(child: Text(
-                                        '${"Not found events"}',
-                                        style: TextStyle(fontSize: 18.0,
-                                            color: Colors.orange[600]),))
-                                    ],
-                                  ),
-                                )
-                                ,)
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 250),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .center,
+                                        children: <Widget>[
+                                          Center(child: Text(
+                                            '${"Not found events"}',
+                                            style: TextStyle(fontSize: 18.0,
+                                                color: Colors.orange[600]),))
+                                        ],
+                                      ),
+                                    )
+                                  ,)
                                 ,)
                                   : listEvents();
                             }

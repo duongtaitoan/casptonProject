@@ -34,8 +34,8 @@ class show {
         accuracy: LocationAccuracy.high, interval: 1000, distanceFilter: 0);
     _locationData = await location.getLocation();
 
-    // check minus * 60 and mode for 5
-    int lastTime = duration * 60 ;
+    // check minus and mode for 5
+    int lastTime = duration;
     print('Last Time :' + lastTime.toString());
 
     // get times when %
@@ -87,7 +87,7 @@ Future timeLocation(_locationData,counts,show,idEvents,BuildContext context,uid,
     Stopwatch s = new Stopwatch();
     for (int i = 0; i <= counts; i++) {
       sleep(const Duration(milliseconds: 1));
-      await Future.delayed(new Duration(minutes: 5),() async {
+      await Future.delayed(new Duration(seconds: 3),() async {
         if(show == true) {
           ShowMessage.functionShowMessage("Your location has been sent to APT server.");
           getLocation(new TrackingDTO(eventId: idEvents,longitude: _locationData.longitude,latitude: _locationData.latitude));

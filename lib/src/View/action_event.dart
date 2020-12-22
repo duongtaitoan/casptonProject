@@ -9,25 +9,32 @@ import 'package:intl/intl.dart';
 class ActionEventsPage extends StatefulWidget {
   final FirebaseUser uid;
   final status;
-  const ActionEventsPage({Key key, this.uid, this.status}) : super(key: key);
+  final intIndexPage;
+  const ActionEventsPage({Key key, this.uid, this.status,this.intIndexPage}) : super(key: key);
 
   @override
-  _ActionEventsPageState createState() => _ActionEventsPageState(uid);
+  _ActionEventsPageState createState() => _ActionEventsPageState(uid,intIndexPage);
 }
 
 class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerProviderStateMixin {
   final FirebaseUser uid;
+  final intIndexPage;
   TabController _tabController;
   List<UserDTO> _search;
   HistoryVM historyVM;
-  _ActionEventsPageState(this.uid);
+  _ActionEventsPageState(this.uid,this.intIndexPage);
   final TextEditingController _controller = TextEditingController();
   static DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
+
 
   @override
   void initState() {
     historyVM = new HistoryVM();
-    _tabController = new TabController(length: 3, vsync: this);
+    if(intIndexPage == null){
+      _tabController = new TabController(initialIndex: 0,length: 3, vsync: this);
+    }else{
+      _tabController = new TabController(initialIndex: intIndexPage,length: 3, vsync: this);
+    }
     _search = List<UserDTO>();
     super.initState();
   }
@@ -189,7 +196,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                                           textAlign: TextAlign.start,
                                         ),
                                         subtitle: Text(dtf.format(DateTime.parse(
-                                            snapshot.data[snap].startDate)),
+                                            snapshot.data[snap].startDate).add(Duration(hours: 7))),
                                           style: TextStyle(fontSize: 16.0),),
                                       ),
                                     ],

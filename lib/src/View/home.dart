@@ -17,15 +17,17 @@ import 'package:scoped_model/scoped_model.dart';
 class HomePage extends StatefulWidget {
   final FirebaseUser uid;
   final status;
-  final barselect;
-  const HomePage({Key key, this.uid, this.status,this.barselect}) : super(key: key);
+  final barSelect;
+  final pageIndex;
+  const HomePage({Key key, this.uid, this.status,this.barSelect,this.pageIndex}) : super(key: key);
   @override
-  _HomePageState createState() => _HomePageState(uid, status,barselect);
+  _HomePageState createState() => _HomePageState(uid, status,barSelect,pageIndex);
 }
 
 class _HomePageState extends State<HomePage> {
   final FirebaseUser uid;
-  final barselect;
+  final barSelect;
+  final pageIndex;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   var status;
   int selectedIndex = 0;
@@ -37,21 +39,22 @@ class _HomePageState extends State<HomePage> {
   static List<EventsDTO> listEventDTO;
   static List<Widget> imageSliders;
 
-  _HomePageState(this.uid, this.status,this.barselect);
+  _HomePageState(this.uid, this.status,this.barSelect,this.pageIndex);
 
   @override
   void initState() {
     handlerHoverImg();
     handlerShowMessage(this.status);
-    _actionEvents = ActionEventsPage(uid: uid,);
+    _actionEvents = ActionEventsPage(uid: uid,intIndexPage: pageIndex,);
     _scaffoldKey = new GlobalKey<ScaffoldState>();
-    if(barselect != null){
-      selectedIndex = barselect;
+    if(barSelect != null){
+      selectedIndex = barSelect;
     }
     super.initState();
     try {
       model = new EventsVM();
       model.getFirstIndex();
+      setState(() { });
     }catch(e){
       handlerShowMessage("No Internet connection");
     }
@@ -125,7 +128,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // appbar in show then show
+  // show appbar if home
   Widget myAppBar() {
     if (this.selectedIndex == 0) {
       return AppBar(
@@ -215,10 +218,7 @@ class _HomePageState extends State<HomePage> {
   // Title events
   Widget titleEvents(String title) {
     return Container(
-      width: MediaQuery
-          .of(context)
-          .size
-          .width,
+      width: MediaQuery.of(context).size.width,
       height: 50,
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       child: Row(
@@ -308,7 +308,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           subtitle: Text(
                             dtf.format(DateTime.parse(
-                                element.startedAt)),
+                                element.startedAt).add(Duration(hours: 7))),
                             style: TextStyle(fontSize: 16.0),
                           ),
                           trailing: Padding(
