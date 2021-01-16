@@ -68,12 +68,12 @@ class _HomeMenuState extends State<HomeMenu> {
             ),
             SizedBox(height: 10,),
             // your history
-            handlerItemMenu(
-              'assets/images/history.png',
-              'History',
-              HistoryPage(uid: uid)
-            ),
-            SizedBox(height: 10,),
+            // handlerItemMenu(
+            //   'assets/images/history.png',
+            //   'History',
+            //   HistoryPage(uid: uid)
+            // ),
+            // SizedBox(height: 10,),
             // logout
             Column(
               children: <Widget>[

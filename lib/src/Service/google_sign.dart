@@ -1,7 +1,6 @@
 import 'package:designui/src/Model/userDAO.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class GoogleSign {
   // get length of token and content
@@ -49,7 +48,7 @@ class GoogleSign {
       final AuthResult authResult = await _auth.signInWithCredential(
           credential);
       final FirebaseUser user = authResult.user;
-      return user;
+    return user;
   }
 
   static signOutGoogle(GoogleSignIn googleSignIn) async {

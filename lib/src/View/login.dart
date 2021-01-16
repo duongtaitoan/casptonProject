@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ));
       }else{
-        ShowMessage.functionShowMessage("The system to update");
+        ShowMessage.functionShowMessage("Connecting server error");
       }
   }
 

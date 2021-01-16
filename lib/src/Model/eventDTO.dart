@@ -1,75 +1,87 @@
 class EventsDTO{
   int id;
   String title;
-  String content;
-  int duration;
-  String location;
+  String hostName;
+  String description;
+  int maximumParticipant;
+  String startTime;
+  String endTime;
+  String thumbnailPicture;
+  String banner;
   bool gpsTrackingRequired;
   bool approvalRequired;
-  String startedAt;
-  int remainingSeats;
-  String cancelUnavailableAt;
-  int checkInDuration;
-  int capacity;
-  String note;
+  String location;
+  String startAcceptingRegistrationAt;
+  String stopAcceptingRegistrationAt;
   String status;
-  String picture;
-  String thumbnailPicture;
-  String host;
+  String checkInQrCode;
+  int trackingInterval;
+  String myRegistrationStatus;
 
   EventsDTO({
       this.id,
       this.title,
-      this.content,
-      this.duration,
+      this.hostName,
+      this.description,
+      this.maximumParticipant,
+      this.startTime,
+      this.banner,
       this.location,
+      this.endTime,
       this.gpsTrackingRequired,
       this.approvalRequired,
-      this.startedAt,
-      this.remainingSeats,
-      this.cancelUnavailableAt,
-      this.capacity, this.note,
-      this.status,this.thumbnailPicture,this.picture,this.host,this.checkInDuration}); // DateTime timeStop;
+      this.status,
+      this.thumbnailPicture,
+      this.checkInQrCode,
+      this.trackingInterval,
+      this.myRegistrationStatus,
+      this.startAcceptingRegistrationAt,
+      this.stopAcceptingRegistrationAt
+  }); // DateTime timeStop;
 
   factory EventsDTO.fromJson(Map<String, dynamic> json) => EventsDTO(
     id: json["id"],
     title: json["title"],
-    content: json["content"],
-    duration: json["duration"],
+    hostName: json["hostName"],
+    description: json["description"],
     location: json["location"],
+    endTime: json["endTime"],
     gpsTrackingRequired: json["gpsTrackingRequired"],
     approvalRequired: json["approvalRequired"],
-    checkInDuration: json["checkInDuration"],
-    startedAt: json["startedAt"],
-    remainingSeats:json["remainSit"],
-    cancelUnavailableAt:json["cancelUnavailableAt"],
-    capacity: json["capacity"],
-    note: json["note"],
+    checkInQrCode: json["checkInQrCode"],
+    startTime: json["startTime"],
+    maximumParticipant:json["maximumParticipant"],
+    stopAcceptingRegistrationAt:json["stopAcceptingRegistrationAt"],
+    startAcceptingRegistrationAt: json["startAcceptingRegistrationAt"],
+    trackingInterval: json["trackingInterval"],
     status: json["status"],
     thumbnailPicture: json["thumbnailPicture"],
-    picture: json["picture"],
-    host: json["host"],
+    banner: json["banner"],
+    myRegistrationStatus: json["myRegistrationStatus"],
+
   );
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['title'] = this.title;
-    data['content'] = this.content;
-    data['duration'] = this.duration;
+    data['hostName'] = this.hostName;
+    data['description'] = this.description;
     data['location'] = this.location;
-    data['startedAt'] = this.startedAt;
-    data['remainSit'] = this.remainingSeats;
-    data['cancelUnavailableAt'] = this.cancelUnavailableAt;
+    data['startTime'] = this.startTime;
+    data['endTime'] = this.endTime;
+    data['maximumParticipant'] = this.maximumParticipant;
+    data['stopAcceptingRegistrationAt'] = this.stopAcceptingRegistrationAt;
+    data['startAcceptingRegistrationAt'] = this.startAcceptingRegistrationAt;
     data['gpsTrackingRequired'] = this.gpsTrackingRequired;
-    data['checkInDuration'] = this.checkInDuration;
     data['approvalRequired'] = this.approvalRequired;
-    data['capacity'] = this.capacity;
-    data['note'] = this.note;
+    data['trackingInterval'] = this.trackingInterval;
+    data['myRegistrationStatus'] = this.myRegistrationStatus;
+    data['checkInQrCode'] = this.checkInQrCode;
     data['status'] = this.status;
-    data['picture'] = this.picture;
+    data['banner'] = this.banner;
     data['thumbnailPicture'] = this.thumbnailPicture;
-    data['host'] = this.host;
+
     return data;
   }
 

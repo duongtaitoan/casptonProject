@@ -3,17 +3,32 @@ import 'package:designui/src/Model/eventDTO.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class EventsVM extends Model {
-  int index = 1;
+  int index = 0;
   int page = 5;
   bool isLoading = false;
   bool isAdd = false;
   List<EventsDTO> listEvent;
   var showToast;
+
   // get event opening
   static Future<List<EventsDTO>> getAllListEvents() async {
     try {
       EventsDAO dao = new EventsDAO();
       var listEvents = await dao.getAllOpenning("Opening");
+      List<EventsDTO> saveEvents = new List<EventsDTO>();
+      if(listEvents!= null){
+        saveEvents.addAll(listEvents);
+      }
+      return saveEvents;
+    } catch (e) {
+    }
+  }
+
+  // get event ongoing
+  static Future<List<EventsDTO>> getEventsOngoing() async {
+    try {
+      EventsDAO dao = new EventsDAO();
+      var listEvents = await dao.apiGetEventsStatus("ONGOING");
       List<EventsDTO> saveEvents = new List<EventsDTO>();
       if(listEvents!= null){
         saveEvents.addAll(listEvents);
@@ -32,7 +47,7 @@ class EventsVM extends Model {
       index++;
       EventsDAO dao = new EventsDAO();
       // get next
-      var listEvents = await dao.pageIndex(index,page);
+      var listEvents = await dao.pageIndex(index);
         if (listEvents.toString() != null) {
         listEvent.addAll(listEvents);
       }
@@ -46,16 +61,18 @@ class EventsVM extends Model {
     }
   }
 
-  // get first 5 record upcoming events
+  // get first 10 record open for registrations events
   Future<void> getFirstIndex() async {
     try {
       isLoading = true;
       notifyListeners();
       EventsDAO dao = new EventsDAO();
-      var listEvents = await dao.pageFirstOpening(index,"Opening");
+      var listEvents = await dao.pageFirstOpening(index,"OPEN_FOR_REGISTRATIONS");
       listEvent = new List();
-      if(listEvents.toString() != null){
+      if(listEvents.length != 0){
         listEvent.addAll(listEvents);
+      }else{
+        notifyListeners();
       }
     } catch (e) {
     } finally {
@@ -64,12 +81,13 @@ class EventsVM extends Model {
     }
   }
 
-  // event openning in week
+  // event in week
   static Future<List<EventsDTO>> eventInWeek(now,isFuture) async {
     EventsDAO dao = new EventsDAO();
+    // var listEvents = await dao.apiGetListEvents("2021-02-08T23:00:00Z","2021-02-09T02:30:18Z");
     var listEvents = await dao.apiGetListEvents(now,isFuture);
+    List<EventsDTO> saveEvents = new List<EventsDTO>();
     if(listEvents.isNotEmpty) {
-      List<EventsDTO> saveEvents = new List<EventsDTO>();
       saveEvents.addAll(listEvents);
       return saveEvents;
     }else{
@@ -81,7 +99,7 @@ class EventsVM extends Model {
   Future<EventsDTO> getEventFlowId(int id) async{
     try {
       EventsDAO dao = new EventsDAO();
-      EventsDTO eventsDTO = await dao.idEvents(id);
+      var eventsDTO = await dao.idEvents(id);
       eventsDTO.toJson();
       return eventsDTO;
     }catch(e){

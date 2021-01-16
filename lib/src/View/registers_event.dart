@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:designui/src/Helper/camera_plugin.dart';
 import 'package:designui/src/Helper/show_message.dart';
+import 'package:designui/src/Helper/show_user_location.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/Model/feedbackDAO.dart';
 import 'package:designui/src/Model/registerEventDAO.dart';
@@ -9,6 +11,7 @@ import 'package:designui/src/View/feedback.dart';
 import 'package:designui/src/View/home.dart';
 import 'package:designui/src/ViewModel/events_viewmodel.dart';
 import 'package:designui/src/ViewModel/register_viewmodel.dart';
+import 'package:designui/src/ViewModel/tracking_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -24,11 +27,12 @@ class RegisterEventPage extends StatefulWidget {
   final tracking;
   final nameEvents;
   final screenHome;
-
-  const RegisterEventPage({Key key, this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,scaffoldGlobalKey,this.screenHome}) : super(key: key);
+  final nameLocation;
+  const RegisterEventPage({Key key,
+    this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,scaffoldGlobalKey,this.screenHome,this.nameLocation}) : super(key: key);
 
   @override
-  _RegisterEventPageState createState() => _RegisterEventPageState(uid,idEvents,status,tracking,nameEvents,screenHome);
+  _RegisterEventPageState createState() => _RegisterEventPageState(uid,idEvents,status,tracking,nameEvents,screenHome,nameLocation);
 }
 
 class _RegisterEventPageState extends State<RegisterEventPage> {
@@ -36,6 +40,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   final tracking;
   final nameEvents;
   final screenHome;
+  final nameLocation;
   var idEvents;
   var status;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
@@ -52,14 +57,12 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
 
   GlobalKey _scaffoldGlobalKey = GlobalKey();
   Map<String, dynamic> decodedToken;
-  _RegisterEventPageState(this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,this.screenHome);
+  _RegisterEventPageState(this.uid,this.idEvents,this.status,this.tracking,this.nameEvents,this.screenHome,this.nameLocation);
 
   @override
   void initState(){
     userCheckIn();
     locationOfEvent();
-    dropdownValue = "Any";
-    dropdownSemester();
     super.initState();
   }
 
@@ -77,7 +80,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
               key: _scaffoldGlobalKey,
               appBar: myAppBar(),
               body: FutureBuilder(
-                future: Future.delayed(Duration(seconds: 1)),
+                future: Future.delayed(Duration(milliseconds:500)),
                 builder: (c, s) => s.connectionState == ConnectionState.done
                   ? FutureBuilder<EventsDTO>(
                       future: EventsVM().getEventFlowId(idEvents),
@@ -121,7 +124,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
               try {
                 return Column(
                   children: <Widget>[
-                    dto.picture == null
+                    dto.banner== null
                         ? Container(
                           width: MediaQuery.of(context).size.width,
                           height: MediaQuery.of(context).size.height*0.3,
@@ -132,7 +135,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                               new Text("Loading"),
                             ],),),
                         )
-                    :Image.network("${dto.picture}",
+                    :Image.network("${dto.banner}",
                       width: MediaQuery.of(context).size.width,
                       height: 180,
                       fit: BoxFit.fill,
@@ -207,7 +210,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50,top: 10),
-                  child: Text(dtf.format(DateTime.parse(dto.startedAt).add(Duration(hours: 7))),
+                  child: Text(dtf.format(DateTime.parse(dto.startTime).add(Duration(hours: 7))),
                       style: TextStyle(color: Colors.black, fontSize: 16.0)),
                 ),
                 SizedBox(height: 30,),
@@ -230,15 +233,15 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                   padding: const EdgeInsets.only(left: 35,top: 10),
                   child: FlatButton(
                     onPressed: () async {
-                      eventLocation !=null
+                      eventLocation != null
                           ? await showDialog(
                             context: context,
                             builder: (BuildContext context) {
                               // return object of type Dialog
                               return AlertDialog(
                                 title: new Text("Event Loaction"),
-                                content: new Text("Title :${eventLocation.title}\nRoom :${eventLocation.roomNumber}\nFloor :${eventLocation.floor}"
-                                    "\nAddress :${eventLocation.address}"),
+                                content: new Text("Title :${eventLocation["preferredName"]}\nRoom :${eventLocation["roomNumber"]}\nFloor :${eventLocation["floor"]}"
+                                    "\nAddress :${ShowMessage.utf8convert(eventLocation["address"])}"),
                                 actions: <Widget>[
                                   // usually buttons at the bottom of the dialog
                                   new FlatButton(
@@ -256,7 +259,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                          eventLocation != null
-                              ?Tooltip(message: "Event location detail", child: Text("${ShowMessage.functionLimitCharacter(eventLocation.title)}",textAlign: TextAlign.start))
+                              ?Tooltip(message: "Event location detail", child: Text("${ShowMessage.functionLimitCharacter(eventLocation["preferredName"])}",textAlign: TextAlign.start))
                               :Tooltip(message: "Unknown location detail", child: Text("Unknown", textAlign: TextAlign.start)),
                          Icon(Icons.arrow_forward_ios,size: 15,),
                       ],
@@ -282,7 +285,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50,top: 10),
-                  child: Text("${dto.duration} minutes ", style: TextStyle(color: Colors.black, fontSize: 16.0),),
+                  child: Text("${dto.trackingInterval} minutes ", style: TextStyle(color: Colors.black, fontSize: 16.0),),
                 ),
                 SizedBox(height: 30,),
               ],
@@ -303,8 +306,8 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50,top: 10),
-                  child:  dto.host!= null
-                      ? Text(dto.host,style: TextStyle(color: Colors.black, fontSize: 16.0,),)
+                  child:  dto.hostName!= null
+                      ? Text(dto.hostName,style: TextStyle(color: Colors.black, fontSize: 16.0,),)
                       : Text("Unknown",style: TextStyle(color: Colors.black, fontSize: 16.0,),),
                 ),
                 SizedBox(height: 30,),
@@ -349,7 +352,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50,top: 10),
-                  child: Text("${dto.remainingSeats.toString()}", style: TextStyle(color: Colors.black, fontSize: 16.0),)
+                  child: Text("${dto.maximumParticipant.toString()}", style: TextStyle(color: Colors.black, fontSize: 16.0),)
                 ),
                 SizedBox(height: 30,),
               ],
@@ -370,13 +373,17 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                     padding: const EdgeInsets.only(left: 50,top: 10),
-                    child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" &&_tmpStatusUser != "canceled" ? Padding(
+                    child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" &&_tmpStatusUser != "canceled"
+                        && _tmpStatusUser != "can register event" && _tmpStatusUser != "you have not registered for this event before."?Padding(
                       padding: const EdgeInsets.all(0),
-                      child: _tmpStatusUser != "pending" ? Padding(
+                      child: _tmpStatusUser != "waiting_for_approval" ? Padding(
                         padding: const EdgeInsets.all(0),
-                        child: _tmpStatusUser != "accepted" ? Padding(
+                        child: _tmpStatusUser != "approved" ? Padding(
                           padding: const EdgeInsets.all(0),
-                          child: Text('Registration rejected',style: TextStyle(color: Colors.red, fontSize: 16.0),textAlign: TextAlign.start,),
+                          child: _tmpStatusUser == "checked_in"? Padding(
+                              padding: const EdgeInsets.all(0),
+                              child: Text('Checked in',style: TextStyle(color: Colors.orange, fontSize: 16.0),textAlign: TextAlign.start,),
+                          ):Text('Registration rejected',style: TextStyle(color: Colors.red, fontSize: 16.0),textAlign: TextAlign.start,),
                         ):Text('Registration approved',style: TextStyle(color: Colors.green, fontSize: 16.0),textAlign: TextAlign.start,),
                       ):Text('Waiting for approval',style: TextStyle(color: Colors.amber, fontSize: 15.0),textAlign: TextAlign.start,),
                     ):Text('Not registered yet',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold, fontSize: 16.0),textAlign: TextAlign.start,),
@@ -400,7 +407,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50,top: 10),
-                  child: Text(dto.content,style: TextStyle(color: Colors.black, fontSize: 16.0),),
+                  child: Text('${dto.description}',style: TextStyle(color: Colors.black, fontSize: 16.0),),
                 ),
                 SizedBox(height: 30,),
               ],
@@ -422,21 +429,26 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
         child: SizedBox(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-            child: status != "This event you have completed" ? Center(
-              child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" && _tmpStatusUser != "canceled"? Center(
-                child: _tmpStatusUser != "pending" ? Center(
-                    child: _tmpStatusUser == "rejected" && _tmpStatusUser !="accepted"? Center(
-                        child:buttonDetails(3.0, 3.0,"Rejected",dto)
-                    ): Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: 52,
+            child: _tmpStatusUser != "checked_in" ? Center(
+              child: status != "This event you have completed"
+                  ? Center(
+                child: _tmpStatusUser != null && _tmpStatusUser != "this event you have not registered yet" && _tmpStatusUser != "canceled"
+                  && _tmpStatusUser != "can register event" && _tmpStatusUser != "you have not registered for this event before." ?Center(
+                  child: _tmpStatusUser != "waiting_for_approval" ? Center(
+                      child: _tmpStatusUser == "rejected" && _tmpStatusUser !="approved" ? Center(
+                          child:buttonDetails(3.0, 3.0,"Rejected",dto)
+                      ): Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: 52,
                           child: buttonCheckin(dto)),
-                ): buttonDetails(3.0,3.0,"Cancel",dto),
-              ):Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: 52,
-                  child:buttonRegister(dto)),
-            ) : buttonFeedBack(4.0, 4.0,dto),
+                  ): buttonDetails(3.0,3.0,"Cancel",dto),
+                ):Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 52,
+                    child:buttonRegister(dto)),
+              ) : buttonFeedBack(4.0, 4.0,dto),
+            )
+              :Center(child: buttonDetails(3.0, 3.0,"Checkedin",dto)),
         ),
       ),
     );
@@ -454,7 +466,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
             height: MediaQuery.of(context).size.height*12/100,
             child: Padding(
               padding: EdgeInsets.only(left: 16,bottom: bottom,top: top),
-                child: title == "Cancel"
+                child: title != "Checkedin" && title != "Rejected"
                     ? RaisedButton(
                     color: Colors.orange[600],
                     shape: RoundedRectangleBorder(
@@ -489,7 +501,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     : RaisedButton(
                     color: Colors.orange[600],
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
-                    child: Text("Rejected",style: TextStyle(color: Colors.white))),
+                    child: Text("${title}",style: TextStyle(color: Colors.white))),
               ),
           ),
         ),
@@ -500,7 +512,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
 
   // button feedback events
   Widget buttonFeedBack(bottom,top,EventsDTO dto){
-    var _tmpStatusUser = dto.status.toString().toLowerCase();
+    // var _tmpStatusUser = dto.status.toString().toLowerCase();
     return Row(
       children: <Widget>[
         Visibility(
@@ -510,14 +522,17 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
             height: MediaQuery.of(context).size.height*12/100,
             child: Padding(
               padding: EdgeInsets.only(left: 16,bottom: bottom,top: top),
-              child: _tmpStatusUser != 'rejected' ? RaisedButton(
+              child:
+              // _tmpStatusUser != 'rejected' ?
+              RaisedButton(
                   color: Colors.orange[600],
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
                   onPressed: () async {
                     await loadingMess(dto,"feedback");
                   },
                   child: Text("FeedBack",style: TextStyle(fontSize: 18.0, color: Colors.white))
-              ) : Text("FeedBack",style: TextStyle(fontSize: 18.0, color: Colors.white))
+              )
+                  // : Text("FeedBack",style: TextStyle(fontSize: 18.0, color: Colors.white))
             ),
           ),
         ),
@@ -533,57 +548,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       child: new RaisedButton(
           child: Text('Register', style: TextStyle(fontSize: 16.0, color: Colors.white),),
           onPressed: () async {
-              await showDialog(
-                context: this.context,
-                child: AlertDialog(
-                  title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(Icons.notifications),
-                        SizedBox(width: 10,),
-                        Text('Confirm information'),
-                      ]
-                  ),
-                  content: Container(
-                    height: MediaQuery
-                        .of(context)
-                        .copyWith()
-                        .size
-                        .height / 9.2,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text('Semester', style: TextStyle(fontSize: 16),),
-                        SizedBox(height: 10,),
-                        dropdownSemester() == null ?Text(''):dropdownSemester(),
-                      ],
-                    ),
-                  ),
-                  actions: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        CupertinoButton(
-                          child: Text('Yes', style: TextStyle(color: Colors
-                              .blue[500]),),
-                          onPressed: () async {
-                            await loadingMess(dto, "register");
-                          }
-                        ),
-                        CupertinoButton(
-                          child: Text('No', style: TextStyle(color: Colors
-                              .blue[500]),),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
+            await loadingMess(dto, "register");
           },
           color: Colors.orange[600],
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
@@ -596,137 +561,106 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     return Padding(
       padding: const EdgeInsets.all(0),
       child:
-      timeToCancel(dto) == false
-          ? Padding(
+      // timeToCancel(dto) == false ?
+        Padding(
             padding: const EdgeInsets.only(right: 16, left: 16,bottom: 1),
-            child: timeToCheckin(dto) != false
-                ? checkInUser == false
-                  ? RaisedButton(
-                      child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
-                      onPressed: () async {
-                        await loadingMess(dto, "Checkin");
-                      },
-                      color: Colors.orange[600],
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
-                      )
-                  : RaisedButton(
-                    onPressed: (){
-                        ShowMessage.functionShowDialog("Your have already check in this event", context);
-                    },
-                    color: Colors.orange[600],
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
-                    child: Text('Check in',style: TextStyle(fontSize: 18.0, color: Colors.white)),
-                  )
-          : RaisedButton(
-            onPressed: ()async{
-              var now = DateTime.now();
-              // time + checkinDuration minutes
-              var timeToDelay = dto.checkInDuration;
-              var timeToLate = DateTime.parse(dto.startedAt).add(new Duration(minutes: timeToDelay));
-              // time user click button checkin into 5 minutes when time startAt
-              if (now.isBefore(timeToLate)) {
-                await ShowMessage.functionShowDialog("Time out to check in", context);
-              }else if(now.isBefore(DateTime.parse(dto.startedAt))){
-              }
-                await ShowMessage.functionShowDialog("This event has not yet start", context);
-            },
-              color: Colors.grey[400],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
-              child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
+            child:
+            // timeToCheckin(dto) != false?
+            // checkInUser == false ?
+            RaisedButton(
+                  child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
+                  onPressed: () async {
+                    await loadingMess(dto, "Checkin");
+                  },
+                  color: Colors.orange[600],
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),)
+              // : RaisedButton(
+              //   onPressed: (){
+              //       // ShowMessage.functionShowDialog("Your have already check in this event", context);
+              //       // ShowMessage.functionShowDialog("You cannot checkin again", context);
+              //   },
+              //   // color: Colors.orange[600],
+              //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+              //   child: Text('Check in',style: TextStyle(fontSize: 18.0, color: Colors.white)),
+              // )
+        //         : RaisedButton(
+        //           onPressed: ()async{
+        //             var now = DateTime.now();
+        //             // time + checkinDuration minutes
+        //             // var timeToDelay = dto.checkInDuration;
+        //             var timeToLate = DateTime.parse(dto.startAcceptingRegistrationAt).add(new Duration(minutes: 5));
+        //             // time user click button checkin into 5 minutes when time startAt
+        //             if (now.isBefore(timeToLate)) {
+        //               await ShowMessage.functionShowDialog("Time out to check in", context);
+        //             }else if(now.isBefore(DateTime.parse(dto.startAcceptingRegistrationAt))){
+        //             }
+        //               await ShowMessage.functionShowDialog("This event has not yet start", context);
+        //           },
+        //             color: Colors.grey[400],
+        //             shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),
+        //             child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),),
         )
-        : buttonDetails(3.0,0.0,"Cancel",dto),
+        // : buttonDetails(3.0,0.0,"Cancel",dto),
     );
   }
 
   // check time user can to canceled
-  timeToCancel(EventsDTO dto){
-    DateTime tmpDT = DateTime.parse(dto.startedAt);
-    tmpDT = tmpDT.add(new Duration(hours:-12));
-    var now = DateTime.now();
-    if(dto.cancelUnavailableAt == null){
-      if (now.isAfter(tmpDT)) {
-        checkTimeCancel = true;
-        return checkTimeCancel;
-      }else {
-        checkTimeCancel = false;
-        return checkTimeCancel;
-      }
-    }else {
-      if(now.isBefore(DateTime.parse(dto.cancelUnavailableAt))) {
-        checkTimeCancel = true;
-        return checkTimeCancel;
-      }else {
-        checkTimeCancel = false;
-        return checkTimeCancel;
-      }
-    }
-  }
+  // timeToCancel(EventsDTO dto){
+  //   DateTime tmpDT = DateTime.parse(dto.startAcceptingRegistrationAt);
+  //   tmpDT = tmpDT.add(new Duration(hours:-12));
+  //   var now = DateTime.now();
+  //   if(dto.stopAcceptingRegistrationAt == null){
+  //     if (now.isAfter(tmpDT)) {
+  //       checkTimeCancel = true;
+  //       return checkTimeCancel;
+  //     }else {
+  //       checkTimeCancel = false;
+  //       return checkTimeCancel;
+  //     }
+  //   }else {
+  //     if(now.isBefore(DateTime.parse(dto.stopAcceptingRegistrationAt))) {
+  //       checkTimeCancel = true;
+  //       return checkTimeCancel;
+  //     }else {
+  //       checkTimeCancel = false;
+  //       return checkTimeCancel;
+  //     }
+  //   }
+  // }
 
   // check time events is in an on going range
-  timeToCheckin(EventsDTO dto){
-    var now = DateTime.now();
-    // time + checkinDuration minutes
-    var timeToDelay = dto.checkInDuration;
-    var timeToLate = DateTime.parse(dto.startedAt).add(new Duration(minutes: timeToDelay));
-    // time user click button checkin into 5 minutes when time startAt
-    if (now.isAfter(DateTime.parse(dto.startedAt)) && now.isBefore(timeToLate)) {
-      if (dto.status == "ONGOING") {
-        checkTimeCheckin = true;
-        return checkTimeCheckin;
-      } else {
-        checkTimeCheckin = false;
-        return checkTimeCheckin;
-      }
-    }
-  }
+  // timeToCheckin(EventsDTO dto){
+  //   var now = DateTime.now();
+  //   // time + checkinDuration minutes
+  //   // var timeToDelay = dto.checkInDuration;
+  //   var timeToLate = DateTime.parse(dto.startTime).add(new Duration(minutes: 5));
+  //   // time user click button checkin into 5 minutes when time startAt
+  //   if (now.isAfter(DateTime.parse(dto.startTime)) && now.isBefore(timeToLate)) {
+  //     if (dto.status == "ONGOING") {
+  //       checkTimeCheckin = true;
+  //       return checkTimeCheckin;
+  //     } else {
+  //       checkTimeCheckin = false;
+  //       return checkTimeCheckin;
+  //     }
+  //   }
+  // }
 
   // get status event
+
   Future<dynamic> statusUserRegistation() async {
     try {
-      SharedPreferences sp = await SharedPreferences.getInstance();
-      String token = sp.getString("token_data");
-      decodedToken = JwtDecoder.decode(token);
-      // check user registered this events or not
-      _tmpStatusEvent = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
-      if(_tmpStatusEvent == null){
-        print('User can register'+_tmpStatusEvent);
-      }
+      _tmpStatusEvent = await RegisterVM().statusRegisterEvent(idEvents);
+      print('${_tmpStatusEvent}');
     }catch(e){
     }
     return _tmpStatusEvent;
   }
 
-  // button dropdown semester
-  dropdownSemester() {
-    try {
-      return DropdownButtonFormField<String>(
-        disabledHint: Text('${dropdownValue}'),
-        isExpanded: true,
-        value: dropdownValue,
-        icon: Icon(Icons.arrow_downward, color: Colors.blue[500],),
-        iconSize: 24,
-        onChanged: (newValue) async {
-          setState(() {
-            dropdownValue = newValue;
-          }
-          );
-        },
-        items: <String>['Any', '1', '2', '3', '4', '5', '6', '7', '8', '9',]
-            .map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-      );
-    }catch(e){
-    }
-  }
-
-  // check if the user has checked in yet
+  // check user check in event or not
   Future<dynamic> userCheckIn() async {
     final prefs = await SharedPreferences.getInstance();
-    var idOfEvent = prefs.get("idEventCamera");
+    var idOfEvent = prefs.get("thisEventCheckin");
     setState(() {
       if (idOfEvent == idEvents) {
         checkInUser = true;
@@ -736,10 +670,10 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     });
   }
 
-  // get id location
+  // get location of event
   locationOfEvent() async {
     try {
-      List tmpLocation = await RegisterVM().getLoactionEvent(idEvents);
+      var tmpLocation = await RegisterVM().getLoactionEvent(nameLocation);
       tmpLocation.forEach((element) {
         setState(() {
           eventLocation = element;
@@ -790,23 +724,23 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
 
   // check condition of feedback
   handlerFeedback(dto) async {
-    bool statusCheckIn = await RegisterEventDAO().statusCheckIn(int.parse(decodedToken["userId"]), idEvents,"Completed");
-    bool feedBack = await FeedBackDAO().checkFeedBack(int.parse(decodedToken["userId"]), idEvents);
+    // bool statusCheckIn = await RegisterEventDAO().statusCheckIn(int.parse(decodedToken["userId"]), idEvents,"Completed");
+    // bool feedBack = await FeedBackDAO().checkFeedBack(int.parse(decodedToken["userId"]), idEvents);
 
-    if(statusCheckIn == true && feedBack == true){
+    // if(statusCheckIn == true && feedBack == true){
       // this event is already feedback
-      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-      ShowMessage.functionShowDialog("This event you have already feedback", context);
-    }else if(statusCheckIn == true && feedBack == false ){
+      // UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+      // ShowMessage.functionShowDialog("This event you have already feedback", context);
+    // }else if(statusCheckIn == true && feedBack == false ){
       // status == true and feedback not found then show feedback for user
       UIBlock.unblock(_scaffoldGlobalKey.currentContext);
       Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
           FeedBackPage(uid: uid, nameEvents: dto.title, idEvent: idEvents,)));
-    }else if(statusCheckIn == false && feedBack == true){
+    // }else if(statusCheckIn == false && feedBack == true){
       // user not check in event
-      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-      ShowMessage.functionShowDialog("This event you have not check in", context);
-    }
+      // UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+      // ShowMessage.functionShowDialog("This event you have not check in", context);
+    // }
   }
 
   // check register of user
@@ -820,22 +754,17 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
       pageIndex = 1;
     }
 
-    // check semester and student code
-    if (dropdownValue == "Any") {
-      var tmpValue = 0.toString();
-      setState(() {
-        dropdownValue = tmpValue;
-      });
-    }
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String token = sp.getString("token_data");
+    var decodedToken= JwtDecoder.decode(token);
 
     // register event
-    var _tmpStatus = await RegisterVM().register(
-        new RegisterEventsDTO(eventId: idEvents, semester: int.parse(dropdownValue),
-            studentId: int.parse(decodedToken["userId"])), dto.approvalRequired);
+    var _tmpStatus = await RegisterVM().register(idEvents);
 
     Navigator.of(context).pop();
     // show message when registered
     await ShowMessage.functionShowDialog(_tmpStatus, context);
+
     Future.delayed(Duration(microseconds: 1),() async {
       Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
         => HomePage(uid: uid,barSelect:barSelect,pageIndex:pageIndex)), (Route<dynamic> route) => false);
@@ -845,12 +774,11 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
 
   // if user cancel this event then show messages
   handlerCancel() async{
-    //get this id events
-    var id = await RegisterEventDAO().idOfEvent(idEvents);
-    RegisterVM regVM = new RegisterVM();
-    var _tmpMessage = await regVM.updateStatusEvent("CANCELED", id, false);
+    //canceled this event
+    var _tmpMessage = await RegisterVM().updateStatusEvent(idEvents);
+
     Navigator.of(context).pop();
-    await ShowMessage.functionShowDialog("Canceled "+_tmpMessage,context);
+    await ShowMessage.functionShowDialog(_tmpMessage,context);
     Future.delayed(Duration(microseconds: 1),() async {
       Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
       => HomePage(uid: uid)), (Route<dynamic> route) => false);
@@ -859,23 +787,50 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   }
 
   // user click button check in
-  handlerCheckIn(dto)async{
-    // get id register
-    var idRegister = await RegisterEventDAO().idOfEvent(idEvents);
-    // get status user register
-    var statusCheckIn = await RegisterVM().statusRegisterEvent(int.parse(decodedToken["userId"]), idEvents);
-    await Future.delayed(Duration.zero, () {
-      Navigator.pushAndRemoveUntil(
-          context, MaterialPageRoute(builder: (BuildContext context) =>
-          CameraApp(uid: uid,
-            duration: dto.duration,
-            nameEvents: dto.title,
-            tracking:dto.gpsTrackingRequired,
-            idEvents: dto.id,
-            idRegister: idRegister,
-            statusCheckin :statusCheckIn,
-          )), (
-          Route<dynamic> route) => false);
-    });
+  handlerCheckIn(EventsDTO dto)async {
+    // date time
+    var current = DateTime.parse(dto.startTime);
+    var isFuture = DateTime.parse(dto.endTime);
+    var currentStart = DateTime.parse(sqlDF.format(current));
+    var isFutureEnd = DateTime.parse(sqlDF.format(isFuture));
+    DateFormat hh = DateFormat('HH');
+    DateFormat mm = DateFormat('mm');
+
+    // time for check in
+    var timeNow = ((int.parse(hh.format(isFutureEnd))*60)+int.parse(mm.format(isFutureEnd)))
+        - ((int.parse(hh.format(currentStart))*60)+int.parse(mm.format(currentStart)));
+
+    // get status event is ongoing
+    var statusCheckIn = await RegisterVM().statusEventEvent(idEvents);
+
+    // get location
+    var tmpLocation = await show.functionGetLocation();
+    var checkinFirst = await sendLocationFirst(tmpLocation[0],tmpLocation[1],tmpLocation[2],dto.checkInQrCode,idEvents);
+
+    if (statusCheckIn.compareTo("ONGOING") == 0) {
+      if(checkinFirst.toString().compareTo("Your registration has not been approved.")!=0) {
+        // if gps tracking required true or false onway to send location first to server
+        await Future.delayed(Duration.zero, () {
+          Navigator.pushAndRemoveUntil(
+              context, MaterialPageRoute(builder: (BuildContext context) =>
+              CameraApp(uid: uid,
+                duration: dto.trackingInterval,
+                nameEvents: dto.title,
+                tracking: dto.gpsTrackingRequired,
+                idEvents: dto.id,
+                checkInQrCode: dto.checkInQrCode,
+                nameLocation: nameLocation,
+                statusCheckin: statusCheckIn,
+                timeEnd: dto.endTime,
+                timeDuration: timeNow,
+              )), (Route<dynamic> route) => false);
+        });
+      }else{
+        await ShowMessage.functionShowDialog("Your registration has not been approved.", context);
+      }
+    }else{
+      await ShowMessage.functionShowDialog("This event has not ongoing yet", context);
+      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+    }
   }
 }

@@ -3,43 +3,30 @@ import 'package:designui/src/Model/user_profileDTO.dart';
 
 class UserProfileDAO{
   // update user profile
-  Future<String> updateInforUser(UserProfileDTO dto,idUser) async{
-    var json;
+  Future<String> updateInforUser(UserProfileDTO dto) async{
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic response = await _api.putInfor(dto, "api/accounts/student/${idUser}");
-      json = response["message"];
-      if (response["isSuccess"] == true) {
-        return json;
+      dynamic response = await _api.putInfor(dto, "oauth/profile");
+      if (response >= 200 && response <= 206) {
+        return "Update successful";
+      }else{
+        return "Update info failed";
       }
     }catch(e){
-      return "Server error";
+      return "Update info failed";
     }
   }
 
   // get user profile
-  Future<dynamic> getInforUser(int idUser) async {
+  Future<dynamic> getInforUser() async {
     ApiHelper _api = new ApiHelper();
-    dynamic response = await _api.get("api/accounts/student/${idUser}");
-    var json = response["data"];
+    dynamic response = await _api.get("oauth/profile");
+    // dynamic response = await _api.getProfile("profile");
+    var json = response;
     if (json != null) {
       return json;
     }
-    return idUser;
+    return null;
   }
 
-  // get student code
-  Future<dynamic> getStudentCode(int idUser) async {
-    try {
-      ApiHelper _api = new ApiHelper();
-      dynamic response = await _api.get("api/accounts/student/${idUser}");
-      var json = response["data"]["studentCode"];
-      if (json != null) {
-        return json;
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
 }

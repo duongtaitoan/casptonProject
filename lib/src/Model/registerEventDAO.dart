@@ -1,4 +1,5 @@
 import 'package:designui/src/API/api_helper.dart';
+import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/Model/locationDTO.dart';
 import 'package:designui/src/Model/registerEventDTO.dart';
 import 'package:designui/src/Model/userDTO.dart';
@@ -6,56 +7,73 @@ import 'package:designui/src/Helper/show_message.dart';
 
 class RegisterEventDAO{
   // user register event
-  Future registerEvents(RegisterEventsDTO dto, bool approval) async {
+  Future registerEvents(int idEvent) async {
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.postRegisEvent(dto, "api/registrations?ApprovalRequired=${approval}");
-      if (json["isSuccess"] == true) {
-        return "Register Successfully";
-      }else{
+      dynamic json = await _api.getIdEvent("api/events/${idEvent}/register");
+      if(json['errorCode'] == 403 || json['errorCode'] == 404){
         return json["message"];
+      }else if(json['errorCode'] == 0){
+        return json["message"];
+      }else if(json['errorCode'] == 500){
+        return "Register failed";
+      }else{
+        return "Register Successfully";
       }
     }catch(e){
-      if(e.toString().contains("Student already register duplicate time duration event")){
-        return "Student already register duplicate time duration event";
-      }else if(e.toString().contains("Student already registed this event")){
-        return "Student already registed this event";
-      }else if(e.toString().contains("Student does not exist")){
-        return "Student does not exist";
-      }
+      // if(e.toString().contains("Student already register duplicate time duration event")){
+      //   return "Student already register duplicate time duration event";
+      // }else if(e.toString().contains("Student already registed this event")){
+      //   return "Student already registed this event";
+      // }else if(e.toString().contains("Student does not exist")){
+      //   return "Student does not exist";
+      // }
     }
   }
 
   // cancel events when user register want to cancel
-  Future cancelRegisEvents(String status, int id, isCheckin) async {
+  Future cancelRegisEvents(int id) async {
     ApiHelper _api = new ApiHelper();
-    var json = await _api.put(status, "api/registrations/${id}",isCheckin);
-    if (json != null) {
+    dynamic json = await _api.getIdEvent("api/events/${id}/cancel-registration");
+    if(json["errorCode"] == 0){
       return json["message"];
     }
     return null;
   }
 
   // check status this events user have not registered yet or register
-  Future<String> statusRegis(int userId, int idEvents) async {
+  Future<String> statusRegis(int idEvents) async {
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.get("api/registrations?EventId=${idEvents}&UserId=${userId}");
-      if (json["message"] == "Success") {
-        return json["data"]["items"][0]["status"];
+      dynamic json = await _api.getIdEvent("api/events/${idEvents}/registrations/me");
+      if(json.toString().length == 2){
+        return "Can register event";
+      }else if(json["errorCode"] == 404){
+        return "You have not registered for this event before.";
       }
+      return json['status'];
     }catch(e){
       return null;
     }
   }
 
-  // list events flow status
-  Future<dynamic> statusEvents(int userId) async {
+  // check status this events user have not registered yet or register
+  Future<String> statusEvent(int idEvent) async {
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.get("api/registrations?UserId=${userId}&PageIndex=1&PageSize=100");
-      var eventJson = json["data"]["items"] as List;
-      if (eventJson != null) {
+      dynamic json = await _api.getIdEvent("api/events/${idEvent}");
+      return json['status'];
+    }catch(e){
+    }
+  }
+
+  // list events flow status
+  Future<dynamic> statusEvents(String status) async {
+    try {
+      ApiHelper _api = new ApiHelper();
+      dynamic json = await _api.postEventsByStatus(status,"api/registrations/find-by-query");
+      var eventJson = json["content"] as List;
+      if (eventJson.isNotEmpty) {
         return eventJson.map((e) => UserDTO.fromJson(e)).toList();
       } else {
         return json;
@@ -65,13 +83,14 @@ class RegisterEventDAO{
   }
 
   // list events history is completed user
-  Future<dynamic> eventIsCompleted(String registrationStatus,int userId) async {
+  Future<dynamic> eventIsCompleted(String registrationStatus) async {
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.get("api/registrations?EventStatus=${registrationStatus}&UserId=${userId}&PageIndex=1&PageSize=100");
-      var eventJson = json["data"]["items"] as List;
+      // dynamic json = await _api.get("api/registrations?EventStatus=${registrationStatus}&UserId=${userId}&PageIndex=1&PageSize=100");
+      dynamic json = await _api.postEvents(registrationStatus,null,"api/events/find-by-query");
+      var eventJson = json["content"] as List;
       if (eventJson != null) {
-        return eventJson.map((e) => UserDTO.fromJson(e)).toList();
+        return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
       } else {
         return json;
       }
@@ -80,11 +99,11 @@ class RegisterEventDAO{
   }
 
   // list events page index history
-  Future<dynamic> pageIndexHistory(String registrationStatus,int userId,int index) async {
+  Future<dynamic> pageIndexHistory(String registrationStatus,int index) async {
     ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/registrations?EventStatus=${registrationStatus}&UserId=${userId}&PageIndex=${index}&PageSize=10");
-    var eventJson = json["data"]["items"] as List;
-    if (eventJson != null) {
+    dynamic json = await _api.postEvents(registrationStatus,index,"api/events/find-by-query");
+    var eventJson = json["content"] as List;
+    if (eventJson.isNotEmpty) {
       return eventJson.map((e) => UserDTO.fromJson(e)).toList();
     } else {
       return json;
@@ -92,13 +111,15 @@ class RegisterEventDAO{
   }
 
   // list first events page index history
-  Future<dynamic> pageFirstHistory(String registrationStatus,int userId,context) async {
+  Future<dynamic> pageFirstHistory(String registrationStatus,int index,context) async {
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.get("api/registrations?EventStatus=${registrationStatus}&UserId=${userId}&PageIndex=1&PageSize=10");
-      var eventJson = json["data"]["items"] as List;
-      if (eventJson != null) {
-        return eventJson.map((e) => UserDTO.fromJson(e)).toList();
+      dynamic json = await _api.postEvents(registrationStatus,index,"api/events/find-by-query");
+      var eventJson = json["content"] as List;
+      if (eventJson.isNotEmpty ) {
+        return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
+      }else{
+        return null;
       }
     }catch(e){
       RegExp pattern = new RegExp('([0-9]{3,4})');
@@ -121,12 +142,12 @@ class RegisterEventDAO{
     return eventDTO;
   }
 
-  // get location of user by id event
-  Future locationEvent(int id) async {
+  // get location of event
+  Future locationEvent(String nameLocation) async {
     ApiHelper _api = new ApiHelper();
-    dynamic json = await _api.get("api/events/${id}");
-    var location = json["data"]["locations"] as List;
-    return location.map((e) => LocationDTO.fromJson(e)).toList();
+    dynamic json = await _api.postLocation(nameLocation, "api/locations/find-by-query",);
+    var location = json["content"] as List;
+    return location;
   }
 
   // get status checkIn  of user

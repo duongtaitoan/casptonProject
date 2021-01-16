@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -19,6 +18,7 @@ class ShowMessage{
 
   // limit name title of event
   static functionLimitCharacter(String text){
+    print('text ${text}');
     String firstHalf;
     if (text.length >= 20 && text != null) {
       firstHalf = text.substring(0, 20)+' ... ';
@@ -26,6 +26,11 @@ class ShowMessage{
     }else{
       return text;
     }
+  }
+
+  static String utf8convert(String text) {
+    List<int> bytes = text.toString().codeUnits;
+    return utf8.decode(bytes);
   }
 
   // show by dialog

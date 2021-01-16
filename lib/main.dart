@@ -63,8 +63,9 @@ class MyApp extends StatelessWidget {
                   return CircularProgressIndicator();
                 },
               );
-              //if(now.isBefore(finishTime))
             } else if (now.isBefore(finishTime)) {
+              return LoginPage();
+            }else if(finishTime == null){
               return LoginPage();
             }
           }

@@ -1,3 +1,4 @@
+import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/Model/registerEventDAO.dart';
 import 'package:designui/src/Model/userDTO.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,20 +7,17 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryVM extends Model{
-  int index = 1;
+  int index = 0;
   bool isLoading = false;
   bool isAdd = false;
-  List<UserDTO> listEvent;
+  List<EventsDTO> listEvent;
   var mgs;
   var message;
 
-  // get list events flow status
+  // get list events flow status action
   Future<List<UserDTO>> getFlowStatus(String status) async {
     try {
-      SharedPreferences sp = await SharedPreferences.getInstance();
-      String token = sp.getString("token_data");
-      var decodedToken= JwtDecoder.decode(token);
-      var listEvents = await RegisterEventDAO().statusEvents(int.parse(decodedToken["userId"]));
+      var listEvents = await RegisterEventDAO().statusEvents(status);
       List<UserDTO> saveEvents = new List<UserDTO>();
       for (int i = 0; i < listEvents.length; i++) {
         if (listEvents[i].status == status) {
@@ -31,12 +29,12 @@ class HistoryVM extends Model{
     }
   }
 
-  // get list events user register
-  Future<List<UserDTO>> getListEventHistory() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    String token = sp.getString("token_data");
-    var decodedToken= JwtDecoder.decode(token);
-    var listEvent = await RegisterEventDAO().eventIsCompleted("Completed",int.parse(decodedToken["userId"]));
+  // get list events user register history
+  Future<List<EventsDTO>> getListEventHistory() async {
+    // SharedPreferences sp = await SharedPreferences.getInstance();
+    // String token = sp.getString("token_data");
+    // var decodedToken= JwtDecoder.decode(token);
+    var listEvent = await RegisterEventDAO().eventIsCompleted("UPCOMING");
     return listEvent;
   }
 
@@ -45,13 +43,8 @@ class HistoryVM extends Model{
     try {
       isLoading = true;
       notifyListeners();
-      SharedPreferences sp = await SharedPreferences.getInstance();
-      String token = sp.getString("token_data");
-      var decodedToken= JwtDecoder.decode(token);
-      var listEvents;
-      listEvents = await RegisterEventDAO().pageFirstHistory("Completed",int.parse(decodedToken["userId"]),context);
+      var listEvents = await RegisterEventDAO().pageFirstHistory("UPCOMING",index,context);
       listEvent = new List();
-
       if(listEvents.toString().compareTo("No events found")==0 || listEvents.toString().compareTo("Server error")==0){
         SharedPreferences spf = await SharedPreferences.getInstance();
         spf.setString("sms", listEvents);
@@ -61,6 +54,7 @@ class HistoryVM extends Model{
         listEvent.addAll(listEvents);
       }
     }catch (e) {
+      throw e.toString();
     } finally {
       isLoading = false;
       notifyListeners();
@@ -74,12 +68,12 @@ class HistoryVM extends Model{
       isAdd = true;
       notifyListeners();
       index++;
-      SharedPreferences sp = await SharedPreferences.getInstance();
-      String token = sp.getString("token_data");
-      var decodedToken= JwtDecoder.decode(token);
+      // SharedPreferences sp = await SharedPreferences.getInstance();
+      // String token = sp.getString("token_data");
+      // var decodedToken= JwtDecoder.decode(token);
 
       RegisterEventDAO dao = new RegisterEventDAO();
-      var listEvents = await dao.pageIndexHistory("Completed",int.parse(decodedToken["userId"]),index);
+      var listEvents = await dao.pageIndexHistory("UPCOMING",index);
       // get next
       if (listEvents.toString() != null) {
         listEvent.addAll(listEvents);

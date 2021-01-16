@@ -25,41 +25,78 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Map<String, dynamic> decodedToken;
   UserProfileDAO dao;
   String dropdownValue;
+  String dropdownIntSemester;
   bool isCheck = false;
 
   var _tmpInfor;
   var matchesStudent;
-  var saveSynMajor ="SE" ;
+  var saveSynMajor ="Another Major" ;
 
   _UserProfilePageState(this.uid,this.status);
   final TextEditingController controlNumber = TextEditingController();
   TextEditingController controlMajor = TextEditingController();
+  TextEditingController controlSemester = TextEditingController();
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState(){
+    dropdownIntSemester = "Any";
+    dropdownValue="Another Major";
+    dropdownSemester();
+
     RegExp pattern = new RegExp('([se|sa|sb|ss|SS|SE|SA|SB]{2})([0-9]{5,8})');
     var _tmpStudentCode = uid.email.split("@")[0];
     matchesStudent = pattern.stringMatch(_tmpStudentCode);
-    dropdownValue="Information System";
 
     dao = new UserProfileDAO();
     super.initState();
     try {
-      getstudentCode().then((value) {
+      getstudentCode().then((value) async {
         try {
           controlMajor.text = value["major"];
-          if(controlMajor.text.toString().compareTo("SE")==0){
-            dropdownValue="Information System";
-          }else if(controlMajor.text.toString().compareTo("SS")==0){
+          if(controlMajor.text.toString().compareTo("Software Engineering")==0){
+            dropdownValue="Software Engineering";
+          }else if(controlMajor.text.toString().compareTo("Business Administration")==0){
             dropdownValue="Business Administration";
-          }else if(controlMajor.text.toString().compareTo("SA")==0){
+          }else if(controlMajor.text.toString().compareTo("English Language")==0){
             dropdownValue="English Language";
+          }else if(controlMajor.text.toString().compareTo("Another Major")==0){
+            dropdownValue="Another Major";
           }
+
           controlNumber.text = value["phoneNumber"];
+
+          int _tmpIdSemester = value["semester"];
+          controlSemester.text = _tmpIdSemester.toString();
+
+          if(controlSemester.text.toString().compareTo("0") == 0){
+            return dropdownIntSemester= "Any";
+          }else if(controlSemester.text.toString().compareTo("1") == 0){
+            return dropdownIntSemester = "1";
+          }else if(controlSemester.text.toString().compareTo("2") == 0){
+            return dropdownIntSemester = "2";
+          }else if(controlSemester.text.toString().compareTo("3") == 0){
+            return dropdownIntSemester = "3";
+          }else if(controlSemester.text.toString().compareTo("4") == 0){
+            return dropdownIntSemester = "4";
+          }else if(controlSemester.text.toString().compareTo("5") == 0){
+            return dropdownIntSemester = "5";
+          }else if(controlSemester.text.toString().compareTo("6") == 0){
+            return dropdownIntSemester = "6";
+          }else if(controlSemester.text.toString().compareTo("7") == 0){
+            return dropdownIntSemester = "7";
+          }else if(controlSemester.text.toString().compareTo("8") == 0){
+            return dropdownIntSemester = "8";
+          }else if(controlSemester.text.toString().compareTo("9") == 0){
+            return dropdownIntSemester = "9";
+          }
+
         }catch(e){
           if(status != null){
             ShowMessage.functionShowMessage("${status}");
+          }else{
+            await ShowMessage.functionShowDialog("Not found you user", context);
+            Navigator.of(_scaffoldKey.currentContext).pop();
           }
         }
       setState(() {});
@@ -95,7 +132,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   automaticallyImplyLeading: false,
             ),
             body: FutureBuilder(
-                future: Future.delayed(Duration(milliseconds: 2000),),
+                future: Future.delayed(Duration(milliseconds: 500),),
                 builder: (c, s) => s.connectionState == ConnectionState.done
                     ? FutureBuilder(
                       future: getstudentCode(),
@@ -137,13 +174,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                                   padding: const EdgeInsets.only( left: 16.0,right: 16.0),
                                                   child: dropdownMajor(),
                                                 ),
+                                                SizedBox(height: 30,),
+                                                Row(
+                                                  children: <Widget>[
+                                                    SizedBox(width: 15,),
+                                                    Text("Semester",style: TextStyle(color: Colors.black, fontSize: 16.0,fontWeight: FontWeight.bold)),
+                                                  ],
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.only( left: 16.0,right: 16.0),
+                                                  child: dropdownSemester(),
+                                                ),
                                               ],
                                             ),),
                                         ),
                                         Expanded(
                                           flex: 0,
                                           child:  Container(
-                                            margin: EdgeInsets.only(top: 135,right: 16,left: 11),
+                                            margin: EdgeInsets.only(top: 55,right: 16,left: 11),
                                             child: SizedBox(
                                               width: double.infinity,
                                               height: 52,
@@ -160,11 +208,23 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                                     String _tmpMajor = saveSynMajor;
                                                     String _tmpMSSV = matchesStudent;
 
-                                                    var _tmpUpdate = await dao.updateInforUser(new UserProfileDTO(
+                                                    String _tmpSemester;
+                                                    if(dropdownIntSemester.compareTo("Any")== 0){
+                                                      _tmpSemester = 0.toString();
+                                                    }else{
+                                                      _tmpSemester = dropdownIntSemester;
+                                                    }
+
+                                                    SharedPreferences sp = await SharedPreferences.getInstance();
+                                                    String token = sp.getString("token_data");
+                                                    decodedToken = JwtDecoder.decode(token);
+                                                    int idUser = int.parse(decodedToken["sub"]);
+                                                // check update info
+                                                    var _tmpUpdate = await dao.updateInforUser(new UserProfileDTO(id: idUser,
                                                         studentCode: _tmpMSSV,phone: _tmpNum,major: _tmpMajor,
-                                                        fullname: displayName),int.parse(decodedToken["userId"]));
-                                                    // check info
-                                                    checkUpdateInfo(_tmpUpdate);
+                                                        fullName: displayName,semester: _tmpSemester),);
+                                                // update info for success then come back home
+                                                    messageUpdate(_tmpUpdate);
                                                   }
                                                 },
                                                 child: Text('Update information', style: TextStyle(fontSize: 18.0, color: Colors.white),),
@@ -183,14 +243,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             );
                           }
                         }
-                        return Center (
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Image(image: AssetImage("assets/images/tenor.gif"),width: 300,height: 300,),
-                            ],
-                          ),
-                        );
+                        return Center ();
                       })
                     : Center (
                       child: Column(
@@ -221,16 +274,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  //get studentsCode
+  //get info students
   Future<dynamic> getstudentCode() async {
     try {
-      SharedPreferences sp = await SharedPreferences.getInstance();
-      String token = sp.getString("token_data");
-      decodedToken = JwtDecoder.decode(token);
-      _tmpInfor = await UserProfileDAO().getInforUser(int.parse(decodedToken["userId"]));
+      _tmpInfor = await UserProfileDAO().getInforUser();
       return _tmpInfor;
     }catch(e){
-      ShowMessage.functionShowDialog("Server error", context);
+      // ShowMessage.functionShowDialog("Not found you user", context);
     }
   }
 
@@ -287,7 +337,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   // check user update information
-  Future<Widget> checkUpdateInfo(_tmpUpdate) async {
+  Future<Widget> messageUpdate(_tmpUpdate) async {
     // update when login first time with status != null
     if(_tmpUpdate.compareTo("Update successful")==0){
       await ShowMessage.functionShowDialog(_tmpUpdate,_scaffoldKey.currentContext);
@@ -308,19 +358,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
       icon: Icon(Icons.arrow_downward,color: Colors.blue[500],),
       iconSize: 24,
       onChanged: (newValue)async{
-        setState(() {
+        // setState(() {
           dropdownValue = newValue;
-          if(dropdownValue.compareTo("Information System") ==0){
-            return saveSynMajor = "SE";
+          if(dropdownValue.compareTo("Software Engineering") ==0){
+            return saveSynMajor = "Software Engineering";
           }else if(dropdownValue.compareTo("Business Administration") ==0){
-            return saveSynMajor = "SS";
+            return saveSynMajor = "Business Administration";
           }else if(dropdownValue.compareTo("English Language") ==0){
-            return saveSynMajor = "SA";
+            return saveSynMajor = "English Language";
+          }else if(dropdownValue.compareTo('Another Major') == 0){
+            return saveSynMajor = "Another Major";
           }
-        }
-        );
+        // });
       },
-      items: <String>['Information System','Business Administration','English Language']
+      items: <String>['Software Engineering','Business Administration','English Language','Another Major']
           .map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
@@ -330,4 +381,29 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
+  // button dropdown semester
+  dropdownSemester() {
+    try {
+      return DropdownButtonFormField<String>(
+        disabledHint: Text('${dropdownIntSemester}'),
+        isExpanded: true,
+        value: dropdownIntSemester,
+        icon: Icon(Icons.arrow_downward, color: Colors.blue[500],),
+        iconSize: 24,
+        onChanged: (newValue) async {
+          // setState(() {
+          dropdownIntSemester = newValue;
+          // });
+        },
+        items: <String>['Any', '1', '2', '3', '4', '5', '6', '7', '8', '9',]
+            .map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
+      );
+    }catch(e){
+    }
+  }
 }

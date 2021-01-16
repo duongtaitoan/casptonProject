@@ -1,3 +1,4 @@
+import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/ViewModel/all_event_viewmodel.dart';
 import 'package:designui/src/ViewModel/events_viewmodel.dart';
@@ -122,7 +123,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
       List<EventsDTO> listEvents = await EventsVM.getAllListEvents();
 
       listEvents.forEach((ex) {
-        if (ex.title.toUpperCase().contains(delayInput.toUpperCase())) {
+        if (ShowMessage.utf8convert(ex.title).toUpperCase().contains(delayInput.toUpperCase())) {
           tmpList.add(ex);
 
           for (int i = 0; i < tmpList.length; i++) {
@@ -210,21 +211,20 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                     uid: uid,
                                                     idEvents: element.id,
                                                     tracking: element
-                                                        .gpsTrackingRequired)));
+                                                        .gpsTrackingRequired,nameLocation: element.location,)));
                                   });
                                 },
                               ),
                             ],
                           )),
                       ListTile(
-                        title: Text(
-                          element.title,
+                        title: Text(element.title,
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18.0),
                           textAlign: TextAlign.start,
                         ),
                         subtitle: Text(
-                          dtf.format(DateTime.parse(element.startedAt).add(Duration(hours: 7))),
+                          dtf.format(DateTime.parse(element.startTime).add(Duration(hours: 7))),
                           style: TextStyle(fontSize: 16.0),
                         ),
                         trailing: Padding(
@@ -237,7 +237,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                         uid: uid,
                                         idEvents: element.id,
                                         tracking:
-                                            element.gpsTrackingRequired)));
+                                            element.gpsTrackingRequired,nameLocation: element.location)));
                               });
                             },
                             child: Text(
@@ -273,6 +273,17 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                             },
                           )
                   ],
+                );
+              }else if(model.listEvent.length == 0 || model.listEvent == null){
+                return Padding (
+                  padding: const EdgeInsets.only(top:250),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Center(child:Text('${model.mgs}',style: TextStyle(fontSize: 18.0,color: Colors.orange[600]),))
+                    ],
+                  ),
                 );
               }
               return Container();
@@ -366,7 +377,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                                             .id,
                                                                         tracking: _search[i]
                                                                             .gpsTrackingRequired,
-                                                                        screenHome: screenHome),));
+                                                                        screenHome: screenHome,nameLocation:_search[i].location),));
                                                         });
                                                       },
                                                     ),
@@ -381,7 +392,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                 textAlign: TextAlign.start,),
                                               subtitle: Text(dtf.format(
                                                   DateTime.parse(
-                                                      _search[i].startedAt).add(Duration(hours: 7))),
+                                                      _search[i].startTime).add(Duration(hours: 7))),
                                                 style: TextStyle(
                                                     fontSize: 16.0),),
                                               trailing: Padding(
@@ -402,7 +413,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                                           .id,
                                                                       tracking: _search[i]
                                                                           .gpsTrackingRequired,
-                                                                      screenHome: screenHome)));
+                                                                      screenHome: screenHome,nameLocation: _search[i].location)));
                                                     });
                                                   },
                                                   child: Text('Join now',

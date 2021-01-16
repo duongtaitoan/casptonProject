@@ -1,27 +1,28 @@
 import 'package:designui/src/API/api_helper.dart';
+import 'package:designui/src/Model/feedbackDTO.dart';
 
 class FeedBackDAO{
-  Future postFeedback(String listQvsA,int idEvent) async {
+  // submit question of user
+  Future postFeedback(eventId,studentId,now,valueBody) async {
     try{
-    ApiHelper _api = new ApiHelper();
-    dynamic _tmpJson = await _api.postFeedBack(listQvsA, idEvent, "api/feedbacks");
-    return _tmpJson;
-  }catch(e){
+      ApiHelper _api = new ApiHelper();
+      dynamic _tmpJson = await _api.postFeedBack(eventId,studentId,now,valueBody, "api/feedback");
+      if(_tmpJson["errorCode"] == 0){
+        return "You have not checked in event and cannot give feedback for this event.";
+      }
+      return _tmpJson;
+    }catch(e){
     }
   }
 
-  // get status feedback of user
-  Future<bool> checkFeedBack(int userId, int idEvents) async {
-    try {
+  //get list ask question in BQT
+  Future<List<FeedbackDTO>> getListQuestion() async {
+    try{
       ApiHelper _api = new ApiHelper();
-      var json = await _api.get("api/feedbacks?EventId=${idEvents}&StudentId=${userId}");
-      if (json["message"].toString().compareTo("Not found") != 0) {
-        return true;
-      }else{
-        return false;
-      }
+      dynamic _tmpJson = await _api.getIdEvent("api/feedback/questions");
+      var value = _tmpJson as List;
+      return value.map((e) => FeedbackDTO.fromJson(e)).toList();
     }catch(e){
-      return true;
     }
   }
 }

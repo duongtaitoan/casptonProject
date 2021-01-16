@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:designui/src/Helper/show_message.dart';
-import 'package:designui/src/Model/userDTO.dart';
+import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/ViewModel/history_viewmodel.dart';
 import 'package:designui/src/view/home.dart';
 import 'package:designui/src/view/registers_event.dart';
@@ -23,7 +22,7 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   final FirebaseUser uid;
-  List<UserDTO> _search;
+  List<EventsDTO> _search;
   HistoryVM model;
   DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
   var status = "This event you have completed";
@@ -33,7 +32,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   void initState() {
-    _search = List<UserDTO>();
+    _search = List<EventsDTO>();
     super.initState();
     try {
       model = new HistoryVM();
@@ -50,7 +49,6 @@ class _HistoryPageState extends State<HistoryPage> {
       tmpSms = spf.getString("sms");
       setState(() {});
     }catch(e){
-
     }
   }
 
@@ -105,11 +103,11 @@ class _HistoryPageState extends State<HistoryPage> {
         return;
       }
 
-      List<UserDTO> tmpList = new List();
-      List<UserDTO> listEvents = await HistoryVM().getListEventHistory();
+      List<EventsDTO> tmpList = new List();
+      List<EventsDTO> listEvents = await HistoryVM().getListEventHistory();
 
       listEvents.forEach((ex) {
-        if (ex.eventTitle.toUpperCase().contains(delayInput.toUpperCase())) {
+        if (ShowMessage.utf8convert(ex.title).toUpperCase().contains(delayInput.toUpperCase())) {
           tmpList.add(ex);
 
           for (int i = 0; i < tmpList.length; i++) {
@@ -215,8 +213,8 @@ class _HistoryPageState extends State<HistoryPage> {
                       Navigator.of(context).push(
                           MaterialPageRoute(builder: (context) =>
                               RegisterEventPage(uid: uid,
-                                  idEvents: element.eventId,
-                                  status: status)));
+                                  idEvents: element.id,
+                                  status: status,nameLocation: element.location,)));
                     },
                     padding: const EdgeInsets.only(top: 1, left: 10),
                     child: Column(
@@ -267,12 +265,11 @@ class _HistoryPageState extends State<HistoryPage> {
                                       .center,
                                   children: <Widget>[
                                     SizedBox(width: 10,),
-                                    Text(ShowMessage.functionLimitCharacter(
-                                        element.eventTitle),
+                                    Text(ShowMessage.utf8convert(ShowMessage.functionLimitCharacter(element.title)),
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18.0),),
-                                    Text(dtf.format(DateTime.parse(element.startDate).add(Duration(hours: 7))), style: TextStyle(fontSize: 16.0),),
+                                    Text(dtf.format(DateTime.parse(element.startTime).add(Duration(hours: 7))), style: TextStyle(fontSize: 16.0),),
                                     element.status.toLowerCase() != "pending"
                                         ? Center(child: element.status.toLowerCase() == "canceled"
                                           ? Text('${element.status.toLowerCase()}', style: TextStyle(fontSize: 16.0, color: Colors.grey[500]),)
@@ -319,12 +316,12 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   // respond list events of user
-  Widget getEvent(BuildContext context, uid, List<UserDTO> _search, _controller) {
+  Widget getEvent(BuildContext context, uid, List<EventsDTO> _search, _controller) {
     return SingleChildScrollView(
       child:  FutureBuilder(
           future: Future.delayed(Duration(seconds: 2)),
           builder: (c, s) => s.connectionState == ConnectionState.done
-              ? FutureBuilder<List<UserDTO>>(
+              ? FutureBuilder<List<EventsDTO>>(
               future: HistoryVM().getListEventHistory(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
@@ -362,9 +359,8 @@ class _HistoryPageState extends State<HistoryPage> {
                                             MaterialPageRoute(
                                                 builder: (context) =>
                                                     RegisterEventPage(uid: uid,
-                                                        idEvents: _search[i]
-                                                            .eventId,
-                                                        status: status)));
+                                                        idEvents: _search[i].id,
+                                                        status: status,nameLocation: _search[i].location,)));
                                       },
                                       padding: const EdgeInsets.only(
                                           top: 1, left: 10),
@@ -416,15 +412,13 @@ class _HistoryPageState extends State<HistoryPage> {
                                                       .center,
                                                   children: <Widget>[
                                                     SizedBox(width: 10,),
-                                                    Text(ShowMessage.functionLimitCharacter(
-                                                        _search[i].eventTitle),
+                                                    Text(ShowMessage.utf8convert(ShowMessage.functionLimitCharacter(_search[i].title)),
                                                       style: TextStyle(
                                                           fontWeight: FontWeight
                                                               .bold,
                                                           fontSize: 18.0),),
                                                     Text(dtf.format(
-                                                        DateTime.parse(_search[i]
-                                                            .startDate).add(Duration(hours: 7))),
+                                                        DateTime.parse(_search[i].startTime).add(Duration(hours: 7))),
                                                       style: TextStyle(
                                                           fontSize: 16.0),),
                                                     _search[i].status

@@ -31,9 +31,9 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
   void initState() {
     historyVM = new HistoryVM();
     if(intIndexPage == null){
-      _tabController = new TabController(initialIndex: 0,length: 3, vsync: this);
+      _tabController = new TabController(initialIndex: 0,length: 4, vsync: this);
     }else{
-      _tabController = new TabController(initialIndex: intIndexPage,length: 3, vsync: this);
+      _tabController = new TabController(initialIndex: intIndexPage,length: 4, vsync: this);
     }
     _search = List<UserDTO>();
     super.initState();
@@ -45,28 +45,32 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
     return SafeArea(
         child: SizedBox.expand(
           child: DefaultTabController(
-            length: 3,
+            length: 4,
             child: Scaffold(
               backgroundColor: Colors.orange[600],
               appBar: TabBar(
                 controller: _tabController,
-                indicatorWeight: 3,
+                indicatorWeight: 4,
+                labelPadding: EdgeInsets.symmetric(horizontal: 2.0),
                 indicatorColor: Colors.white,
                 tabs: [
-                  Tab(icon: new Icon(Icons.history, ),
+                  Tab(icon: new Icon(Icons.access_time, ),
                     child: Text('Waiting',style: TextStyle(color: Colors.white),),),
                   Tab(icon: new Icon(Icons.check_circle_outline, ),
                         child:Text('Approved',style: TextStyle(color: Colors.white))),
                   Tab(icon: new Icon(Icons.cancel, ),
                     child: Text('Rejected',style: TextStyle(color: Colors.white),),),
+                  Tab(icon: new Icon(Icons.history, ),
+                    child: Text('Checked in',style: TextStyle(color: Colors.white),),),
                 ],
               ),
               body: new TabBarView(
                   controller: _tabController,
                   children: <Widget>[
-                    tabTable("PENDING"),
-                    tabTable("ACCEPTED"),
+                    tabTable("WAITING_FOR_APPROVAL"),
+                    tabTable("APPROVED"),
                     tabTable("REJECTED"),
+                    tabTable("CHECKED_IN"),
                   ]
               ),
             ),
@@ -76,7 +80,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
   }
 
   // button tab table
-  Widget tabTable( String flowStatus){
+  Widget tabTable(String flowStatus){
     return Container(
       width: double.infinity,
       height: 600,
@@ -97,12 +101,15 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
     var _tmpChange = "";
     historyVM.getFlowStatus(flowStatus).then((value) {
       if(value == null){
-        if(flowStatus.toString().compareTo("PENDING")==0){
-          _tmpChange = "No waiting events";
+        if(flowStatus.toString().compareTo("WAITING_FOR_APPROVAL")==0 ||
+            flowStatus.toString().compareTo("IN_WISHLIST")==0){
+          _tmpChange = "No waiting registration";
         }else if(flowStatus.toString().compareTo("ACCEPTED")==0){
-          _tmpChange = "No approved events";
+          _tmpChange = "No approved registration";
         }else if(flowStatus.toString().compareTo("REJECTED")==0){
-          _tmpChange = "No rejected events";
+          _tmpChange = "No rejected registration";
+        }else if(flowStatus.toString().compareTo("CHECKED_IN")==0){
+          _tmpChange = "No check in registration";
         };
       }
     });
@@ -119,12 +126,15 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                       if (snapshot.hasData) {
                         if (snapshot.data != null) {
                           if (snapshot.data.length == 0){
-                            if(flowStatus.toString().compareTo("PENDING")==0){
-                              _tmpChange = "No waiting events";
+                            if(flowStatus.toString().compareTo("WAITING_FOR_APPROVAL")==0 ||
+                                flowStatus.toString().compareTo("IN_WISHLIST")==0){
+                              _tmpChange = "No waiting registration";
                             }else if(flowStatus.toString().compareTo("ACCEPTED")==0){
-                              _tmpChange = "No approved events";
+                              _tmpChange = "No approved registration";
                             }else if(flowStatus.toString().compareTo("REJECTED")==0){
-                              _tmpChange = "No rejected events";
+                              _tmpChange = "No rejected registration";
+                            }else if(flowStatus.toString().compareTo("CHECKED_IN")==0){
+                              _tmpChange = "No check in registration";
                             }
                           }else {
                             return ListView.builder(
@@ -136,67 +146,50 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                                   margin: const EdgeInsets.only(top: 20),
                                   decoration: BoxDecoration(
                                       color: Colors.white,
-                                      border: Border.all(
-                                          color: Colors.white, width: 1),
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(10.0),
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(blurRadius: 9,
+                                      border: Border.all(color: Colors.white, width: 1),
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0),),
+                                      boxShadow: [BoxShadow(blurRadius: 9,
                                             color: Colors.grey[300],
-                                            offset: Offset(0, 3))
-                                      ]
-                                  ),
-                                  padding: const EdgeInsets.only(top: 4),
+                                            offset: Offset(0, 3))]),
+                                  padding: const EdgeInsets.only(top: 0),
                                   child: Column(
-                                    mainAxisAlignment: MainAxisAlignment
-                                        .spaceAround,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    // crossAxisAlignment: CrossAxisAlignment.center,
                                     children: <Widget>[
-                                      SizedBox(height: 10,),
-                                      Center(
-                                          child: new Padding(
-                                            padding: const EdgeInsets.all(0.0),
-                                            child: FlatButton(
-                                              onPressed: () {
-                                                Navigator.of(context).push(
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            RegisterEventPage(
-                                                              uid: uid,
-                                                              idEvents: snapshot
-                                                                  .data[snap]
-                                                                  .eventId,)));
-                                              },
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                BorderRadius.circular(15.0),
-                                                child: snapshot.data[snap].thumbnailPicture == null
-                                                    ? Container(
-                                                      width: double.infinity, height: 140,
-                                                      child: Center(child: new Column(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          new CircularProgressIndicator(),
-                                                          new Text("Loading"),
-                                                        ],),),
-                                                    )
-                                                    : Image.network('${snapshot.data[snap].thumbnailPicture}',
-                                                      width: double.infinity, height: 140, fit: BoxFit.cover,
-                                                ),
+                                      Container(
+                                          width: double.infinity,
+                                          height: 150,
+                                          child: Stack(
+                                            children: <Widget>[
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(10),
+                                                child:
+                                                // snapshot.data[snap].eventThumbnail == null
+                                                //     ? Center(child: new Column(
+                                                //   mainAxisSize: MainAxisSize.min,
+                                                //   children: [
+                                                //     new CircularProgressIndicator(),
+                                                //     new Text("Loading"),
+                                                //   ],),)
+                                                //     :
+                                                Image.network('${snapshot.data[snap].eventThumbnail}',width: double.infinity, height: 200, fit: BoxFit.cover,),
+                                                // Image.network('${snapshot.data[snap].eventThumbnail}',width: double.infinity, height: 200, fit: BoxFit.cover,),
                                               ),
-                                            ),
-                                          )
-                                      ),
+                                              InkWell(
+                                                borderRadius: BorderRadius.circular(10),
+                                                onTap: () {
+                                                  setState(() {
+                                                    Navigator.of(context).push(MaterialPageRoute(
+                                                      builder: (context) => RegisterEventPage(uid: uid,
+                                                        idEvents: snapshot.data[snap].eventId,nameLocation: snapshot.data[snap].eventLocation,)));                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          )),
                                       ListTile(
-                                        title: Text(snapshot.data[snap].eventTitle,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18.0),
-                                          textAlign: TextAlign.start,
-                                        ),
-                                        subtitle: Text(dtf.format(DateTime.parse(
-                                            snapshot.data[snap].startDate).add(Duration(hours: 7))),
+                                        title: Text(snapshot.data[snap].eventName, style: TextStyle(
+                                            fontWeight: FontWeight.bold, fontSize: 18.0), textAlign: TextAlign.start,),
+                                        subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].eventEndTime).add(Duration(hours: 7))),
                                           style: TextStyle(fontSize: 16.0),),
                                       ),
                                     ],

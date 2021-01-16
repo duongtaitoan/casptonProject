@@ -7,20 +7,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserDAO {
   static Future login({@required String fbToken, @required FirebaseUser user}) async {
     ApiHelper _api = new ApiHelper();
-    var response = await _api.LoginAPI(fbToken: fbToken, url: "api/accounts/student/firebase-signin",);
+    var response = await _api.LoginAPI(fbToken: fbToken, url: "oauth/verify/firebase",);
+    print('response ${response.statusCode}');
     if (response.statusCode == 200) {
       print('Response body: ${response.body}');
 
       final prefs = await SharedPreferences.getInstance();
       var tokenData = jsonDecode(response.body);
 
-      prefs.setString("token_data", tokenData["data"]["token"]);
-      prefs.setString("timeTo", tokenData["data"]["validTo"]);
-      prefs.setString("timeFrom", tokenData["data"]["validFrom"]);
+      prefs.setString("token_data", tokenData["accessToken"]);
+      prefs.setString("timeFrom", tokenData["refreshTokenExpiredAt"]);
       var listUser = [user.uid,user.displayName,user.email];
       prefs.setStringList("firebase", listUser);
 
-      return tokenData["message"];
+      return "Signin successful";
     } else if (response.statusCode == 400 ) {
       return "Email address is not valid\n Vd: example@fpt.edu.vn";
     }

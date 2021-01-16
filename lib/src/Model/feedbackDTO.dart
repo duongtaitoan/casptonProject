@@ -1,18 +1,21 @@
 class FeedbackDTO{
+  int id;
   String question;
-  String answer;
+  String type;
 
-  FeedbackDTO({this.question, this.answer});
+  FeedbackDTO({this.id,this.question, this.type});
 
   factory FeedbackDTO.fromJson(Map<String,dynamic> json)=> FeedbackDTO(
+    id: json["id"],
     question: json["question"],
-    answer: json["answer"],
+    type: json["type"],
   );
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
     data['question'] = this.question;
-    data['answer'] = this.answer;
+    data['type'] = this.type;
     return data;
   }
 }

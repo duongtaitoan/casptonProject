@@ -37,7 +37,11 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.example.designui"
+//        applicationId "com.example.designui"
+        applicationId "com.ben.apt"
+        manifestPlaceholders = [onesignal_app_id: "5efe7693-153f-42df-b3c4-b3fced8029c4",
+                                // Project number pulled from dashboard, local value is ignored.
+                                onesignal_google_project_number: "REMOTE"]
         minSdkVersion 21
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()
@@ -60,7 +64,9 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.firebase:firebase-analytics:17.5.0'
+//    classpath 'gradle.plugin.com.onesignal:onesignal-gradle-plugin:[0.12.10, 0.99.99]'
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.onesignal.androidsdk.onesignal-gradle-plugin'
