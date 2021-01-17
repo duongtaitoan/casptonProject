@@ -80,4 +80,10 @@ class EventsDAO{
     return EventsDTO.fromJson(json);
   }
 
+  // get hash notification in server
+  Future<dynamic> getNotification() async {
+    ApiHelper _api = new ApiHelper();
+    dynamic json = await _api.getHashNoti("api/notifications/my-id-hash");
+    return json;
+  }
 }

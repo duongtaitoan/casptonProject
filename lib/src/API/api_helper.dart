@@ -59,7 +59,6 @@ class ApiHelper {
           'Authorization': 'Bearer '+token,
         },
       );
-
       responseJson = new Map<String, dynamic>();
       if(response.body.isNotEmpty){
         responseJson = json.decode(utf8.decode(response.bodyBytes));
@@ -68,6 +67,25 @@ class ApiHelper {
       throw FetchDataException('No Internet connection');
     }
     return responseJson;
+  }
+
+  // get id events
+  Future<dynamic> getHashNoti(String url) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String token = sp.getString("token_data");
+    var response;
+    try {
+      response = await http.get(_baseUrl+url,
+        headers: {
+          'Content-Type': 'application/json ; charset=utf-8',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer '+token,
+        },
+      );
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    }
+    return response.body;
   }
 
   // update

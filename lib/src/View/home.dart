@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:designui/src/Helper/show_message.dart';
@@ -590,21 +591,52 @@ class _HomePageState extends State<HomePage> {
       var decodedToken = JwtDecoder.decode(token);
       int userid = int.parse(decodedToken["sub"]);
 
-      // set external for user id
-      OneSignal.shared.setExternalUserId("${userid}").then((results) {
-        if (results == null) return;
-        this.setState(() {
-          return "External user id set: $results";
+      // get hash send to server
+      await EventsVM.notifi().then((userAuthHas) {
+        String tmpAuth = userAuthHas;
+        // set external for user id
+        OneSignal.shared.setExternalUserId("${userid}", tmpAuth);
+      });
+    setState(() async {
+      await OneSignal.shared.setSubscription(true);
+      OneSignal.shared.setNotificationOpenedHandler((OSNotificationOpenedResult openedResult) {
+        Map<String, dynamic> data = openedResult.notification.payload.additionalData;
+
+        var dataIdEvent = data["eventId"];
+        var dataType = data["type"];
+        var dataChangStatus = data["registrationStatus"];
+        var dataNameLocation = data["locationDetails"];
+
+        if(dataType == "EVENT_STATUS_CHANGED") {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => RegisterEventPage(
+                  uid: uid, idEvents: int.parse(dataIdEvent),nameLocation: dataNameLocation,)));
+
+        }else if(dataType == "REGISTRATION_STATUS_CHANGED"){
+          if(dataChangStatus == "APPROVED"){
+            Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
+            => HomePage(uid: uid,barSelect:1,pageIndex:1)), (Route<dynamic> route) => false);
+          }else if(dataChangStatus == "REJECTED"){
+            Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
+            => HomePage(uid: uid,barSelect:1,pageIndex:2)), (Route<dynamic> route) => false);
+          }else if(dataChangStatus == "CHECKED_IN"){
+            Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
+            => HomePage(uid: uid,barSelect:1,pageIndex:3)), (Route<dynamic> route) => false);
+          }else{
+            Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
+            => HomePage(uid: uid,barSelect:1,pageIndex:0)), (Route<dynamic> route) => false);
+          }
+        }
         });
       });
 
-      OneSignal.shared.setNotificationOpenedHandler((openedResult) {
-        // paser đoạn này lấy value để xử lý
-        // feedback show message
-        print('message notification ${openedResult}');
+      OneSignal.shared.setNotificationReceivedHandler((OSNotification notification) async {
+        var data = notification.payload.additionalData;
+        var aa = await notification.payload.additionalData["a"];
+        print('${aa}');
+        print('data ${data}');
       });
     }catch(e){
-
     }
   }
 }

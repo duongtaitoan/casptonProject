@@ -5,6 +5,7 @@ import 'package:designui/src/view/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeMenu extends StatefulWidget {
@@ -20,7 +21,7 @@ class _HomeMenuState extends State<HomeMenu> {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseUser uid;
-  var status;
+  // var status;
   _HomeMenuState(this.uid);
 
   @override
@@ -88,6 +89,8 @@ class _HomeMenuState extends State<HomeMenu> {
                         onTap: () async {
                           googleSignIn.signOut();
                           _auth.signOut();
+                          OneSignal.shared.removeExternalUserId();
+                          await OneSignal.shared.setSubscription(false);
                           SharedPreferences sp = await SharedPreferences.getInstance();
                           sp.clear();
                           // back to login and when user click button back => logout app

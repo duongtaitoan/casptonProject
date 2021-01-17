@@ -105,4 +105,14 @@ class EventsVM extends Model {
     }catch(e){
     }
   }
+
+  // get hash notification
+  static Future<String> notifi() async {
+    try {
+      EventsDAO dao = new EventsDAO();
+      var listEvents = await dao.getNotification();
+      return listEvents;
+    } catch (e) {
+    }
+  }
 }
