@@ -37,7 +37,9 @@ class _HomePageState extends State<HomePage> {
   var _tmpCheckEvent = false;
   var _tmpCheckOngoing = false;
   var _tmpCheckOngoinEvent = false;
-  DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
+  var _tmpOpening = false;
+  var _tmpOpeningEvent = false;
+  DateFormat dtf = DateFormat('HH:mm a dd/MM/yyyy');
   int selectedIndex = 0;
   GlobalKey<ScaffoldState> _scaffoldKey;
   Widget _actionEvents = ActionEventsPage();
@@ -47,6 +49,8 @@ class _HomePageState extends State<HomePage> {
   static List<Widget> imageSliders1;
   static List<EventsDTO> listEventOngoingDTO;
   static List<Widget> imageSliders2;
+  static List<EventsDTO> listEventOpening;
+  static List<Widget> imageSliders3;
 
   _HomePageState(this.uid, this.status,this.barSelect,this.pageIndex);
 
@@ -54,9 +58,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     handlerHoverImg(1);
     handlerHoverImg(2);
+    handlerHoverImg(3);
     handlerShowMessage(this.status);
     configOneSignal();
-    // _handleSendNotification();
     _actionEvents = ActionEventsPage(uid: uid,intIndexPage: pageIndex,);
     _scaffoldKey = new GlobalKey<ScaffoldState>();
     if(barSelect != null){
@@ -176,8 +180,13 @@ class _HomePageState extends State<HomePage> {
                     titleEvents("On Going"),
                     eventsHover(2),
                   ],)) :Center(),
-                  titleEvents("Opening"),
-                  listEventsOpening(),
+                  _tmpOpeningEvent == true
+                      ?(Column(children: <Widget>[
+                    titleEvents("Opening"),
+                    eventsHoverOpening(3),
+                  ],)) :Center(),
+                  titleEvents("Upcoming"),
+                  listEventsUpcoming(),
                 ],
               )
           ),
@@ -195,6 +204,29 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             CarouselSlider(
               items: sequences == 1 ? imageSliders1 : imageSliders2,
+              // items: imageSliders1,
+              options: CarouselOptions(
+                  autoPlay: true,
+                  enlargeCenterPage: true,
+                  aspectRatio: 2.0,
+                  onPageChanged: (index, reason) {
+                    setState(() {});
+                  }),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  // screen hover
+  Widget eventsHoverOpening(int sequences){
+    return Column(
+      children: <Widget>[
+        ListView(
+          shrinkWrap: true,
+          children: <Widget>[
+            CarouselSlider(
+              items: imageSliders3,
               // items: imageSliders1,
               options: CarouselOptions(
                   autoPlay: true,
@@ -246,8 +278,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // list event opening
-  Widget listEventsOpening() {
+  // list event upcoming
+  Widget listEventsUpcoming() {
       return ScopedModel(
         model: model,
         child: Padding(
@@ -317,7 +349,7 @@ class _HomePageState extends State<HomePage> {
                               textAlign: TextAlign.start,
                             ),
                             subtitle: Text(
-                              dtf.format(DateTime.parse(element.startTime).add(Duration(hours: 7))),
+                              dtf.format(DateTime.parse(element.startTime)),
                               style: TextStyle(fontSize: 16.0),
                             ),
                             trailing: Padding(
@@ -379,17 +411,21 @@ class _HomePageState extends State<HomePage> {
   // check list events in week and ongoing
   handlerHoverImg(int sequences) async {
     try {
-      // load event in week
-      if(sequences == 1) {
-        DateTime now =  new DateTime.now();
-        var _tmpFuture = now.add(Duration(days: 7));
-        listEventDTO = await EventsVM.eventInWeek(now.toUtc().toIso8601String(), _tmpFuture.toUtc().toIso8601String());
-        eventByDayOrStatus(1);
-        // event ongoing when user register event successful
-      }else if(sequences == 2){
-        listEventOngoingDTO = await EventsVM.getEventsOngoing();
-        eventByDayOrStatus(2);
-      }
+        // load event in week
+        if(sequences == 1) {
+          DateTime now =  new DateTime.now();
+          var _tmpFuture = now.add(Duration(days: 7));
+          listEventDTO = await EventsVM.eventInWeek(now.toUtc().toIso8601String(), _tmpFuture.toUtc().toIso8601String());
+          eventByDayOrStatus(1);
+          // event ongoing when user register event successful
+        }else if(sequences == 2){
+          listEventOngoingDTO = await EventsVM.getEventsOngoing();
+          eventByDayOrStatus(2);
+        }else if(sequences == 3){
+          listEventOpening = await EventsVM.getListEventsOpening();
+          eventByDayOrStatus(3);
+        }
+        setState((){});
     }catch(e){
       _tmpCheckEvent = false;
     }
@@ -457,7 +493,8 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                              child: Text('${String.fromCharCode(ShowMessage.functionLimitCharacter(item.title).runes.first)}',
+                              // child: Text('${String.fromCharCode(ShowMessage.functionLimitCharacter(item.title).runes.first)}',
+                              child: Text('${item.title}',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20.0,
@@ -471,7 +508,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               )).toList();
           setState(() {});
-      } else if (listEventDTO.isEmpty) {
+      } else if (listEventDTO.isNotEmpty) {
         _tmpCheck = false;
         _tmpCheckEvent = false;
         Center(
@@ -540,9 +577,10 @@ class _HomePageState extends State<HomePage> {
                             ),
                             padding: EdgeInsets.symmetric(
                                 vertical: 10.0, horizontal: 20.0),
-                            child: Text('${String.fromCharCode(ShowMessage.functionLimitCharacter(item.title).runes.first)}',
+                            child: Text('${item.title}',
+                            // child: Text('${String.fromCharCode(ShowMessage.functionLimitCharacter(item.title).runes.first)}',
                               style: TextStyle(
-                                color: Colors.grey[300],
+                                color: Colors.white,
                                 fontSize: 18.0,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -557,6 +595,89 @@ class _HomePageState extends State<HomePage> {
       } else if (listEventOngoingDTO.isEmpty) {
         _tmpCheckOngoing = false;
         _tmpCheckOngoinEvent = false;
+        Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+    }else if( id == 3){
+      if (listEventOpening.isNotEmpty) {
+        _tmpOpening = true;
+        _tmpOpeningEvent = true;
+        imageSliders3 = listEventOpening.map((item) =>
+            Container(
+              width: double.infinity,
+              child: Container(
+                margin: EdgeInsets.all(6),
+                padding: EdgeInsets.all(3),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  border: Border.all(color: Colors.grey[200], width: 1),
+                  borderRadius: BorderRadius.all(
+                      Radius.circular(15.0)), // set rounded corner radius
+                ),
+                child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      RegisterEventPage(
+                                          uid: uid,
+                                          idEvents: item.id,
+                                          tracking: item.gpsTrackingRequired,
+                                          nameLocation: item.location)));
+                            });
+                          },
+                          child: item.thumbnailPicture == null
+                              ? Center(child: new Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              new CircularProgressIndicator(),
+                              new Text("Loading"),
+                            ],),)
+                              : Image.network(
+                              '${item.thumbnailPicture}', fit: BoxFit.cover,
+                              width: 1000.0),),
+                        Positioned(
+                          bottom: 0.0,
+                          left: 0.0,
+                          right: 0.0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color.fromARGB(0, 0, 0, 0),
+                                  Color.fromARGB(0, 0, 0, 0)
+                                ],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                                vertical: 10.0, horizontal: 20.0),
+                            child: Text('${item.title}',
+                            // child: Text('${String.fromCharCode(ShowMessage.functionLimitCharacter(item.title).runes.first)}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )),
+              ),
+            )).toList();
+        setState(() {});
+      } else if (listEventOpening.isEmpty) {
+        _tmpOpening = false;
+        _tmpOpeningEvent = false;
         Center(
           child: CircularProgressIndicator(),
         );
@@ -633,8 +754,6 @@ class _HomePageState extends State<HomePage> {
       OneSignal.shared.setNotificationReceivedHandler((OSNotification notification) async {
         var data = notification.payload.additionalData;
         var aa = await notification.payload.additionalData["a"];
-        print('${aa}');
-        print('data ${data}');
       });
     }catch(e){
     }

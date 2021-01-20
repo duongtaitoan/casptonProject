@@ -7,6 +7,7 @@ import 'package:designui/src/ViewModel/tracking_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geocoder/model.dart';
+import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 
 class show {
@@ -95,11 +96,12 @@ Future timeLocation(_locationData,counts,show,idEvents,BuildContext context,uid,
   DateTime now = DateTime.now();
   return new Future.delayed(const Duration(milliseconds: 1), () async {
     Stopwatch s = new Stopwatch();
-    for (int i = 0; i <= counts; i++) {
-      if(now.isBefore(timeEnd)){
+    for (int i = 0; i <= 3; i++) {
+      if(now.isBefore(DateTime.parse(timeEnd))){
         sleep(const Duration(milliseconds: 1));
         await Future.delayed(new Duration(seconds: duration),() async {
           if(show == true) {
+            print('---');
             // get address location by latitude and longitude
             final coordinates = new Coordinates(_locationData.latitude, _locationData.longitude);
             var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);

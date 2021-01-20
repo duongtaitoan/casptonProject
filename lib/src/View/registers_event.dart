@@ -43,7 +43,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   final nameLocation;
   var idEvents;
   var status;
-  DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
+  DateFormat dtf = DateFormat('HH:mm a dd/MM/yyyy');
   DateFormat sqlDF = DateFormat('yyyy-MM-ddTHH:mm:ss');
   var checkTimeCancel = false;
   var checkTimeCheckin = false;
@@ -210,7 +210,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50,top: 10),
-                  child: Text(dtf.format(DateTime.parse(dto.startTime).add(Duration(hours: 7))),
+                  child: Text(dtf.format(DateTime.parse(dto.startTime)),
                       style: TextStyle(color: Colors.black, fontSize: 16.0)),
                 ),
                 SizedBox(height: 30,),
@@ -448,7 +448,10 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
                     child:buttonRegister(dto)),
               ) : buttonFeedBack(4.0, 4.0,dto),
             )
-              :Center(child: buttonDetails(3.0, 3.0,"Checkedin",dto)),
+              :Container(
+                width: MediaQuery.of(context).size.width,
+                height: 52,
+                child: buttonCheckin(dto)),
         ),
       ),
     );
@@ -466,7 +469,7 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
             height: MediaQuery.of(context).size.height*12/100,
             child: Padding(
               padding: EdgeInsets.only(left: 16,bottom: bottom,top: top),
-                child: title != "Checkedin" && title != "Rejected"
+                child: title != "Rejected"
                     ? RaisedButton(
                     color: Colors.orange[600],
                     shape: RoundedRectangleBorder(
@@ -568,12 +571,12 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
             // timeToCheckin(dto) != false?
             // checkInUser == false ?
             RaisedButton(
-                  child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
-                  onPressed: () async {
-                    await loadingMess(dto, "Checkin");
-                  },
-                  color: Colors.orange[600],
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),)
+              child: Text('Check in', style: TextStyle(fontSize: 18.0, color: Colors.white),),
+              onPressed: () async {
+                await loadingMess(dto, "Checkin");
+              },
+              color: Colors.orange[600],
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(6))),)
               // : RaisedButton(
               //   onPressed: (){
               //       // ShowMessage.functionShowDialog("Your have already check in this event", context);
@@ -746,13 +749,13 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
   // check register of user
   handlerRegister(dto) async{
     // if approvalRequired == true then Registered show approved else awaiting
-    var _tmpPageIndex = dto.approvalRequired;
-    var pageIndex;
-    if(_tmpPageIndex == false){
-      pageIndex = 0;
-    }else{
-      pageIndex = 1;
-    }
+    // var _tmpPageIndex = dto.approvalRequired;
+    // var pageIndex;
+    // if(_tmpPageIndex == false){
+    //   pageIndex = 0;
+    // }else{
+    //   pageIndex = 1;
+    // }
 
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
@@ -761,15 +764,22 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     // register event
     var _tmpStatus = await RegisterVM().register(idEvents);
 
-    Navigator.of(context).pop();
-    // show message when registered
-    await ShowMessage.functionShowDialog(_tmpStatus, context);
+    if(_tmpStatus != "Register Successfully"){
+      Navigator.of(context).pop();
+      await ShowMessage.functionShowDialog(_tmpStatus, context);
+    }else {
+      Navigator.of(context).pop();
+      // show message when registered
+      await ShowMessage.functionShowDialog(_tmpStatus, context);
 
-    Future.delayed(Duration(microseconds: 1),() async {
-      Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
-        => HomePage(uid: uid,barSelect:barSelect,pageIndex:pageIndex)), (Route<dynamic> route) => false);
-    });
-    UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+      Future.delayed(Duration(microseconds: 1), () async {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+            builder: (context) =>
+                HomePage(uid: uid, barSelect: barSelect, pageIndex: 0)), (
+            Route<dynamic> route) => false);
+      });
+      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+    }
   }
 
   // if user cancel this event then show messages
@@ -803,34 +813,31 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     // get status event is ongoing
     var statusCheckIn = await RegisterVM().statusEventEvent(idEvents);
 
-    // get location
-    var tmpLocation = await show.functionGetLocation();
-    var checkinFirst = await sendLocationFirst(tmpLocation[0],tmpLocation[1],tmpLocation[2],dto.checkInQrCode,idEvents);
+    // if (statusCheckIn.compareTo("ONGOING") == 0) {
+    //     // if gps tracking required true or false onway to send location first to server
+    //     await Future.delayed(Duration.zero, () {
+    //       Navigator.pushAndRemoveUntil(
+    //           context, MaterialPageRoute(builder: (BuildContext context) =>
+    //           CameraApp(uid: uid,
+    //             duration: dto.trackingInterval,
+    //             nameEvents: dto.title,
+    //             tracking: dto.gpsTrackingRequired,
+    //             idEvents: dto.id,
+    //             checkInQrCode: dto.checkInQrCode,
+    //             nameLocation: nameLocation,
+    //             statusCheckin: statusCheckIn,
+    //             timeEnd: DateFormat("yyyy-MM-dd hh:mm:ss").format(isFuture),
+    //             timeDuration: timeNow,
+    //           )), (Route<dynamic> route) => false);
+    //     });
+    // }else{
+    //   await ShowMessage.functionShowDialog("This event has not ongoing yet", context);
+    //   UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+    // }
 
-    if (statusCheckIn.compareTo("ONGOING") == 0) {
-      if(checkinFirst.toString().compareTo("Your registration has not been approved.")!=0) {
-        // if gps tracking required true or false onway to send location first to server
-        await Future.delayed(Duration.zero, () {
-          Navigator.pushAndRemoveUntil(
-              context, MaterialPageRoute(builder: (BuildContext context) =>
-              CameraApp(uid: uid,
-                duration: dto.trackingInterval,
-                nameEvents: dto.title,
-                tracking: dto.gpsTrackingRequired,
-                idEvents: dto.id,
-                checkInQrCode: dto.checkInQrCode,
-                nameLocation: nameLocation,
-                statusCheckin: statusCheckIn,
-                timeEnd: dto.endTime,
-                timeDuration: timeNow,
-              )), (Route<dynamic> route) => false);
-        });
-      }else{
-        await ShowMessage.functionShowDialog("Your registration has not been approved.", context);
-      }
-    }else{
-      await ShowMessage.functionShowDialog("This event has not ongoing yet", context);
-      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-    }
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) =>
+            FeedBackPage(uid: uid, nameEvents: dto.title,
+                idEvent: idEvents, screenHome: "HomePage",idStudent:3)));
   }
 }

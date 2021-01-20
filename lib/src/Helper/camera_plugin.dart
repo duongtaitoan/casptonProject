@@ -126,16 +126,17 @@ class _CameraAppPageState extends State<CameraApp> {
                                         _scanBarcode = 'Failed to get platform version.';
                                       }
                                       if (!mounted) return;
-                                      print('${_scanBarcode.compareTo(checkInQrCode.toString())}');
-                                      if(_scanBarcode.compareTo(checkInQrCode.toString()) == 0){
-                                        await ShowMessage.functionShowDialog("Check in Success",context);
+                                      var tmpLocation = await show.functionGetLocation();
+                                      var checkinFirst = await sendLocationFirst(tmpLocation[0],tmpLocation[1],tmpLocation[2],_scanBarcode,idEvents);
+                                      // if(checkinFirst.toString().compareTo("Your registration has not been approved.") !=0 ) {
+                                      if(checkinFirst.toString().compareTo("") ==0 ) {
+                                        await ShowMessage.functionShowDialog("Check in Success", context);
                                         await getLocationUser(tracking);
-                                        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HomePage(uid: uid)));
+                                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(uid: uid)));
+                                        setState(() {});
                                       }else{
-                                        await ShowMessage.functionShowDialog("Invalid QR code",context);
+                                          await ShowMessage.functionShowDialog("${checkinFirst}",context);
                                       }
-                                      setState(() {
-                                      });
                                     },
                                     child: Text("Check in by QR code",style: TextStyle(color: Colors.white))),
                               ),

@@ -24,6 +24,20 @@ class EventsVM extends Model {
     }
   }
 
+  // get event opening
+  static Future<List<EventsDTO>> getListEventsOpening() async {
+    try {
+      EventsDAO dao = new EventsDAO();
+      var listEvents = await dao.apiGetEventsStatus("OPEN_FOR_REGISTRATIONS");
+      List<EventsDTO> saveEvents = new List<EventsDTO>();
+      if(listEvents!= null){
+        saveEvents.addAll(listEvents);
+      }
+      return saveEvents;
+    } catch (e) {
+    }
+  }
+
   // get event ongoing
   static Future<List<EventsDTO>> getEventsOngoing() async {
     try {
@@ -61,13 +75,13 @@ class EventsVM extends Model {
     }
   }
 
-  // get first 10 record open for registrations events
+  // get first 10 record upcoming for registrations events
   Future<void> getFirstIndex() async {
     try {
       isLoading = true;
       notifyListeners();
       EventsDAO dao = new EventsDAO();
-      var listEvents = await dao.pageFirstOpening(index,"OPEN_FOR_REGISTRATIONS");
+      var listEvents = await dao.pageFirstOpening(0,"UPCOMING");
       listEvent = new List();
       if(listEvents.length != 0){
         listEvent.addAll(listEvents);
@@ -83,15 +97,17 @@ class EventsVM extends Model {
 
   // event in week
   static Future<List<EventsDTO>> eventInWeek(now,isFuture) async {
-    EventsDAO dao = new EventsDAO();
-    // var listEvents = await dao.apiGetListEvents("2021-02-08T23:00:00Z","2021-02-09T02:30:18Z");
-    var listEvents = await dao.apiGetListEvents(now,isFuture);
-    List<EventsDTO> saveEvents = new List<EventsDTO>();
-    if(listEvents.isNotEmpty) {
-      saveEvents.addAll(listEvents);
-      return saveEvents;
-    }else{
-      return null;
+    try {
+      EventsDAO dao = new EventsDAO();
+      // var listEvents = await dao.apiGetListEvents("2021-02-08T23:00:00Z","2021-02-09T02:30:18Z");
+      var listEvents = await dao.apiGetListEvents(now, isFuture);
+      List<EventsDTO> saveEvents = new List<EventsDTO>();
+      if (listEvents.isNotEmpty) {
+        saveEvents.addAll(listEvents);
+        return saveEvents;
+      }
+    }catch(e){
+
     }
   }
 

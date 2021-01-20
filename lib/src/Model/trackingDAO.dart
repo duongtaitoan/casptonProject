@@ -19,7 +19,7 @@ class TrackingDAO {
     }else if(json["errorCode"] == 500){
       return "Tracking error";
     }else{
-      return 1;
+      return json["message"];
     }
   }
 }

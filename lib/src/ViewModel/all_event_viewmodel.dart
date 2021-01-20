@@ -19,7 +19,7 @@ class ViewAllVM extends Model{
       notifyListeners();
       EventsDAO dao = new EventsDAO();
 
-      var listEvents = await dao.viewAllPageFirst(index,context);
+      var listEvents = await dao.viewAllPageFirst(0,context);
       listEvent = new List();
       if(listEvents != null) {
         if (listEvents.length != 0) {

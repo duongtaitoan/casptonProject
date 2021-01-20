@@ -27,7 +27,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
   ViewAllVM model;
   GlobalKey<ScaffoldState> _scaffoldKey;
   _ShowAllEventsPageState(this.uid);
-  static DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
+  static DateFormat dtf = DateFormat('HH:mm a dd/MM/yyyy');
   var checkSearch = false;
 
   @override
@@ -224,7 +224,7 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                           textAlign: TextAlign.start,
                         ),
                         subtitle: Text(
-                          dtf.format(DateTime.parse(element.startTime).add(Duration(hours: 7))),
+                          dtf.format(DateTime.parse(element.startTime)),
                           style: TextStyle(fontSize: 16.0),
                         ),
                         trailing: Padding(
@@ -385,14 +385,14 @@ class _ShowAllEventsPageState extends State<ShowAllEventsPage> {
                                                 )
                                             ),
                                             ListTile(
-                                              title: Text(_search[i].title,
+                                              title: Text(ShowMessage.utf8convert(_search[i].title),
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 18.0),
                                                 textAlign: TextAlign.start,),
                                               subtitle: Text(dtf.format(
                                                   DateTime.parse(
-                                                      _search[i].startTime).add(Duration(hours: 7))),
+                                                      _search[i].startTime)),
                                                 style: TextStyle(
                                                     fontSize: 16.0),),
                                               trailing: Padding(

@@ -308,20 +308,34 @@ class ApiHelper {
   }
 
   // get 10 event
-  Future<dynamic> postEvents(String status,int page,String url) async {
+  Future<dynamic> postEvents(String status,int size,String url) async {
     var responseJson;
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
     Map map;
-    if(page == null){
+    if(size == null){
       map = {
         "query": "status == '${status}'",
         "sorts": {}
       };
-    } else {
+    } else if(status == "DELETED"){
+      map = {
+        "query": "status != '${status}'",
+        "page":size,
+        "size": 10,
+        "sorts": {}
+      };
+    } else if(status == "UPCOMING"){
       map = {
         "query": "status == '${status}'",
-        "page": page,
+        "page":size,
+        "size": 5,
+        "sorts": {}
+      };
+    }else {
+      map = {
+        "query": "status == '${status}'",
+        "page": size,
         "size": 10,
         "sorts": {}
       };
@@ -351,6 +365,7 @@ class ApiHelper {
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
     Map map;
+    DateTime now = DateTime.now();
     if(status.compareTo("WAITING_FOR_APPROVAL")==0){
       map = {
         "query": "status == '${status}' or status == 'IN_WISHLIST'",
@@ -358,7 +373,7 @@ class ApiHelper {
       };
     } else {
       map = {
-          "query": "status == '${status}'",
+          "query": "status == '${status}' and requestedAt <= '${now.toUtc().toIso8601String()}'",
           "sorts": {}
         };
       };

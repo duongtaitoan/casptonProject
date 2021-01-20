@@ -32,7 +32,7 @@ class EventsDAO{
   Future<List<EventsDTO>> pageIndex(int index) async {
     ApiHelper _api = new ApiHelper();
     try {
-      dynamic json = await _api.postEvents("OPEN_FOR_REGISTRATIONS",index,"api/events/find-by-query");
+      dynamic json = await _api.postEvents("DELETED",index,"api/events/find-by-query");
       var eventJson = json["content"] as List;
       if(eventJson.isNotEmpty){
         return eventJson.map((e) => EventsDTO.fromJson(e)).toList();
@@ -55,7 +55,7 @@ class EventsDAO{
   Future<List<EventsDTO>> viewAllPageFirst(int index,context) async {
     try {
       ApiHelper _api = new ApiHelper();
-      dynamic json = await _api.postEvents("OPEN_FOR_REGISTRATIONS",index,"api/events/find-by-query");
+      dynamic json = await _api.postEvents("DELETED",index,"api/events/find-by-query");
       var eventJson = json["content"] as List;
       if(json["errorCode"] == 500){
         return null;

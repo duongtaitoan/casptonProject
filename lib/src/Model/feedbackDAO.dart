@@ -7,11 +7,12 @@ class FeedBackDAO{
     try{
       ApiHelper _api = new ApiHelper();
       dynamic _tmpJson = await _api.postFeedBack(eventId,studentId,now,valueBody, "api/feedback");
-      if(_tmpJson["errorCode"] == 0){
-        return "You have not checked in event and cannot give feedback for this event.";
-      }
-      return _tmpJson;
+      // if(_tmpJson["errorCode"] == 0){
+      //   return "You have not checked in event and cannot give feedback for this event.";
+      // }
+      return "";
     }catch(e){
+      return "";
     }
   }
 

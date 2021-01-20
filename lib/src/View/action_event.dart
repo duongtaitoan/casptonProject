@@ -24,7 +24,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
   HistoryVM historyVM;
   _ActionEventsPageState(this.uid,this.intIndexPage);
   final TextEditingController _controller = TextEditingController();
-  static DateFormat dtf = DateFormat('HH:mm dd/MM/yyyy');
+  static DateFormat dtf = DateFormat('HH:mm a dd/MM/yyyy');
 
 
   @override
@@ -189,7 +189,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                                       ListTile(
                                         title: Text(snapshot.data[snap].eventName, style: TextStyle(
                                             fontWeight: FontWeight.bold, fontSize: 18.0), textAlign: TextAlign.start,),
-                                        subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].eventEndTime).add(Duration(hours: 7))),
+                                        subtitle: Text(dtf.format(DateTime.parse(snapshot.data[snap].eventEndTime)),
                                           style: TextStyle(fontSize: 16.0),),
                                       ),
                                     ],
