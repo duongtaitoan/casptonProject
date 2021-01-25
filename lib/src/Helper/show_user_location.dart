@@ -96,12 +96,11 @@ Future timeLocation(_locationData,counts,show,idEvents,BuildContext context,uid,
   DateTime now = DateTime.now();
   return new Future.delayed(const Duration(milliseconds: 1), () async {
     Stopwatch s = new Stopwatch();
-    for (int i = 0; i <= 3; i++) {
+    for (int i = 1; i <= counts; i++) {
       if(now.isBefore(DateTime.parse(timeEnd))){
         sleep(const Duration(milliseconds: 1));
         await Future.delayed(new Duration(seconds: duration),() async {
           if(show == true) {
-            print('---');
             // get address location by latitude and longitude
             final coordinates = new Coordinates(_locationData.latitude, _locationData.longitude);
             var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);

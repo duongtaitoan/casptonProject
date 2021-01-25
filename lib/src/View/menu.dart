@@ -1,4 +1,5 @@
 import 'package:designui/src/Helper/show_message.dart';
+import 'package:designui/src/Model/user_profileDAO.dart';
 import 'package:designui/src/view/history.dart';
 import 'package:designui/src/view/login.dart';
 import 'package:designui/src/view/user_profile.dart';
@@ -68,13 +69,9 @@ class _HomeMenuState extends State<HomeMenu> {
               UserProfilePage(uid: uid)
             ),
             SizedBox(height: 10,),
-            // your history
-            // handlerItemMenu(
-            //   'assets/images/history.png',
-            //   'History',
-            //   HistoryPage(uid: uid)
-            // ),
-            // SizedBox(height: 10,),
+            // delete my account
+            handlerDelete(),
+            SizedBox(height: 10,),
             // logout
             Column(
               children: <Widget>[
@@ -124,6 +121,68 @@ class _HomeMenuState extends State<HomeMenu> {
                 onTap: () {
                   // go to screen
                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>pushButton));
+                },
+              ),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+
+  Widget handlerDelete(){
+    return Column(
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            SizedBox( width: 25,),
+            Expanded(
+              flex: 5,
+              child: ListTile(
+                leading: Image.asset('assets/images/deleteAccount.png',width: 30,height: 30),
+                title: Text("Delete my account",style: TextStyle(fontSize: 18, color: Color(0xff323643))),
+                onTap: ()async {
+                  // go to screen
+
+                  await showDialog(
+                    context: this.context,
+                    child: AlertDialog(
+                      title: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children:[
+                            SizedBox(width: 10,),
+                            Text("Message"),
+                          ]
+                      ),
+                      content: Text("Delete my account?",style: TextStyle(fontSize: 16.0,),textAlign: TextAlign.center,),
+                      actions: [
+                        new FlatButton(
+                          child: Text("Yes",style: TextStyle(color: Colors.blue[500]),),
+                          onPressed: () async {
+                             await UserProfileDAO().deleteMyAccount();
+                             // logout
+                             googleSignIn.signOut();
+                             _auth.signOut();
+                             // removeExternalUserId()
+                             OneSignal.shared.removeExternalUserId();
+                             // not show subscription for user
+                             await OneSignal.shared.setSubscription(false);
+                             // clear shared preferences
+                             SharedPreferences sp = await SharedPreferences.getInstance();
+                             sp.clear();
+                             // back to login and when user click button back => logout app
+                             Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)=>LoginPage()), (Route<dynamic> route) => false);
+                             ShowMessage.functionShowMessage("Logout successful");
+                          },
+                        ),
+                        new FlatButton(
+                          child: Text("No",style: TextStyle(color: Colors.blue[500]),),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  );
                 },
               ),
             ),

@@ -29,4 +29,13 @@ class UserProfileDAO{
     return null;
   }
 
+  // get user profile
+  Future<dynamic> deleteMyAccount() async {
+    ApiHelper _api = new ApiHelper();
+    dynamic response = await _api.deleteYourAccount("oauth/profile/delete-account");
+    if (response != null) {
+      return response;
+    }
+    return null;
+  }
 }

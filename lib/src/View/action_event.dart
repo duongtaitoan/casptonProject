@@ -104,7 +104,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
         if(flowStatus.toString().compareTo("WAITING_FOR_APPROVAL")==0 ||
             flowStatus.toString().compareTo("IN_WISHLIST")==0){
           _tmpChange = "No waiting registration";
-        }else if(flowStatus.toString().compareTo("ACCEPTED")==0){
+        }else if(flowStatus.toString().compareTo("APPROVED")==0){
           _tmpChange = "No approved registration";
         }else if(flowStatus.toString().compareTo("REJECTED")==0){
           _tmpChange = "No rejected registration";
@@ -129,7 +129,7 @@ class _ActionEventsPageState extends State<ActionEventsPage> with SingleTickerPr
                             if(flowStatus.toString().compareTo("WAITING_FOR_APPROVAL")==0 ||
                                 flowStatus.toString().compareTo("IN_WISHLIST")==0){
                               _tmpChange = "No waiting registration";
-                            }else if(flowStatus.toString().compareTo("ACCEPTED")==0){
+                            }else if(flowStatus.toString().compareTo("APPROVED")==0){
                               _tmpChange = "No approved registration";
                             }else if(flowStatus.toString().compareTo("REJECTED")==0){
                               _tmpChange = "No rejected registration";

@@ -427,6 +427,30 @@ class ApiHelper {
     return responseJson;
   }
 
+  // get delete my account
+  Future<dynamic> deleteYourAccount(String url) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String token = sp.getString("token_data");
+    var responseJson;
+    var response;
+    try {
+      response = await http.delete(_baseUrl+url,
+        headers: {
+          'Content-Type': 'application/json ; charset=utf-8',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer '+token,
+        },
+      );
+      responseJson = new Map<String, dynamic>();
+      if(response.body.isNotEmpty){
+        responseJson = json.decode(utf8.decode(response.bodyBytes));
+      }
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
+  }
+
   dynamic returnResponse(http.Response response) {
     switch (response.statusCode) {
       case 200:

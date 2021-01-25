@@ -607,48 +607,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     );
   }
 
-  // check time user can to canceled
-  // timeToCancel(EventsDTO dto){
-  //   DateTime tmpDT = DateTime.parse(dto.startAcceptingRegistrationAt);
-  //   tmpDT = tmpDT.add(new Duration(hours:-12));
-  //   var now = DateTime.now();
-  //   if(dto.stopAcceptingRegistrationAt == null){
-  //     if (now.isAfter(tmpDT)) {
-  //       checkTimeCancel = true;
-  //       return checkTimeCancel;
-  //     }else {
-  //       checkTimeCancel = false;
-  //       return checkTimeCancel;
-  //     }
-  //   }else {
-  //     if(now.isBefore(DateTime.parse(dto.stopAcceptingRegistrationAt))) {
-  //       checkTimeCancel = true;
-  //       return checkTimeCancel;
-  //     }else {
-  //       checkTimeCancel = false;
-  //       return checkTimeCancel;
-  //     }
-  //   }
-  // }
-
-  // check time events is in an on going range
-  // timeToCheckin(EventsDTO dto){
-  //   var now = DateTime.now();
-  //   // time + checkinDuration minutes
-  //   // var timeToDelay = dto.checkInDuration;
-  //   var timeToLate = DateTime.parse(dto.startTime).add(new Duration(minutes: 5));
-  //   // time user click button checkin into 5 minutes when time startAt
-  //   if (now.isAfter(DateTime.parse(dto.startTime)) && now.isBefore(timeToLate)) {
-  //     if (dto.status == "ONGOING") {
-  //       checkTimeCheckin = true;
-  //       return checkTimeCheckin;
-  //     } else {
-  //       checkTimeCheckin = false;
-  //       return checkTimeCheckin;
-  //     }
-  //   }
-  // }
-
   // get status event
 
   Future<dynamic> statusUserRegistation() async {
@@ -748,14 +706,6 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
 
   // check register of user
   handlerRegister(dto) async{
-    // if approvalRequired == true then Registered show approved else awaiting
-    // var _tmpPageIndex = dto.approvalRequired;
-    // var pageIndex;
-    // if(_tmpPageIndex == false){
-    //   pageIndex = 0;
-    // }else{
-    //   pageIndex = 1;
-    // }
 
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
@@ -813,31 +763,26 @@ class _RegisterEventPageState extends State<RegisterEventPage> {
     // get status event is ongoing
     var statusCheckIn = await RegisterVM().statusEventEvent(idEvents);
 
-    // if (statusCheckIn.compareTo("ONGOING") == 0) {
-    //     // if gps tracking required true or false onway to send location first to server
-    //     await Future.delayed(Duration.zero, () {
-    //       Navigator.pushAndRemoveUntil(
-    //           context, MaterialPageRoute(builder: (BuildContext context) =>
-    //           CameraApp(uid: uid,
-    //             duration: dto.trackingInterval,
-    //             nameEvents: dto.title,
-    //             tracking: dto.gpsTrackingRequired,
-    //             idEvents: dto.id,
-    //             checkInQrCode: dto.checkInQrCode,
-    //             nameLocation: nameLocation,
-    //             statusCheckin: statusCheckIn,
-    //             timeEnd: DateFormat("yyyy-MM-dd hh:mm:ss").format(isFuture),
-    //             timeDuration: timeNow,
-    //           )), (Route<dynamic> route) => false);
-    //     });
-    // }else{
-    //   await ShowMessage.functionShowDialog("This event has not ongoing yet", context);
-    //   UIBlock.unblock(_scaffoldGlobalKey.currentContext);
-    // }
-
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) =>
-            FeedBackPage(uid: uid, nameEvents: dto.title,
-                idEvent: idEvents, screenHome: "HomePage",idStudent:3)));
+    if (statusCheckIn.compareTo("ONGOING") == 0) {
+        // if gps tracking required true or false alway to send location first to server
+        await Future.delayed(Duration.zero, () {
+          Navigator.pushAndRemoveUntil(
+              context, MaterialPageRoute(builder: (BuildContext context) =>
+              CameraApp(uid: uid,
+                duration: dto.trackingInterval,
+                nameEvents: dto.title,
+                tracking: dto.gpsTrackingRequired,
+                idEvents: dto.id,
+                checkInQrCode: dto.checkInQrCode,
+                nameLocation: nameLocation,
+                statusCheckin: statusCheckIn,
+                timeEnd: DateFormat("yyyy-MM-dd hh:mm:ss").format(isFuture),
+                timeDuration: timeNow,
+              )), (Route<dynamic> route) => false);
+        });
+    }else{
+      await ShowMessage.functionShowDialog("This event has not ongoing yet", context);
+      UIBlock.unblock(_scaffoldGlobalKey.currentContext);
+    }
   }
 }

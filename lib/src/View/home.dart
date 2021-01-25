@@ -56,11 +56,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    handlerHoverImg(1);
-    handlerHoverImg(2);
-    handlerHoverImg(3);
     handlerShowMessage(this.status);
-    configOneSignal();
     _actionEvents = ActionEventsPage(uid: uid,intIndexPage: pageIndex,);
     _scaffoldKey = new GlobalKey<ScaffoldState>();
     if(barSelect != null){
@@ -68,9 +64,14 @@ class _HomePageState extends State<HomePage> {
     }
     super.initState();
     try {
-      model = new EventsVM();
-      model.getFirstIndex();
-      setState(() { });
+      setState(() {
+        handlerHoverImg(1);
+        handlerHoverImg(2);
+        handlerHoverImg(3);
+        configOneSignal();
+        model = new EventsVM();
+        model.getFirstIndex();
+      });
     }catch(e){
       handlerShowMessage("No Internet connection");
     }
@@ -698,6 +699,7 @@ class _HomePageState extends State<HomePage> {
     //ID for onesignal
     await OneSignal.shared.init('5efe7693-153f-42df-b3c4-b3fced8029c4',iOSSettings: settings);
     await OneSignal.shared.promptUserForPushNotificationPermission(fallbackToSettings: true);
+    await OneSignal.shared.setSubscription(true);
 
     OneSignal.shared.consentGranted(true);
     OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
@@ -710,16 +712,15 @@ class _HomePageState extends State<HomePage> {
       SharedPreferences sp = await SharedPreferences.getInstance();
       String token = sp.getString("token_data");
       var decodedToken = JwtDecoder.decode(token);
-      int userid = int.parse(decodedToken["sub"]);
+      int userId = int.parse(decodedToken["sub"]);
 
       // get hash send to server
       await EventsVM.notifi().then((userAuthHas) {
         String tmpAuth = userAuthHas;
         // set external for user id
-        OneSignal.shared.setExternalUserId("${userid}", tmpAuth);
+        OneSignal.shared.setExternalUserId("${userId}", userAuthHas);
       });
     setState(() async {
-      await OneSignal.shared.setSubscription(true);
       OneSignal.shared.setNotificationOpenedHandler((OSNotificationOpenedResult openedResult) {
         Map<String, dynamic> data = openedResult.notification.payload.additionalData;
 
@@ -729,10 +730,9 @@ class _HomePageState extends State<HomePage> {
         var dataNameLocation = data["locationDetails"];
 
         if(dataType == "EVENT_STATUS_CHANGED") {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => RegisterEventPage(
-                  uid: uid, idEvents: int.parse(dataIdEvent),nameLocation: dataNameLocation,)));
-
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => RegisterEventPage(
+                uid: uid, idEvents: int.parse(dataIdEvent),nameLocation: dataNameLocation,)));
         }else if(dataType == "REGISTRATION_STATUS_CHANGED"){
           if(dataChangStatus == "APPROVED"){
             Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
@@ -752,8 +752,6 @@ class _HomePageState extends State<HomePage> {
       });
 
       OneSignal.shared.setNotificationReceivedHandler((OSNotification notification) async {
-        var data = notification.payload.additionalData;
-        var aa = await notification.payload.additionalData["a"];
       });
     }catch(e){
     }
