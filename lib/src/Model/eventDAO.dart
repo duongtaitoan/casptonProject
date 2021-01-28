@@ -81,7 +81,7 @@ class EventsDAO{
   }
 
   // get hash notification in server
-  Future<dynamic> getNotification() async {
+  Future<dynamic> getIdHash() async {
     ApiHelper _api = new ApiHelper();
     dynamic json = await _api.getHashNoti("api/notifications/my-id-hash");
     return json;

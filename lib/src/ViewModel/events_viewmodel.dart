@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:designui/src/Model/eventDAO.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -123,12 +125,12 @@ class EventsVM extends Model {
   }
 
   // get hash notification
-  static Future<String> notifi() async {
-    try {
-      EventsDAO dao = new EventsDAO();
-      var listEvents = await dao.getNotification();
-      return listEvents;
-    } catch (e) {
-    }
-  }
+  // static Future<String> getIDHash() async {
+  //   try {
+  //     EventsDAO dao = new EventsDAO();
+  //     return await dao.getIdHash();
+  //   } catch (e) {
+  //     log("Cannot get ID hash. Detailed: " + e);
+  //   }
+  // }
 }

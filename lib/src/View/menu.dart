@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:designui/src/Helper/notification.dart';
 import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/user_profileDAO.dart';
 import 'package:designui/src/view/history.dart';
@@ -7,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeMenu extends StatefulWidget {
@@ -86,10 +90,10 @@ class _HomeMenuState extends State<HomeMenu> {
                         onTap: () async {
                           googleSignIn.signOut();
                           _auth.signOut();
-                          OneSignal.shared.removeExternalUserId();
-                          await OneSignal.shared.setSubscription(false);
+                          await NotificationEvent().removeUserId();
                           SharedPreferences sp = await SharedPreferences.getInstance();
-                          sp.clear();
+                          await sp.clear();
+                          File("/data/data/com.ben.apt/shared_prefs/OneSignal.xml").delete(recursive: true);
                           // back to login and when user click button back => logout app
                           Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)=>LoginPage()), (Route<dynamic> route) => false);
                           ShowMessage.functionShowMessage("Logout successful");
@@ -164,10 +168,8 @@ class _HomeMenuState extends State<HomeMenu> {
                              // logout
                              googleSignIn.signOut();
                              _auth.signOut();
-                             // removeExternalUserId()
-                             OneSignal.shared.removeExternalUserId();
-                             // not show subscription for user
-                             await OneSignal.shared.setSubscription(false);
+                             // remove External UserId()
+                             await NotificationEvent().removeUserId();
                              // clear shared preferences
                              SharedPreferences sp = await SharedPreferences.getInstance();
                              sp.clear();

@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'dart:ui';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:designui/src/Helper/notification.dart';
 import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 import 'package:designui/src/View/action_event.dart';
@@ -13,10 +13,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   final FirebaseUser uid;
@@ -56,19 +53,20 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    super.initState();
+
+    NotificationEvent().configOneSignal(uid,context);
     handlerShowMessage(this.status);
     _actionEvents = ActionEventsPage(uid: uid,intIndexPage: pageIndex,);
     _scaffoldKey = new GlobalKey<ScaffoldState>();
     if(barSelect != null){
       selectedIndex = barSelect;
     }
-    super.initState();
     try {
       setState(() {
         handlerHoverImg(1);
         handlerHoverImg(2);
         handlerHoverImg(3);
-        configOneSignal();
         model = new EventsVM();
         model.getFirstIndex();
       });
@@ -683,77 +681,6 @@ class _HomePageState extends State<HomePage> {
           child: CircularProgressIndicator(),
         );
       }
-    }
-  }
-
-  // notification
-  void configOneSignal() async{
-    //Remove this method to stop OneSignal Debugging
-    OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
-
-    var settings = {
-      OSiOSSettings.autoPrompt: false,
-      OSiOSSettings.promptBeforeOpeningPushUrl: true
-    };
-
-    //ID for onesignal
-    await OneSignal.shared.init('5efe7693-153f-42df-b3c4-b3fced8029c4',iOSSettings: settings);
-    await OneSignal.shared.promptUserForPushNotificationPermission(fallbackToSettings: true);
-    await OneSignal.shared.setSubscription(true);
-
-    OneSignal.shared.consentGranted(true);
-    OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
-    _handleSetExternalUserId();
-  }
-
-  // handler external for userid
-  Future<void> _handleSetExternalUserId() async {
-    try {
-      SharedPreferences sp = await SharedPreferences.getInstance();
-      String token = sp.getString("token_data");
-      var decodedToken = JwtDecoder.decode(token);
-      int userId = int.parse(decodedToken["sub"]);
-
-      // get hash send to server
-      await EventsVM.notifi().then((userAuthHas) {
-        String tmpAuth = userAuthHas;
-        // set external for user id
-        OneSignal.shared.setExternalUserId("${userId}", userAuthHas);
-      });
-    setState(() async {
-      OneSignal.shared.setNotificationOpenedHandler((OSNotificationOpenedResult openedResult) {
-        Map<String, dynamic> data = openedResult.notification.payload.additionalData;
-
-        var dataIdEvent = data["eventId"];
-        var dataType = data["type"];
-        var dataChangStatus = data["registrationStatus"];
-        var dataNameLocation = data["locationDetails"];
-
-        if(dataType == "EVENT_STATUS_CHANGED") {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => RegisterEventPage(
-                uid: uid, idEvents: int.parse(dataIdEvent),nameLocation: dataNameLocation,)));
-        }else if(dataType == "REGISTRATION_STATUS_CHANGED"){
-          if(dataChangStatus == "APPROVED"){
-            Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
-            => HomePage(uid: uid,barSelect:1,pageIndex:1)), (Route<dynamic> route) => false);
-          }else if(dataChangStatus == "REJECTED"){
-            Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
-            => HomePage(uid: uid,barSelect:1,pageIndex:2)), (Route<dynamic> route) => false);
-          }else if(dataChangStatus == "CHECKED_IN"){
-            Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
-            => HomePage(uid: uid,barSelect:1,pageIndex:3)), (Route<dynamic> route) => false);
-          }else{
-            Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context)
-            => HomePage(uid: uid,barSelect:1,pageIndex:0)), (Route<dynamic> route) => false);
-          }
-        }
-        });
-      });
-
-      OneSignal.shared.setNotificationReceivedHandler((OSNotification notification) async {
-      });
-    }catch(e){
     }
   }
 }

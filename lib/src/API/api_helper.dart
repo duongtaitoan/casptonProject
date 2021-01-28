@@ -69,7 +69,7 @@ class ApiHelper {
     return responseJson;
   }
 
-  // get id events
+  // get id hash by id user
   Future<dynamic> getHashNoti(String url) async {
     SharedPreferences sp = await SharedPreferences.getInstance();
     String token = sp.getString("token_data");
