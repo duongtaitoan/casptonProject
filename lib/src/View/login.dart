@@ -26,9 +26,9 @@ class _LoginPageState extends State<LoginPage> {
       FirebaseUser user = await GoogleSign.handleSignIn();
       String status = await GoogleSign.onSignInFinished(user);
       RegExp regExp = RegExp("^[a-z0-9_\.]{8,}@[fpt|fu]{1,4}(\.[edu]{3})(\.[vn]{2})");
-      if (!regExp.hasMatch(user.email.toString())) {
-        try{
-          ShowMessage.functionShowMessage(status);
+    if (!regExp.hasMatch(user.email.toString())) {
+      try{
+          ShowMessage.functionShowMessage("Email address is not valid\n Vd: example@fpt.edu.vn");
         }catch(e){
       }
       } else if(status == "Signin successful") {

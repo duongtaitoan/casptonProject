@@ -1,17 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:designui/src/Helper/camera_plugin.dart';
 import 'package:designui/src/Helper/show_message.dart';
-import 'package:designui/src/Helper/show_user_location.dart';
 import 'package:designui/src/Model/eventDTO.dart';
-import 'package:designui/src/Model/feedbackDAO.dart';
-import 'package:designui/src/Model/registerEventDAO.dart';
-import 'package:designui/src/Model/registerEventDTO.dart';
 import 'package:designui/src/View/feedback.dart';
 import 'package:designui/src/View/home.dart';
 import 'package:designui/src/ViewModel/events_viewmodel.dart';
 import 'package:designui/src/ViewModel/register_viewmodel.dart';
-import 'package:designui/src/ViewModel/tracking_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

@@ -74,14 +74,14 @@ class _CameraAppPageState extends State<CameraApp> {
           child:Scaffold(
             key: _scaffoldGlobalKey,
               appBar: AppBar(
-                backgroundColor: Colors.orange[400],
+                backgroundColor: Colors.orange[600],
                 title: Text("Check in", textAlign: TextAlign.center,),
                 leading: IconButton(
                   icon: Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
                         builder: (context) => RegisterEventPage(uid: uid,
-                            idEvents: idEvents, screenHome: screenHome)),
+                            idEvents: idEvents, screenHome: screenHome,nameLocation: nameLocation,)),
                             (Route<dynamic> route) => false);
                   }
                 ),
@@ -115,7 +115,7 @@ class _CameraAppPageState extends State<CameraApp> {
                               Expanded(
                                 flex: 1,
                                 child: RaisedButton(
-                                    color: Colors.orange[400],
+                                    color: Colors.orange[600],
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(Radius.circular(10))),
                                     onPressed: () async {
@@ -126,16 +126,24 @@ class _CameraAppPageState extends State<CameraApp> {
                                         _scanBarcode = 'Failed to get platform version.';
                                       }
                                       if (!mounted) return;
-                                      var tmpLocation = await show.functionGetLocation();
-                                      var checkinFirst = await sendLocationFirst(tmpLocation[0],tmpLocation[1],tmpLocation[2],_scanBarcode,idEvents);
-                                      // if(checkinFirst.toString().compareTo("Your registration has not been approved.") !=0 ) {
-                                      if(checkinFirst.toString().compareTo("") ==0 ) {
-                                        await ShowMessage.functionShowDialog("Check in Success", context);
-                                        await getLocationUser(tracking);
-                                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(uid: uid)));
-                                        setState(() {});
-                                      }else{
-                                          await ShowMessage.functionShowDialog("${checkinFirst}",context);
+                                      try{
+                                        var tmpLocation = await show.functionGetLocation();
+                                        var checkinFirst = await sendLocationFirst(tmpLocation[0],tmpLocation[1],tmpLocation[2],_scanBarcode,idEvents);
+                                        // if(checkinFirst.toString().compareTo("Your registration has not been approved.") !=0 ) {
+                                        if(checkinFirst.toString().compareTo("") ==0 ) {
+                                          await ShowMessage.functionShowDialog(
+                                              "Check in Success", context);
+                                          await getLocationUser(tracking);
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      HomePage(uid: uid)));
+                                          setState(() {});
+                                        }else{
+                                            await ShowMessage.functionShowDialog("${checkinFirst}",context);
+                                        }
+                                      }catch(e){
+                                        ShowMessage.functionShowMessage("Need to access the users camera permission.");
                                       }
                                     },
                                     child: Text("Check in by QR code",style: TextStyle(color: Colors.white))),

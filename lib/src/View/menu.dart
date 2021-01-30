@@ -3,14 +3,11 @@ import 'dart:io';
 import 'package:designui/src/Helper/notification.dart';
 import 'package:designui/src/Helper/show_message.dart';
 import 'package:designui/src/Model/user_profileDAO.dart';
-import 'package:designui/src/view/history.dart';
 import 'package:designui/src/view/login.dart';
 import 'package:designui/src/view/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeMenu extends StatefulWidget {

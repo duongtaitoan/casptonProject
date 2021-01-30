@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:designui/src/Model/eventDAO.dart';
 import 'package:designui/src/Model/eventDTO.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -27,12 +25,13 @@ class EventsVM extends Model {
   }
 
   // get event opening
-  static Future<List<EventsDTO>> getListEventsOpening() async {
+  Future<List<EventsDTO>> getListEventsOpening() async {
     try {
       EventsDAO dao = new EventsDAO();
       var listEvents = await dao.apiGetEventsStatus("OPEN_FOR_REGISTRATIONS");
       List<EventsDTO> saveEvents = new List<EventsDTO>();
       if(listEvents!= null){
+        notifyListeners();
         saveEvents.addAll(listEvents);
       }
       return saveEvents;
@@ -41,12 +40,13 @@ class EventsVM extends Model {
   }
 
   // get event ongoing
-  static Future<List<EventsDTO>> getEventsOngoing() async {
+  Future<List<EventsDTO>> getEventsOngoing() async {
     try {
       EventsDAO dao = new EventsDAO();
       var listEvents = await dao.apiGetEventsStatus("ONGOING");
       List<EventsDTO> saveEvents = new List<EventsDTO>();
       if(listEvents!= null){
+        notifyListeners();
         saveEvents.addAll(listEvents);
       }
       return saveEvents;
@@ -98,13 +98,14 @@ class EventsVM extends Model {
   }
 
   // event in week
-  static Future<List<EventsDTO>> eventInWeek(now,isFuture) async {
+  Future<List<EventsDTO>> eventInWeek(now,isFuture) async {
     try {
       EventsDAO dao = new EventsDAO();
       // var listEvents = await dao.apiGetListEvents("2021-02-08T23:00:00Z","2021-02-09T02:30:18Z");
       var listEvents = await dao.apiGetListEvents(now, isFuture);
       List<EventsDTO> saveEvents = new List<EventsDTO>();
       if (listEvents.isNotEmpty) {
+        notifyListeners();
         saveEvents.addAll(listEvents);
         return saveEvents;
       }

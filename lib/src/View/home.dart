@@ -414,14 +414,14 @@ class _HomePageState extends State<HomePage> {
         if(sequences == 1) {
           DateTime now =  new DateTime.now();
           var _tmpFuture = now.add(Duration(days: 7));
-          listEventDTO = await EventsVM.eventInWeek(now.toUtc().toIso8601String(), _tmpFuture.toUtc().toIso8601String());
+          listEventDTO = await EventsVM().eventInWeek(now.toUtc().toIso8601String(), _tmpFuture.toUtc().toIso8601String());
           eventByDayOrStatus(1);
           // event ongoing when user register event successful
         }else if(sequences == 2){
-          listEventOngoingDTO = await EventsVM.getEventsOngoing();
+          listEventOngoingDTO = await EventsVM().getEventsOngoing();
           eventByDayOrStatus(2);
         }else if(sequences == 3){
-          listEventOpening = await EventsVM.getListEventsOpening();
+          listEventOpening = await EventsVM().getListEventsOpening();
           eventByDayOrStatus(3);
         }
         setState((){});
